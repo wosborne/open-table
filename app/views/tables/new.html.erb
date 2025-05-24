@@ -1,0 +1,32 @@
+<section class="section">
+  <div class="container is-max-tablet">
+    <h1 class="title">New Table</h1>
+
+    <%= form_with model: @table do |f| %>
+      <div class="field">
+        <%= f.label :name, "Table Name" %>
+        <%= f.text_field :name, class: "input", placeholder: "Enter table name" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :import, "Import CSV" %>
+        <div class="file has-name is-fullwidth">
+          <label class="file-label">
+            <%= f.file_field :import, class: "file-input" %>
+            <span class="file-cta">
+              <span class="file-icon">
+                <i class="fas fa-upload"></i>
+              </span>
+              <span class="file-label"> Choose a file… </span>
+            </span>
+            <%# <span class="file-name"> Screen Shot 2017-07-29 at 15.54.25.png </span> %>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.submit class: "button is-primary" %>
+      </div>
+    <% end %>
+  </div>
+</section>

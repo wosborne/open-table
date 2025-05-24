@@ -1,0 +1,10 @@
+<section class="section">
+  <h1 class="title"><%= @table.name %></h1>
+
+  <%= render "tables/filters" %>
+
+  <%= turbo_frame_tag "products" do %>
+    <%= render "tables/table" %>
+  <% end %>
+</section>
+      

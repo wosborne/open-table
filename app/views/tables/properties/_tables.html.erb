@@ -1,0 +1,12 @@
+<hr class="dropdown-divider" />
+
+<div class="dropdown-item">
+  <label class="label is-small">Linked Table</label>
+  <div class="field">
+    <div class="control is-expanded">
+      <div class="select is-small is-fullwidth">
+        <%= select :property, :linked_table_id, Table.all.map{|t| [t.name, t.id]}, { include_blank: true } %>
+      </div>
+    </div>
+  </div>
+</div>

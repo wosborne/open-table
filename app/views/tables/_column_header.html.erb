@@ -1,0 +1,64 @@
+<th
+  id="property-<%= property.id %>"
+  style="min-width: 110px;"
+  data-controller="dropdown">
+  <div class="dropdown is-clickable" style="width: 100%; height: 100%;" data-dropdown-target="dropdown" data-action="click->dropdown#toggle">
+    <div class="dropdown-trigger">
+      <%= property.name %>
+    </div>
+    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+      <div class="dropdown-content">
+        <%= form_with model: property,
+          url: table_property_path(property.table_id, property),
+          id: "property-form-#{property.id}",
+          data: {
+            controller: 'nested-form property-type',
+            nested_form_wrapper_selector_value: '.nested-form-wrapper',
+            property_id: property.id,
+            table_id: property.table_id,
+            action: "turbo:submit-end->table#refreshColumns"
+          },
+          format: :turbo_stream do |f| %>
+          <%= f.hidden_field :id %>
+
+          <div class="dropdown-item">
+            <%= f.text_field :name, class: "input is-small" %>
+          </div>
+          
+          <div class="dropdown-item">
+            <div class="field">
+              <div class="control is-expanded">
+                <div class="select is-small is-fullwidth">
+                  <%= f.select :data_type, Property.data_types.keys, {}, { data: { action: "change->property-type#typeChanged" } } %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <%= render partial: "tables/properties/type_fields", locals: { f: f, property: } %>
+        <% end %>
+
+        <hr class="dropdown-divider" />
+
+        <div class="dropdown-item">
+          <div class="field is-grouped">
+            <%= button_to table_property_path(property.table_id, property), method: :delete, data: { turbo_method: :delete }, class: "button is-danger is-outlined is-small" do %>
+              <span class="icon">
+                <i class="fas fa-trash"></i>
+              </span>
+            <% end %>
+            
+            <p class="control is-expanded">
+            </p>
+
+            <p class="control">
+              <button type="button" onclick="document.getElementById('property-form-<%= property.id %>').requestSubmit();" class="button is-primary is-small">
+                Save
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</th>

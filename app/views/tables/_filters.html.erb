@@ -1,0 +1,59 @@
+
+  <div data-controller="filter">
+    <div class="columns">
+      <%= form_with url: table_path(@table), method: :get, data: { filter_target: "form" }, class: "column is-one-third" do |f| %>
+        <div class="field has-addons">
+          <div class="control has-icons-left is-expanded">
+            <%= f.text_field :search, value: params[:search], placeholder: "Search everything", class: "input" %>
+            <%= f.hidden_field :filters, value: params[:filters], data: { filter_target: "hiddenInput" } %>
+            <span class="icon is-small is-left">
+              <i class="fas fa-search"></i>
+            </span>
+          </div>
+          
+          <div class="control">
+            <%= f.submit "Search", class: "button is-primary" %>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form_with url: property_options_table_path(@table), method: :get, id: "property-select-form", class: "column is-two-fifths" do |f| %>
+        <%= turbo_frame_tag "filters" do %>
+          <div class="field has-addons">
+            <p class="control">
+              <span class="select">
+                <%= f.select :property_id,
+                  options_for_select(@table.properties.map { |p| [p.name.titleize, p.id] },
+                  params[:property_id]),
+                  { include_blank: "Select property" },
+                  data: { filter_target: "propertySelect" },
+                  onchange: "this.form.requestSubmit();" %>
+              </span>
+            </p>
+        
+            <%= render "tables/filter_input", property: nil %>
+
+            <p class="control">
+              <button class="button is-info" type="button" data-action="click->filter#addFilter">Add Filter</button>
+            </p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+
+    <div class="columns">
+      <div class="column tags">
+        <% if params[:filters].present? && params[:filters] != "{}"  %>
+          <% JSON.parse(params[:filters])&.each do |key, value| %>
+            <span class="tag is-info is-medium" data-filter-target="filterTag">
+              <%= @table.properties.find(key).name.titleize %>: <%= value %>
+              <button class="delete" type="button" data-action="click->filter#removeFilter" data-filter-key="<%= key %>"></button>
+            </span>
+          <% end %>
+
+          <%= link_to "Reset", table_path(@table), class: "button is-light is-small" %>
+        <% end %>
+      </div>
+    </div>
+  </div>

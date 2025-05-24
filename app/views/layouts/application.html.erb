@@ -17,12 +17,26 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <script src="https://kit.fontawesome.com/6fb2a00b93.js" crossorigin="anonymous"></script>
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+      <%= render "layouts/navbar" %>
+
+      <section class="hero is-fullheight-with-navbar">
+        <div class="columns is-gapless is-desktop is-flex-grow-1">
+          <div class="column is-2 has-background-light p-4!">
+            <%= render "layouts/sidebar" %>
+          </div>
+
+          <div class="column is-10">
+            <%= yield %>
+          </div>
+        </div>
+      </section>
   </body>
 </html>

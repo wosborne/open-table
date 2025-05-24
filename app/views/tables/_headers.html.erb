@@ -1,0 +1,16 @@
+<tr>
+  <% table.properties.includes(:options).order(:position).each_with_index do |property| %>
+    <%= render "tables/column_header", property:, icon: "fa-chevron-down" %>
+  <% end %>
+  
+  <th>
+    <%= button_to table_properties_path(table), data: { turbo_method: :post }, style: "width: max-content;" do %>
+      <span class="icon-text">
+        <span class="icon is-clickable">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>Add Property</span>
+      </span>
+    <% end %>
+  </th>
+</tr>

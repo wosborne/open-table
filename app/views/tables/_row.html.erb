@@ -1,0 +1,7 @@
+<tr id="product-<%= item.id %>" data-item-id="<%= item.id %>">
+  <% table.properties.order(:position).each do |property| %>
+    <td>
+      <%= render "tables/cell", item:, property: property, value: item.properties[property.id.to_s]%>
+    </td>
+  <% end %>
+</tr>

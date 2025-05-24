@@ -1,0 +1,19 @@
+<aside class="menu p-4">
+  <p class="menu-label">Tables</p>
+  <ul class="menu-list">
+    <% Table.all.each do |table| %>
+      <li><%= link_to table.name, table_path(table), class: "has-background-light" %></li>
+    <% end %>
+
+    <li>
+      <%= link_to new_table_path, class: "has-background-light mt-4" do %>
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>Create New Table</span>
+        </span>
+      <% end %>
+    </li>
+  </ul>
+</aside>

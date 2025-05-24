@@ -1,0 +1,8 @@
+<%= turbo_frame_tag "property-type-fields-#{property.id}" do %>
+  <% case params[:type] || property.data_type %>
+  <% when "linked_record" %>
+    <%= render "tables/properties/tables", f: f %>
+  <% when "select" %>
+    <%= render "tables/properties/options", f: f, property: %>
+  <% end %>
+<% end %>

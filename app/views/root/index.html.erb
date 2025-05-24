@@ -1,0 +1,12 @@
+<section class="section">
+  <div class="container">
+    <% @tables.each do |table| %>
+      <%= link_to table_path(table) do %>
+        <div class="box">
+          <h2 class="title is-4"><%= table.name %></h2>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</section>
+      

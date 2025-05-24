@@ -1,0 +1,23 @@
+<div class="table-container" data-controller="table" data-table-table-id-value="<%= @table.id %>" style="overflow: visible;">
+  <table class="table is-hoverable is-narrow mb-2 is-fullwidth">
+    <thead>
+      <%= render "tables/headers", table: @table %>
+    </thead>
+
+    <tbody>
+      <% @items.each do |item| %>
+        <%= render "tables/row", item:, table: @table %>
+      <% end %>
+      <tr id="new-item-row">
+    </tbody>
+  </table>
+
+  <%= button_to table_items_path(@table), data: { turbo_method: :post } do %>
+    <span class="icon-text">
+      <span class="icon is-clickable">
+        <i class="fas fa-plus"></i>
+      </span>
+      <span>Add Item</span>
+    </span>
+  <% end %>
+</div>

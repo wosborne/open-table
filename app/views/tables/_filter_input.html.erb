@@ -1,0 +1,16 @@
+<p id="filter-input" class="control is-expanded">
+  <% if property&.select_type? %>
+    <span class="select is-fullwidth">
+      <select data-filter-target="valueInput" data-action="change->filter#addFilter">
+        <option value="">Select value</option>
+        <% property.all_values.each do |value| %>
+          <option value="<%= value %>"><%= value %></option>
+        <% end %>
+      </select>
+    </span>
+  <% elsif property&.text_type? %>
+    <input class="input" type="text" placeholder="Enter value" data-filter-target="valueInput" data-action="keydown.enter->filter#addFilter">
+  <% else %>
+    <input class="input" disabled type="text" placeholder="Select a property">
+  <% end %>
+</p>
