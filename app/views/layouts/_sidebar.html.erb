@@ -1,12 +1,13 @@
 <aside class="menu p-4">
+  <h2 class="title is-4"><%= current_account.name %></h2>
   <p class="menu-label">Tables</p>
   <ul class="menu-list">
     <% Table.all.each do |table| %>
-      <li><%= link_to table.name, table_path(table), class: "has-background-light" %></li>
+      <li><%= link_to table.name, account_table_path(current_account, table), class: "has-background-light" %></li>
     <% end %>
 
     <li>
-      <%= link_to new_table_path, class: "has-background-light mt-4" do %>
+      <%= link_to new_account_table_path(current_account), class: "has-background-light mt-4" do %>
         <span class="icon-text">
           <span class="icon">
             <i class="fas fa-plus"></i>

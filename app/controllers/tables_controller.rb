@@ -1,4 +1,4 @@
-class TablesController < ApplicationController
+class TablesController < AccountsController
   def show
     @table = current_table
     @items = search_and_filter_items
@@ -6,16 +6,20 @@ class TablesController < ApplicationController
   end
 
   def new
-    @table = Table.new
+    @table = current_account.tables.new
   end
 
   def create
-    @table = Table.new(table_params)
+    @table = current_account.tables.new(table_params)
     if @table.save
-      redirect_to @table, notice: "Table was successfully created."
+      redirect_to account_table_path(current_account, @table), notice: "Table was successfully created."
     else
       render :new
     end
+  end
+
+  def index
+    @tables = current_account.tables
   end
 
   def property_options
@@ -28,7 +32,7 @@ class TablesController < ApplicationController
 
   helper_method :current_table
   def current_table
-    @current_table ||= Table.find(params[:table_id] || params[:id])
+    @current_table ||= current_account.tables.find(params[:table_id] || params[:id])
   end
 
   private

@@ -21,8 +21,8 @@ export default class extends Controller {
     document.removeEventListener("keydown", this.close)
   }
 
-  toggle() {
-    this.dropdownTarget.classList.toggle("is-active")
+  open() {
+    this.dropdownTarget.classList.add("is-active")
   }
 
 

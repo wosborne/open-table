@@ -23,7 +23,7 @@ require 'rspec/rails'
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-# Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
 
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
@@ -44,7 +44,31 @@ RSpec.configure do |config|
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false # Using DatabaseCleaner instead
+
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction # Default strategy
+    DatabaseCleaner.clean_with(:truncation) # Initially clean with truncation
+  end
+
+  config.before(:each, type: :system) do
+    # Swap to truncation as Selenium runs in separate thread with a different
+    # database connection
+    DatabaseCleaner.strategy = :truncation
+  end
+
+  config.after(:each, type: :system) do
+    # Reset so non-request specs can use transaction
+    DatabaseCleaner.strategy = :transaction
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
@@ -70,4 +94,9 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+  config.include Devise::Test::ControllerHelpers, type: :controller
+  config.include Devise::TestHelpers, type: :view
+
+  config.include SignInHelper, type: :system
 end

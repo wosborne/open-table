@@ -14,7 +14,7 @@ export default class extends Controller {
     const token = csrfMeta ? csrfMeta.content : null;
 
   
-    fetch(`/tables/${this.tableIdValue}/properties/${propertyId}/refresh_cells`, {
+    fetch(`${this.tableIdValue}/properties/${propertyId}/refresh_cells`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

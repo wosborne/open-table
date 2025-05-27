@@ -25,18 +25,6 @@
   </head>
 
   <body>
-      <%= render "layouts/navbar" %>
-
-      <section class="hero is-fullheight-with-navbar">
-        <div class="columns is-gapless is-desktop is-flex-grow-1">
-          <div class="column is-2 has-background-light p-4!">
-            <%= render "layouts/sidebar" %>
-          </div>
-
-          <div class="column is-10">
-            <%= yield %>
-          </div>
-        </div>
-      </section>
+    <%= yield %>
   </body>
 </html>

@@ -2,7 +2,7 @@
   <div class="container is-max-tablet">
     <h1 class="title">New Table</h1>
 
-    <%= form_with model: @table do |f| %>
+    <%= form_with model: @table, url: account_tables_path(current_account) do |f| %>
       <div class="field">
         <%= f.label :name, "Table Name" %>
         <%= f.text_field :name, class: "input", placeholder: "Enter table name" %>

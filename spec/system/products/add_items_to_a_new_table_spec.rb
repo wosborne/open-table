@@ -1,12 +1,13 @@
 require "rails_helper"
 
 RSpec.describe "AddItemsToANewTable", type: :system do
-  before do
-  end
-
   it "creates a product record" do
+    sign_in_as(create(:user))
+
     visit root_path
     click_on "Create New Table"
+
+    expect(page).to have_selector("h1", text: "New Table")
 
     fill_in "Table Name", with: "Products"
     click_button "Create Table"
@@ -17,12 +18,16 @@ RSpec.describe "AddItemsToANewTable", type: :system do
 
     click_on "Add Property"
 
-    expect(page).to have_selector("div", text: "Untitled")
+    within "#products" do
+      find('.dropdown', match: :first)
+
+      expect(page).to have_selector("div", text: "Untitled")
+    end
 
     last_property = Property.last
 
     within "#property-#{last_property.id}" do
-      find('.dropdown-trigger', text: 'Untitled').click
+      find('.dropdown', text: 'Untitled').click
 
       fill_in "property_name", with: "Name"
 

@@ -1,5 +1,5 @@
 <%= turbo_frame_tag "item-#{item.id}-property-#{property.id}" do %>
-  <%= form_with model: item, url: set_property_table_item_path(item.table_id, item), format: :turbo_stream, data: { turbo: true } do |f| %>
+  <%= form_with model: item, url: set_property_account_table_item_path(current_account, item.table_id, item), format: :turbo_stream, data: { turbo: true } do |f| %>
     <%= f.hidden_field :property_id, value: property.id %>
     <% if property.text_type? %>
       <%= f.text_field :value,

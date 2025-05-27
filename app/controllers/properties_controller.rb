@@ -2,7 +2,7 @@ class PropertiesController < TablesController
   def create
     @property = current_table.properties.create(data_type: :text)
 
-    redirect_to table_path(current_table)
+    redirect_to account_table_path(current_account, current_table)
   end
 
   def update

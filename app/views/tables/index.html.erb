@@ -1,7 +1,7 @@
 <section class="section">
   <div class="container">
     <% @tables.each do |table| %>
-      <%= link_to table_path(table) do %>
+      <%= link_to account_table_path(current_account.slug, table) do %>
         <div class="box">
           <h2 class="title is-4"><%= table.name %></h2>
         </div>

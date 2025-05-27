@@ -1,0 +1,14 @@
+<h1 class="title">Forgot your password?</h1>
+
+<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+
+  <%= render "/components/form/input_wrapper",
+    label: f.label(:email, class: "label"),
+    input: f.email_field(:email, autofocus: true, autocomplete: "email", class: "input"),
+    errors: resource.errors.full_messages_for(:email) %>
+
+  <div class="is-flex is-flex-direction-column is-align-items-center">
+    <%= f.submit "Send me reset password instructions", class: "button" %><br />
+    <%= render "devise/shared/links" %>
+  </div>
+<% end %>

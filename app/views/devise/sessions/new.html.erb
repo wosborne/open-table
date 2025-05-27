@@ -1,0 +1,27 @@
+<h1 class="title">Log in</h1>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  <%= render "/components/form/input_wrapper",
+    label: f.label(:email, class: "label"),
+    input: f.email_field(:email, autofocus: true, autocomplete: "email", class: "input"),
+    errors: resource.errors.full_messages_for(:email) %>
+
+  <%= render "/components/form/input_wrapper",
+    label: f.label(:password, class: "label"),
+    input: f.password_field(:password, autocomplete: "new-password", class: "input"),
+    errors: resource.errors.full_messages_for(:password) %>
+
+  <% if devise_mapping.rememberable? %>
+    <div class="field">
+      <%= f.check_box :remember_me %>
+      <%= f.label :remember_me %>
+    </div>
+  <% end %>
+
+  <div class="is-flex is-flex-direction-column is-align-items-center">
+    <%= f.submit "Log in", class: "button is-primary" %>
+    <br />
+    <%= render "devise/shared/links" %>
+  </div>
+<% end %>
+

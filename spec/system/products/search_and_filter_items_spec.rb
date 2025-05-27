@@ -1,8 +1,9 @@
 require "rails_helper"
 
 RSpec.describe "SearchAndFilterItems", type: :system do
-  before do
-    @table = create(:table, name: "Products")
+  before(:each) do
+    @user = create(:user)
+    @table = create(:table, name: "Products", account: @user.accounts.first)
     text_property = create(:property, table: @table, data_type: "text", name: "Name")
     select_property = create(:property, table: @table, data_type: "select", name: "Color")
     create(:property_option, property: select_property, value: "Red")
@@ -14,7 +15,9 @@ RSpec.describe "SearchAndFilterItems", type: :system do
   end
 
   it "search and filter items" do
-    visit table_path(@table)
+    sign_in_as(@user)
+
+    visit account_table_path(@user.accounts.first, @table)
 
     within "#products" do
       expect(page).to have_selector("#product-#{@toast.id}")

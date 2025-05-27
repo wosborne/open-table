@@ -12,7 +12,7 @@
     </tbody>
   </table>
 
-  <%= button_to table_items_path(@table), data: { turbo_method: :post } do %>
+  <%= button_to account_table_items_path(current_account, @table), data: { turbo_method: :post } do %>
     <span class="icon-text">
       <span class="icon is-clickable">
         <i class="fas fa-plus"></i>

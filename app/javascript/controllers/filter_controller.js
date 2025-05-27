@@ -5,7 +5,6 @@ export default class extends Controller {
   static targets = ["propertySelect", "valueInput", "form", "hiddenInput"]
   
   addFilter(event) {
-    console.log("Adding filter")
     event.preventDefault()
 
     const key = this.propertySelectTarget.value
@@ -35,7 +34,6 @@ export default class extends Controller {
   }
 
   _updateAndSubmit(filters) {
-    console.log("this.formTarget", this.formTarget)
     this.hiddenInputTarget.value = JSON.stringify(filters)
     this.formTarget.requestSubmit()
   }

@@ -1,0 +1,33 @@
+
+<h1 class="title">New account</h1>
+<p class="subtitle">Create the account for your business!</p>
+
+<%= form_with model: @account, data: { turbo: false } do |f| %>
+  <%= render "/components/form/input_wrapper",
+    label: f.label(:name, class: "label"),
+    input: f.text_field(:name, autofocus: true, class: "input"),
+    errors: @account.errors.full_messages_for(:name) %>
+
+  <div class="field">
+    <%= f.label :slug, class: "label" %>
+    <div class="field has-addons">
+      <p class="control">
+        <a class="button is-static">
+          www.<%= request.host %>.com/
+        </a>
+      </p>
+      <p class="control is-expanded">
+        <%= f.text_field(:slug, class: "input") %>
+      </p>
+    </div>
+    <div>
+    <% @account.errors.full_messages_for(:slug)&.each do |error| %>
+      <p class="help is-danger"><%= error %></p>
+    <% end %>
+    </div>
+  </div>
+
+  <div class="is-flex is-flex-direction-column is-align-items-center">
+    <%= f.submit "Create account", class: "button is-primary" %>
+  </div>
+<% end %>

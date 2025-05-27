@@ -1,8 +1,10 @@
 require "rails_helper"
 
 RSpec.describe "ChangingPropetyDataType", type: :system do
-  before do
-    @table = create(:table, name: "Products")
+  before(:each) do
+    @user = create(:user)
+
+    @table = create(:table, name: "Products", account: @user.accounts.first)
     @property = create(:property, table: @table, data_type: "text", name: "Name")
     @toast = create(:item, table: @table, properties: { @property.id => "Toast" })
     @cheese = create(:item, table: @table, properties: { @property.id => "Cheese" })
@@ -10,7 +12,9 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
   end
 
   it "changing property type updates columns and cells accordingly" do
-    visit table_path(@table)
+    sign_in_as(@user)
+
+    visit account_table_path(@user.accounts.first, @table)
 
     within "#products" do
       expect(page).to have_field("item-#{@toast.id}-property-#{@property.id}-input", with: 'Toast')
@@ -28,7 +32,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
       expect(page).to have_field("options_value", with: 'Cheese')
       expect(page).to have_field("options_value", with: 'Butter')
 
-      click_button "Save"
+      find('button', text: 'Save').click
     end
 
     within "#products" do
