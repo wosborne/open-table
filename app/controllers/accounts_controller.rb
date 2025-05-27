@@ -18,7 +18,7 @@ class AccountsController < ApplicationController
 
   helper_method :current_account
   def current_account
-    @current_account ||= current_user.accounts.first
+    @current_account ||= current_user.accounts.find_by(slug: params[:account_slug]) || current_user.accounts.first
   end
 
   private
@@ -31,6 +31,8 @@ class AccountsController < ApplicationController
     if current_user && !current_account
       redirect_to new_account_path
     elsif current_user && current_account && !params[:account_slug]
+      redirect_to account_tables_path(current_account)
+    elsif current_user && current_account && params[:account_slug] != current_account.slug
       redirect_to account_tables_path(current_account)
     end
   end

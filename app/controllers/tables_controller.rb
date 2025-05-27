@@ -6,7 +6,7 @@ class TablesController < AccountsController
   end
 
   def new
-    @table = current_account.tables.new
+    @table = Table.new
   end
 
   def create

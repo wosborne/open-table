@@ -2,7 +2,7 @@
   <h2 class="title is-4"><%= current_account.name %></h2>
   <p class="menu-label">Tables</p>
   <ul class="menu-list">
-    <% Table.all.each do |table| %>
+    <% current_account.tables.each do |table| %>
       <li><%= link_to table.name, account_table_path(current_account, table), class: "has-background-light" %></li>
     <% end %>
 
