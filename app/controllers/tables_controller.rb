@@ -32,7 +32,7 @@ class TablesController < AccountsController
 
   helper_method :current_table
   def current_table
-    @current_table ||= current_account.tables.find(params[:table_id] || params[:id])
+    @current_table ||= current_account.tables.friendly.find(params[:table_id] || params[:id])
   end
 
   private

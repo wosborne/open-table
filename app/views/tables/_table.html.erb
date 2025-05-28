@@ -1,5 +1,5 @@
 <div class="table-container" data-controller="table" data-table-table-id-value="<%= @table.id %>" style="overflow: visible;">
-  <table class="table is-hoverable is-narrow mb-2 is-fullwidth">
+  <table class="table is-hoverable is-narrow mb-2">
     <thead>
       <%= render "tables/headers", table: @table %>
     </thead>
@@ -12,12 +12,18 @@
     </tbody>
   </table>
 
-  <%= button_to account_table_items_path(current_account, @table), data: { turbo_method: :post } do %>
-    <span class="icon-text">
-      <span class="icon is-clickable">
-        <i class="fas fa-plus"></i>
+  <% if @table.properties.any? %>
+    <%= button_to account_table_items_path(current_account, @table), data: { turbo_method: :post } do %>
+      <span class="icon-text">
+        <span class="icon is-clickable">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>Add Item</span>
       </span>
-      <span>Add Item</span>
-    </span>
+    <% end %>
+  <% else %>
+    <div class="notification is-warning">
+      <strong>A table must have at least one property column.</strong> Please add a property to enable adding records.
+    </div>
   <% end %>
 </div>

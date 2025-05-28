@@ -1,4 +1,6 @@
 class Account < ApplicationRecord
+  extend FriendlyId
+
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
 
@@ -7,7 +9,5 @@ class Account < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 
-  def to_param
-    slug
-  end
+  friendly_id :slug, use: :slugged
 end

@@ -1,4 +1,6 @@
 class Table < ApplicationRecord
+  extend FriendlyId
+
   belongs_to :account
   has_many :items, dependent: :destroy
   has_many :limited_items, -> { limit(100) }, class_name: "Item"
@@ -7,6 +9,10 @@ class Table < ApplicationRecord
   has_one_attached :import
 
   after_create_commit :process_import_file
+
+  friendly_id :name, use: :slugged
+
+  validates :name, presence: true, uniqueness: { scope: :account_id, case_sensitive: false }
 
   private
 

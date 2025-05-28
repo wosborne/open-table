@@ -2,11 +2,11 @@
   <div class="container is-max-tablet">
     <h1 class="title">New Table</h1>
 
-    <%= form_with model: @table, url: account_tables_path(current_account) do |f| %>
-      <div class="field">
-        <%= f.label :name, "Table Name" %>
-        <%= f.text_field :name, class: "input", placeholder: "Enter table name" %>
-      </div>
+    <%= form_with model: @table, url: account_tables_path(current_account), data: { turbo: false } do |f| %>
+      <%= render "/components/form/input_wrapper",
+        label: f.label(:name, "Table Name", class: "label"),
+        input: f.text_field(:name, autofocus: true, class: "input"),
+        errors: @table.errors.full_messages_for(:name) %>
 
       <div class="field">
         <%= f.label :import, "Import CSV" %>
@@ -19,7 +19,6 @@
               </span>
               <span class="file-label"> Choose a file… </span>
             </span>
-            <%# <span class="file-name"> Screen Shot 2017-07-29 at 15.54.25.png </span> %>
           </label>
         </div>
       </div>

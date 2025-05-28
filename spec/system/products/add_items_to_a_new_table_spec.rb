@@ -13,7 +13,7 @@ RSpec.describe "AddItemsToANewTable", type: :system do
     click_button "Create Table"
 
     expect(page).to have_selector("h1", text: "Products")
-    expect(page).to have_selector("span", text: "Add Item")
+    expect(page).to have_selector(".notification", text: "A table must have at least one property column")
     expect(page).to have_selector("span", text: "Add Property")
 
     click_on "Add Property"
@@ -23,6 +23,8 @@ RSpec.describe "AddItemsToANewTable", type: :system do
 
       expect(page).to have_selector("div", text: "Untitled")
     end
+
+    expect(page).not_to have_selector(".notification", text: "A table must have at least one property column")
 
     last_property = Property.last
 

@@ -4,7 +4,7 @@
     <% if property.text_type? %>
       <%= f.text_field :value,
         value:,
-        class: "input",
+        class: "input is-static",
         style: "width: fit-content;",
         onchange: 'this.form.requestSubmit();',
         id: "item-#{item.id}-property-#{property.id}-input" %>
