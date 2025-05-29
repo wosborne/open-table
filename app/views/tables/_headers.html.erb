@@ -1,4 +1,10 @@
 <tr>
+  <th class="is-align-content-center">
+    <label class="checkbox">
+      <input type="checkbox" data-table-target="selectAll" data-action="change->table#toggleAll"/>
+    </label>
+  </th>
+
   <% table.properties.includes(:options).order(:position).each_with_index do |property| %>
     <%= render "tables/column_header", property:, icon: "fa-chevron-down" %>
   <% end %>

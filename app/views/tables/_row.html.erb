@@ -1,4 +1,11 @@
-<tr id="product-<%= item.id %>" data-item-id="<%= item.id %>">
+<tr id="item-<%= item.id %>" data-item-id="<%= item.id %>" data-action="click->table#selectRow">
+
+  <td class="is-align-content-center" data-action="click->table#toggleItem">
+    <label class="checkbox">
+      <input type="checkbox" data-table-target="checkbox" data-action="click->table#stopPropagation change->table#onCheckboxChange" value="<%= item.id %>" aria-label="Select item <%= item.id %>" />
+    </label>
+  </td>
+
   <% table.properties.order(:position).each do |property| %>
     <td>
       <%= render "tables/cell", item:, property: property, value: item.properties[property.id.to_s]%>

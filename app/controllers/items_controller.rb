@@ -11,6 +11,14 @@ class ItemsController < TablesController
     ]
   end
 
+  def delete_items
+    item_ids = params[:item_ids].split(",").reject(&:blank?)
+
+    if item_ids.any? && current_table.items.where(id: item_ids).destroy_all
+      render turbo_stream: item_ids.map { |id| turbo_stream.remove("item-#{id}") }
+    end
+  end
+
   helper_method :current_item
   def current_item
     @current_item ||= current_table.items.find(params[:item_id] || params[:id])

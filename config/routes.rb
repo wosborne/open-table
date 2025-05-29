@@ -24,6 +24,7 @@ Rails.application.routes.draw do
 
       resources :items, only: %w[create update destroy] do
         patch :set_property, on: :member
+        delete :delete_items, on: :collection
       end
 
       resources :views, only: %w[create show update destroy] do

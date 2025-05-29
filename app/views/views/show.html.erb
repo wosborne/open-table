@@ -24,7 +24,7 @@
 
   <%= render "tables/filters", path: account_table_view_path(current_account, @table, @view) %>
 
-  <%= turbo_frame_tag "table_view", class: "is-flex flex-direction-column is-flex-grow-1" do %>
+  <%= turbo_frame_tag "table_view", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
     <%= render "tables/table" %>
   <% end %>
 </section>

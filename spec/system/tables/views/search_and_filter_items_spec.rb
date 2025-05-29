@@ -21,29 +21,29 @@ RSpec.describe "SearchAndFilterItems", type: :system do
     visit account_table_view_path(@user.accounts.first, @table, @view)
 
     within "#table_view" do
-      expect(page).to have_selector("#product-#{@toast.id}")
-      expect(page).to have_selector("#product-#{@cheese.id}")
-      expect(page).to have_selector("#product-#{@butter.id}")
+      expect(page).to have_selector("#item-#{@toast.id}")
+      expect(page).to have_selector("#item-#{@cheese.id}")
+      expect(page).to have_selector("#item-#{@butter.id}")
     end
 
     fill_in "search", with: "Bu"
     click_button "Search"
 
     within "#table_view" do
-      expect(page).to have_selector("#product-#{@butter.id}")
+      expect(page).to have_selector("#item-#{@butter.id}")
 
-      expect(page).not_to have_selector("#product-#{@toast.id}")
-      expect(page).not_to have_selector("#product-#{@cheese.id}")
+      expect(page).not_to have_selector("#item-#{@toast.id}")
+      expect(page).not_to have_selector("#item-#{@cheese.id}")
     end
 
     fill_in "search", with: "t"
     click_button "Search"
 
     within "#table_view" do
-      expect(page).to have_selector("#product-#{@butter.id}")
-      expect(page).to have_selector("#product-#{@toast.id}")
+      expect(page).to have_selector("#item-#{@butter.id}")
+      expect(page).to have_selector("#item-#{@toast.id}")
 
-      expect(page).not_to have_selector("#product-#{@cheese.id}")
+      expect(page).not_to have_selector("#item-#{@cheese.id}")
     end
 
     select "Color", from: "property_id"
@@ -52,10 +52,10 @@ RSpec.describe "SearchAndFilterItems", type: :system do
     click_button "Add Filter"
 
     within "#table_view" do
-      expect(page).to have_selector("#product-#{@toast.id}")
+      expect(page).to have_selector("#item-#{@toast.id}")
 
-      expect(page).not_to have_selector("#product-#{@butter.id}")
-      expect(page).not_to have_selector("#product-#{@cheese.id}")
+      expect(page).not_to have_selector("#item-#{@butter.id}")
+      expect(page).not_to have_selector("#item-#{@cheese.id}")
     end
   end
 end

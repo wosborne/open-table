@@ -67,10 +67,10 @@ RSpec.describe "Create Table View", type: :system do
     end
 
     within "#table_view" do
-      expect(page).to have_selector("#product-#{@toast.id}")
+      expect(page).to have_selector("#item-#{@toast.id}")
 
-      expect(page).not_to have_selector("#product-#{@butter.id}")
-      expect(page).not_to have_selector("#product-#{@cheese.id}")
+      expect(page).not_to have_selector("#item-#{@butter.id}")
+      expect(page).not_to have_selector("#item-#{@cheese.id}")
     end
   end
 end
