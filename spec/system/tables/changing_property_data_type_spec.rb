@@ -16,7 +16,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
 
     visit account_table_path(@user.accounts.first, @table)
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_field("item-#{@toast.id}-property-#{@property.id}-input", with: 'Toast')
       expect(page).to have_field("item-#{@cheese.id}-property-#{@property.id}-input", with: 'Cheese')
       expect(page).to have_field("item-#{@butter.id}-property-#{@property.id}-input", with: 'Butter')
@@ -35,7 +35,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
       find('button', text: 'Save').click
     end
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_select("item-#{@toast.id}-property-#{@property.id}-input", selected: 'Toast')
       expect(page).to have_select("item-#{@cheese.id}-property-#{@property.id}-input", selected: 'Cheese')
       expect(page).to have_select("item-#{@butter.id}-property-#{@property.id}-input", selected: 'Butter')
@@ -50,7 +50,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
       click_button "Save"
     end
 
-    within "#products" do
+    within "#table_view" do
       expect(page).not_to have_select("item-#{@toast.id}-property-#{@property.id}-input", selected: 'Toast')
       expect(page).not_to have_select("item-#{@cheese.id}-property-#{@property.id}-input", selected: 'Cheese')
       expect(page).not_to have_select("item-#{@butter.id}-property-#{@property.id}-input", selected: 'Butter')
@@ -67,7 +67,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
       click_button "Save"
     end
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_field("item-#{@toast.id}-property-#{@property.id}-input", with: 'Toast')
       expect(page).to have_field("item-#{@cheese.id}-property-#{@property.id}-input", with: 'Cheese')
       expect(page).to have_field("item-#{@butter.id}-property-#{@property.id}-input", with: 'Butter')
@@ -82,7 +82,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
       click_button "Save"
     end
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_field("item-#{@toast.id}-property-#{@property.id}-input", type: 'date')
       expect(page).to have_field("item-#{@cheese.id}-property-#{@property.id}-input", type: 'date')
       expect(page).to have_field("item-#{@butter.id}-property-#{@property.id}-input", type: 'date')

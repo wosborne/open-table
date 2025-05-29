@@ -1,0 +1,25 @@
+<%= f.fields_for :filters, filter, child_index: do |ff| %>
+  <%= ff.hidden_field :id, value: ff.object.id %>
+  
+  <div
+    class="nested-form-wrapper"
+    data-controller="filter-input"
+    data-filter-input-view-id-value="<%= view.id %>"
+    data-filter-input-index-value="<%= ff.index %>"
+    data-new-record="<%= ff&.object&.new_record? %>">
+    <div class="field">
+      <div class="control is-expanded">
+        <span class="select is-small is-fullwidth">
+          <%= ff.select :property_id,
+            options_for_select(view.table.properties.map { |p| [p.name.titleize, p.id] }, ff.object.property_id),
+            { include_blank: "Select property" },
+            { data: { action: "change->filter-input#propertyChanged" } } %>
+        </span>
+      </div>
+    </div>
+
+    <%= render "components/tabs/filter_input", index: ff.index, value: ff.object.value, property: ff.object.property %>
+  </div>
+
+  <hr class="dropdown-divider" />
+<% end %>

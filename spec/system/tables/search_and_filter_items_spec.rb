@@ -19,7 +19,7 @@ RSpec.describe "SearchAndFilterItems", type: :system do
 
     visit account_table_path(@user.accounts.first, @table)
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_selector("#product-#{@toast.id}")
       expect(page).to have_selector("#product-#{@cheese.id}")
       expect(page).to have_selector("#product-#{@butter.id}")
@@ -28,7 +28,7 @@ RSpec.describe "SearchAndFilterItems", type: :system do
     fill_in "search", with: "Bu"
     click_button "Search"
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_selector("#product-#{@butter.id}")
 
       expect(page).not_to have_selector("#product-#{@toast.id}")
@@ -38,7 +38,7 @@ RSpec.describe "SearchAndFilterItems", type: :system do
     fill_in "search", with: "t"
     click_button "Search"
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_selector("#product-#{@butter.id}")
       expect(page).to have_selector("#product-#{@toast.id}")
 
@@ -50,7 +50,7 @@ RSpec.describe "SearchAndFilterItems", type: :system do
     find('[data-filter-target="valueInput"]').select('Red')
     click_button "Add Filter"
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_selector("#product-#{@toast.id}")
 
       expect(page).not_to have_selector("#product-#{@butter.id}")

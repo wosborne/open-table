@@ -1,7 +1,7 @@
 
   <div data-controller="filter">
     <div class="columns">
-      <%= form_with url: account_table_path(current_account, @table), method: :get, data: { filter_target: "form" }, class: "column is-one-third" do |f| %>
+      <%= form_with url: path, method: :get, data: { filter_target: "form" }, class: "column is-one-third" do |f| %>
         <div class="field has-addons">
           <div class="control has-icons-left is-expanded">
             <%= f.text_field :search, value: params[:search], placeholder: "Search everything", class: "input" %>
@@ -52,7 +52,7 @@
             </span>
           <% end %>
 
-          <%= link_to "Reset", account_table_path(current_account, @table), class: "button is-light is-small" %>
+          <%= link_to "Reset", path, class: "button is-light is-small" %>
         <% end %>
       </div>
     </div>

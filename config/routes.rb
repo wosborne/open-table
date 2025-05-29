@@ -26,6 +26,10 @@ Rails.application.routes.draw do
         patch :set_property, on: :member
       end
 
+      resources :views, only: %w[create show update destroy] do
+        get :filter_field, on: :member
+      end
+
       get :property_options, on: :member
     end
   end

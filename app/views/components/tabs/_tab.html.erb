@@ -1,0 +1,78 @@
+<% if view.slug == params[:id] %>
+  <li class="is-active" data-controller="dropdown">
+    <div class="dropdown is-clickable" data-dropdown-target="dropdown">
+      <div class="dropdown-trigger" data-action="click->dropdown#open" aria-label="Open <%= view.name %> view settings">
+        <a href="#" style="pointer-events: none; cursor: default;">
+          <%= view.name %>
+        </a>
+      </div>
+
+      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+          <%= form_with model: view,
+            url: account_table_view_path(current_account, view.table_id, view),
+            id: "view-form-#{view.id}",
+            data: {
+              controller: 'nested-form',
+            },
+            nested_form_wrapper_selector_value: '.nested-form-wrapper' do |f| %>
+            <%= f.hidden_field :id %>
+
+            <div class="dropdown-item">
+              <%= f.text_field :name, class: "input is-small" %>
+            </div>
+
+            <hr class="dropdown-divider" />
+
+            <template data-nested-form-target="template">
+              <%= render "components/tabs/filter_form", view:, f:, filter: Filter.new, child_index: "NEW_RECORD" %>
+            </template>
+
+            <div class="dropdown-item" style="max-height: 200px; overflow: scroll;">
+              <label class="label is-small">Filters</label>
+              <% view.filters.each_with_index do |filter, index| %>
+                <%= render "components/tabs/filter_form", view:, f:, filter:, child_index: index %>
+              <% end %>
+
+              <div data-nested-form-target="target"></div>
+
+              <button id="add-view-filter" class="button is-small is-info" type="button" data-action="nested-form#add">
+                <span class="icon">
+                  <i class="fas fa-plus"></i>
+                </span>
+              </button>
+            </div>
+          <% end %>
+
+          <hr class="dropdown-divider" />
+
+          <div class="dropdown-item">
+            <div class="field is-grouped">
+              <%= button_to account_table_view_path(current_account, current_table, view),
+                method: :delete, data: { turbo_method: :delete },
+                class: "button is-danger is-outlined is-small",
+                aria: { label: "Destroy #{view.name} view" } do %>
+                <span class="icon">
+                  <i class="fas fa-trash"></i>
+                </span>
+              <% end %>
+              
+              <p class="control is-expanded">
+              </p>
+
+              <p class="control">
+                <button type="button" onclick="document.getElementById('view-form-<%= view.id %>').requestSubmit();" class="button is-primary is-small">
+                  Save
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+<% else %>
+  <li>
+    <%= link_to view.name, account_table_view_path(current_account, @table, view) %>
+  </li>
+<% end %>

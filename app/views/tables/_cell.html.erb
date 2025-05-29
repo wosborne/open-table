@@ -12,13 +12,13 @@
     <% elsif property.number_type? %>
       <%= f.number_field :value,
         value:,
-        class: "input",
+        class: "input is-static",
         style: "width: fit-content;",
         onchange: 'this.form.requestSubmit();',
         id: "item-#{item.id}-property-#{property.id}-input" %>
 
     <% elsif property.select_type? %>
-      <div class="select">
+      <div class="select is-static">
         <%= f.select :value,
           options_for_select(property.options.pluck(:value), value),
           { style: "width: fit-content;", include_blank: true },
@@ -38,7 +38,7 @@
     <% elsif property.date_type? %>
       <%= f.date_field :value,
         value: value,
-        class: "input",
+        class: "input is-static",
         style: "width: fit-content;",
         onchange: 'this.form.requestSubmit();',
         id: "item-#{item.id}-property-#{property.id}-input" %>

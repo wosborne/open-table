@@ -1,0 +1,13 @@
+<%= turbo_frame_tag "view-filter-#{index}", data: { filter_input_target: "input" } do %>
+  <div class="field">
+    <div class="control is-expanded">
+      <% if property&.select_type? %>
+        <span class="select is-small is-fullwidth">
+          <%= select "view[filters_attributes][#{index}]", :value, options_for_select(property.all_values, value), { include_blank: "Select value" } %>
+        </span>
+      <% elsif property&.text_type? %>
+        <%= tag.input type: "text", name: "view[filters_attributes][#{index}][value]", value:, class: "input is-small", placeholder: "Enter value" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,17 +1,15 @@
-<section class="section flex is-flex is-flex-direction-column" style="height: 100%">
+<section class="section is-flex is-flex-direction-column" style="height: 100%">
   <h1 class="title"><%= @table.name %></h1>
 
   <div class="tabs" style="overflow: visible;">
     <ul>
-      <li class="is-active"><%= link_to "Everything", account_table_path(current_account, @table) %></li>
+      <li><%= link_to "Everything", account_table_path(current_account, @table) %></li>
 
       <% @table.views.each do |view| %>
-        <li>
-          <%= link_to view.name, account_table_view_path(current_account, @table, view) %>
-        </li>
+        <%= render partial: "components/tabs/tab", locals: { view: } %>
       <% end %>
 
-      <li class="is-active">
+      <li>
         <%= button_to account_table_views_path(current_account, @table) do %>
           <span class="icon-text">
             <span class="icon is-clickable m-0">
@@ -24,10 +22,9 @@
     </ul>
   </div>
 
-  <%= render "tables/filters", path: account_table_path(current_account, @table) %>
+  <%= render "tables/filters", path: account_table_view_path(current_account, @table, @view) %>
 
   <%= turbo_frame_tag "table_view", class: "is-flex flex-direction-column is-flex-grow-1" do %>
     <%= render "tables/table" %>
   <% end %>
 </section>
-      

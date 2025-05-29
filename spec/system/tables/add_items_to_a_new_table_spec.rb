@@ -18,7 +18,7 @@ RSpec.describe "AddItemsToANewTable", type: :system do
 
     click_on "Add Property"
 
-    within "#products" do
+    within "#table_view" do
       find('.dropdown', match: :first)
 
       expect(page).to have_selector("div", text: "Untitled")
@@ -40,7 +40,7 @@ RSpec.describe "AddItemsToANewTable", type: :system do
 
     click_on "Add Item"
 
-    within "#products" do
+    within "#table_view" do
       expect(Item.count).to eq 1
       expect(page).to have_field("item-#{Item.last.id}-property-#{last_property.id}-input", with: '')
     end
@@ -53,14 +53,14 @@ RSpec.describe "AddItemsToANewTable", type: :system do
     fill_in "search", with: "Bad search"
     click_button "Search"
 
-    within "#products" do
+    within "#table_view" do
       expect(page).not_to have_field("item-#{last_item.id}-property-#{last_property.id}-input", with: 'Test Product')
     end
 
     fill_in "search", with: "Test"
     click_button "Search"
 
-    within "#products" do
+    within "#table_view" do
       expect(page).to have_field("item-#{last_item.id}-property-#{last_property.id}-input", with: 'Test Product')
     end
   end

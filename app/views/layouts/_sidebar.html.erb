@@ -3,11 +3,22 @@
   <p class="menu-label">Tables</p>
   <ul class="menu-list">
     <% current_account.tables.each do |table| %>
-      <li><%= link_to table.name, account_table_path(current_account, table), class: "has-background-light" %></li>
+      <li>
+        <%= link_to table.name, account_table_path(current_account, table) %>
+        <% if table.views.any? %>
+          <ul>
+            <% table.views.each do |view| %>
+              <li>
+                <%= link_to view.name, account_table_view_path(current_account, table, view) %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </li>
     <% end %>
 
     <li>
-      <%= link_to new_account_table_path(current_account), class: "has-background-light mt-4" do %>
+      <%= link_to new_account_table_path(current_account), class: "mt-4" do %>
         <span class="icon-text">
           <span class="icon">
             <i class="fas fa-plus"></i>
