@@ -4,7 +4,7 @@ class Table < ApplicationRecord
   belongs_to :account
   has_many :items, dependent: :destroy
   has_many :limited_items, -> { limit(100) }, class_name: "Item"
-  has_many :properties, dependent: :destroy
+  has_many :properties, -> { order(:position) }, dependent: :destroy
   has_many :views, dependent: :destroy
 
   has_one_attached :import

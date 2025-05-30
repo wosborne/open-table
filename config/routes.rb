@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       resources :properties, only: %w[create update] do
         get :type_fields, on: :member
         post :refresh_cells, on: :member
+        patch :set_positions, on: :collection
       end
 
       resources :items, only: %w[create update destroy] do

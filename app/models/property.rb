@@ -13,7 +13,6 @@ class Property < ApplicationRecord
   validates :data_type, presence: true
   validates :data_type, inclusion: { in: data_types.keys }
   validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  validates :position, uniqueness: { scope: :table_id }
   validates :linked_table, presence: true, if: :linked_record_type?
 
   before_save :create_options_from_existing_values, if: :data_type_changed?

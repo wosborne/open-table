@@ -1,5 +1,10 @@
-<tr>
-  <th class="is-align-content-center">
+<tr data-controller="column-position">
+  <th class="is-align-content-center non-draggable" data-id="na">
+    <%= form_with url: set_positions_account_table_properties_path(current_account, current_table), method: :patch do |f| %>
+      <%= f.hidden_field :positions, data: { column_position_target: "positionsInput" } %>
+      <%= f.hidden_field :return_path, value: request.fullpath %>
+    <% end %>
+
     <label class="checkbox">
       <input type="checkbox" data-table-target="selectAll" data-action="change->table#toggleAll"/>
     </label>
@@ -9,7 +14,7 @@
     <%= render "tables/column_header", property:, icon: "fa-chevron-down" %>
   <% end %>
   
-  <th>
+  <th class="non-draggable" data-id="na">
     <%= button_to account_table_properties_path(current_account, table), data: { turbo_method: :post }, style: "width: max-content;" do %>
       <span class="icon-text">
         <span class="icon is-clickable">
