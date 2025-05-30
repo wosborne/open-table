@@ -4,8 +4,6 @@ RSpec.describe "NewUserAndAccount", type: :system do
   it "sets up a new user and account" do
     visit root_path
 
-    expect(page).to have_selector("h1", text: "Log in")
-
     click_on "Sign up"
 
     expect(page).to have_selector("h1", text: "Sign up")

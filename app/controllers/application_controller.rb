@@ -3,4 +3,12 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   before_action :authenticate_user!
+
+  def after_sign_in_path_for(resource)
+    if resource.accounts.any?
+      account_tables_path(resource.accounts.first)
+    else
+      new_account_path
+    end
+  end
 end

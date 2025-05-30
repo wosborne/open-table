@@ -4,7 +4,6 @@ RSpec.describe "AddItemsToANewTable", type: :system do
   it "creates a product record" do
     sign_in_as(create(:user))
 
-    visit root_path
     click_on "Create New Table"
 
     expect(page).to have_selector("h1", text: "New Table")

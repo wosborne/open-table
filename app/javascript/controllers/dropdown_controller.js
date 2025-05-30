@@ -25,8 +25,11 @@ export default class extends Controller {
     this.dropdownTarget.classList.add("is-active")
   }
 
-
   close() {
     this.dropdownTarget.classList.remove("is-active")
+  }
+
+  toggle() {
+    this.dropdownTarget.classList.toggle("is-active")
   }
 }
