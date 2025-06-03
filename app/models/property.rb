@@ -1,11 +1,14 @@
 class Property < ApplicationRecord
-  enum :data_type, %i[text number date select linked_record], suffix: "type"
+  enum :data_type, %i[text number date select linked_record formula], suffix: "type"
 
   belongs_to :table
   belongs_to :linked_table, class_name: "Table", optional: true
 
   has_many :options, class_name: "PropertyOption", dependent: :destroy
+  has_one :formula, class_name: "Formula", dependent: :destroy
+
   accepts_nested_attributes_for :options, allow_destroy: true
+  accepts_nested_attributes_for :formula, allow_destroy: true
 
   before_validation :set_position, on: :create
 
@@ -26,6 +29,10 @@ class Property < ApplicationRecord
     all_values.map do |value|
       options.find_or_initialize_by(value: value)
     end
+  end
+
+  def existing_or_potential_options
+    options.any? ? options : potential_options
   end
 
   private

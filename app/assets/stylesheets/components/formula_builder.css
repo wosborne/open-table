@@ -1,0 +1,38 @@
+.formula-builder-container {
+  position: relative;
+  min-height: 40px !important;
+  min-width: 0 !important;
+  width: 100%;
+  padding: 8px;
+  align-items: start;
+}
+
+.formula-builder-container .textarea:not([rows]) {
+  min-height: 0 !important;
+  min-width: 0 !important;
+}
+
+.formula-builder-textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  resize: none;
+  caret-color: transparent;
+}
+
+.formula-panel-content {
+  display: none;
+}
+
+.formula-panel.is-active .formula-panel-content {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  display: block;
+  background: #fff;
+  width: 500px;
+}

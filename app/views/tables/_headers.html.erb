@@ -15,7 +15,7 @@
   <% end %>
   
   <th class="non-draggable" data-id="na">
-    <%= button_to account_table_properties_path(current_account, table), data: { turbo_method: :post }, style: "width: max-content;" do %>
+    <%= button_to account_table_properties_path(current_account, table), data: { turbo_method: :post }, onclick: "event.stopPropagation();", style: "width: max-content;" do %>
       <span class="icon-text">
         <span class="icon is-clickable">
           <i class="fas fa-plus"></i>

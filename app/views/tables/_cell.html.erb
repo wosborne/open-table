@@ -42,6 +42,15 @@
         style: "width: fit-content;",
         onchange: 'this.form.requestSubmit();',
         id: "item-#{item.id}-property-#{property.id}-input" %>
+
+    <% elsif property.formula_type? %>
+      <%= f.text_field :value,
+        value: property&.formula&.calculate(item),
+        class: "input is-static",
+        style: "width: fit-content;",
+        onchange: 'this.form.requestSubmit();',
+        id: "item-#{item.id}-property-#{property.id}-input",
+        readonly: true %>
     <% end %>
   <% end %>
 <% end %>

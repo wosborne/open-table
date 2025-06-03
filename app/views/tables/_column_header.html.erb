@@ -43,7 +43,7 @@
 
         <div class="dropdown-item">
           <div class="field is-grouped">
-            <%= button_to account_table_property_path(current_account, property.table_id, property), method: :delete, data: { turbo_method: :delete }, class: "button is-danger is-outlined is-small" do %>
+            <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: false, }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
               <span class="icon">
                 <i class="fas fa-trash"></i>
               </span>

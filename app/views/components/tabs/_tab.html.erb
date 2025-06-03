@@ -50,6 +50,7 @@
             <div class="field is-grouped">
               <%= button_to account_table_view_path(current_account, current_table, view),
                 method: :delete, data: { turbo_method: :delete },
+                onclick: "event.stopPropagation();",
                 class: "button is-danger is-outlined is-small",
                 aria: { label: "Destroy #{view.name} view" } do %>
                 <span class="icon">

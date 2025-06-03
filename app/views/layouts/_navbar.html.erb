@@ -1,8 +1,7 @@
 <nav class="navbar is-dark">
   <div class="navbar-brand">
-    <a class="navbar-item is-size-4 has-text-weight-bold" href="/">
-      <img src="/icon.png" alt="Logo" width="28" height="28">
-      PhoneFlipr
+    <a class="navbar-item is-size-4 has-text-weight-bold" style="width: 80px;" href="/">
+      <img src="/icon.png" alt="Logo" style="height: 100%; object-fit: cover; object-position: center; ">
     </a>
   </div>
 
@@ -10,14 +9,12 @@
     <div class="navbar-end">
       <div class="navbar-item">
         <div class="buttons">
-          <%= link_to edit_user_registration_path, class: "button" do %>
-            <span class="icon"><i class="fas fa-user-edit"></i></span>
-            <span>Edit Profile</span>
+          <%= link_to edit_user_registration_path, class: "button is-link" do %>
+            <span>Profile</span>
           <% end %>
 
           <%= button_to destroy_user_session_path, class: "button", method: :delete, data: { turbo_confirm: "Are you sure?" } do %>
-            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-            <span>Log Out</span>
+            <span>Log out</span>
           <% end %>
         </div>
       </div>

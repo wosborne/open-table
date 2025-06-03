@@ -1,0 +1,44 @@
+<div data-controller="formula-builder dropdown">
+  <div class="formula-panel is-size-6" data-dropdown-target="dropdown">
+    <div class="formula-panel-tirgger">
+      <button class="button is-small is-fullwidth" data-action="click->dropdown#open click->formula-builder#focusTextarea">
+        <span class="icon">
+          <i class="fas fa-edit"></i>
+        </span>
+        <span>Edit Formula</span>
+      </button>
+    </div>
+
+    <div class="panel formula-panel-content" style="width: 500px;">
+      <div class="panel-heading is-size-6 is-flex is-justify-content-space-between	">
+        Formula builder
+        <button class="delete" data-action="click->dropdown#close"></button>
+      </div>
+      <div class="panel-block">
+        <div class="formula-builder-container tags" data-formula-builder-target="container">
+            <%= hidden_field_tag "property[formula_attributes][formula_data]", property&.formula&.formula_data, data: { formula_builder_target: "input" } %>
+            <%= hidden_field_tag "property[formula_attributes][id]", property&.formula&.id %>
+          <textarea
+            class="textarea formula-builder-textarea"
+            data-action="keydown->formula-builder#onKeydown"
+            data-formula-builder-target="textarea"
+            spellcheck="false"
+            autocomplete="off"
+            data-gramm="false"
+          ></textarea>
+        </div>
+      </div>
+
+      <% variable.each do |name, id| %>
+        <a class="panel-block is-size-7" data-formula-builder-target="variable" data-id="<%= id %>" data-name="<%= name %>" data-action="click->formula-builder#onVariableClick">
+          <%= name %>
+        </a>
+      <% end %>
+      <div class="panel-block">
+        <button class="button is-link is-outlined is-fullwidth" data-action="click->formula-builder#onSaveClick click->dropdown#close">
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

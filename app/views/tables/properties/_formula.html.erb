@@ -1,0 +1,8 @@
+<hr class="dropdown-divider" />
+
+<div class="dropdown-item">
+  <%= render "components/formula_builder/builder",
+    variable: current_table.properties.number_type.map {|p| [p.name, p.id]},
+    f:,
+    property: %>
+</div>

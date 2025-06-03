@@ -11,6 +11,14 @@ class PropertiesController < TablesController
     @property.update(property_params)
   end
 
+  def destroy
+    if current_property.destroy
+      redirect_to account_table_path(current_account, current_table), notice: "Propety was successfully deleted."
+    else
+      redirect_to account_table_path(current_account, current_table), alert: "Failed to delete property."
+    end
+  end
+
   def type_fields
     property = current_table.properties.find(params[:id])
     render partial: "tables/properties/type_fields", locals: { property:, f: nil }
@@ -38,9 +46,22 @@ class PropertiesController < TablesController
     redirect_to params[:return_path] || account_table_path(current_account, current_table)
   end
 
+  helper_method :current_property
+  def current_property
+    @current_property ||= current_table.properties.find(params[:property_id] || params[:id])
+  end
+
   private
   def property_params
-    params.require(:property).permit(:id, :name, :data_type, :position, :linked_table_id, options_attributes: [ :id, :value, :_destroy ])
+    params.require(:property).permit(
+      :id,
+      :name,
+      :data_type,
+      :position,
+      :linked_table_id,
+      options_attributes: [ :id, :value, :_destroy ],
+      formula_attributes: [ :id, :formula_data ]
+    )
   end
 
   def cleansed_position_ids

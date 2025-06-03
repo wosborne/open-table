@@ -1,26 +1,23 @@
 <hr class="dropdown-divider" />
 
 <template data-nested-form-target="template">
-  <%= fields_for :options, PropertyOption.new, child_index: 'NEW_RECORD' do |of| %>
-    <div class="field nested-form-wrapper" data-new-record="<%= of&.object&.new_record? %>">
-      <div class="control is-expanded">
-        <%= of.text_field :value, class: "input is-small" %>
-      </div>
+  <div class="field nested-form-wrapper">
+    <div class="control is-expanded">
+      <%= text_field_tag "property[options_attributes][NEW_RECORD][value]", "", class: "input is-small" %>
     </div>
-  <% end %>
+  </div>
 </template>
 
 <div class="dropdown-item" style="max-height: 200px; overflow: scroll;">
   <label class="label is-small">Options</label>
-  <% property.potential_options.each do |op| %>
-    <%= fields_for :options do |of| %>
-      <div class="field nested-form-wrapper" data-new-record="<%= of&.object&.new_record? %>">
+    <% property.existing_or_potential_options.each_with_index do |option, index| %>
+      <div class="field nested-form-wrapper">
         <div class="control is-expanded">
-          <%= of.text_field :value, value: op.value, class: "input is-small" %>
+          <%= text_field_tag "property[options_attributes][#{index}][value]", option.value, class: "input is-small" %>
+          <%= hidden_field_tag "property[options_attributes][#{index}][id]", option.id %>
         </div>
       </div>
     <% end %>
-  <% end %>
 
   <div data-nested-form-target="target"></div>
 

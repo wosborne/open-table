@@ -28,9 +28,9 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
 
       select "select", from: "property_data_type"
 
-      expect(page).to have_field("options_value", with: 'Toast')
-      expect(page).to have_field("options_value", with: 'Cheese')
-      expect(page).to have_field("options_value", with: 'Butter')
+      expect(page).to have_field(with: 'Toast')
+      expect(page).to have_field(with: 'Cheese')
+      expect(page).to have_field(with: 'Butter')
 
       find('button', text: 'Save').click
     end

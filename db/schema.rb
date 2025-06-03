@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_28_113535) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_01_104332) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,6 +69,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_28_113535) do
     t.index ["property_id"], name: "index_filters_on_property_id"
     t.index ["view_id", "property_id"], name: "index_filters_on_view_id_and_property_id"
     t.index ["view_id"], name: "index_filters_on_view_id"
+  end
+
+  create_table "formulas", force: :cascade do |t|
+    t.bigint "property_id", null: false
+    t.jsonb "formula_data", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["property_id"], name: "index_formulas_on_property_id"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -161,6 +169,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_28_113535) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
+  add_foreign_key "formulas", "properties"
   add_foreign_key "items", "tables"
   add_foreign_key "links", "items", column: "from_item_id"
   add_foreign_key "links", "items", column: "to_item_id"

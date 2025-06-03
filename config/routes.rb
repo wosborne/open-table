@@ -17,7 +17,7 @@ Rails.application.routes.draw do
 
   scope "/:account_slug", as: :account do
     resources :tables do
-      resources :properties, only: %w[create update] do
+      resources :properties, only: %w[create update destroy] do
         get :type_fields, on: :member
         post :refresh_cells, on: :member
         patch :set_positions, on: :collection
