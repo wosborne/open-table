@@ -1,5 +1,5 @@
 <tr data-controller="column-position">
-  <th class="is-align-content-center non-draggable" data-id="na">
+  <th class="is-align-content-center" data-id="na">
     <%= form_with url: set_positions_account_table_properties_path(current_account, current_table), method: :patch do |f| %>
       <%= f.hidden_field :positions, data: { column_position_target: "positionsInput" } %>
       <%= f.hidden_field :return_path, value: request.fullpath %>
@@ -14,7 +14,7 @@
     <%= render "tables/column_header", property:, icon: "fa-chevron-down" %>
   <% end %>
   
-  <th class="non-draggable" data-id="na">
+  <th data-id="na">
     <%= button_to account_table_properties_path(current_account, table), data: { turbo_method: :post }, onclick: "event.stopPropagation();", style: "width: max-content;" do %>
       <span class="icon-text">
         <span class="icon is-clickable">

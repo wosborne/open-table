@@ -3,14 +3,6 @@ class ItemsController < TablesController
     @item = current_table.items.create
   end
 
-  def set_property
-    current_item.set_property(property_params)
-
-    render turbo_stream: [
-      turbo_stream.replace("item-#{current_item.id}-property-#{property.id}", partial: "tables/cell", locals: { item: current_item, property:, value: current_item.properties[property.id.to_s] })
-    ]
-  end
-
   def delete_items
     item_ids = params[:item_ids].split(",").reject(&:blank?)
 

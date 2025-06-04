@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Create Table View", type: :system do
+  include CellInputHelper
+
   before(:each) do
     @user = create(:user)
 
@@ -20,9 +22,9 @@ RSpec.describe "Create Table View", type: :system do
     expect(page).to have_link("Everything")
 
     within "#table_view" do
-      expect(page).to have_select("item-#{@toast.id}-property-#{@property.id}-input", selected: 'Toast')
-      expect(page).to have_select("item-#{@cheese.id}-property-#{@property.id}-input", selected: 'Cheese')
-      expect(page).to have_select("item-#{@butter.id}-property-#{@property.id}-input", selected: 'Butter')
+      expect(find_cell_input(@toast.id, @property.id).value).to eq('Toast')
+      expect(find_cell_input(@cheese.id, @property.id).value).to eq('Cheese')
+      expect(find_cell_input(@butter.id, @property.id).value).to eq('Butter')
     end
 
     click_on "Add View"

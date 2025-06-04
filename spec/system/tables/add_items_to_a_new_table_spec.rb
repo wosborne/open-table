@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "AddItemsToANewTable", type: :system do
+  include CellInputHelper
+
   it "creates a product record" do
     sign_in_as(create(:user))
 
@@ -40,27 +42,28 @@ RSpec.describe "AddItemsToANewTable", type: :system do
     click_on "Add Item"
 
     within "#table_view" do
+      expect(page).to have_selector("#item-1")
+      expect(find_cell_input(Item.last.id, last_property.id).value).to eq('')
       expect(Item.count).to eq 1
-      expect(page).to have_field("item-#{Item.last.id}-property-#{last_property.id}-input", with: '')
     end
 
     last_item = Item.last
 
-    fill_in "item-#{last_item.id}-property-#{last_property.id}-input", with: "Test Product"
-    find("#item-#{last_item.id}-property-#{last_property.id}-input").send_keys(:enter)
+    find_cell_input(last_item.id, last_property.id).fill_in(with: "Test Product")
+    find_cell_input(last_item.id, last_property.id).send_keys(:enter)
 
     fill_in "search", with: "Bad search"
     click_button "Search"
 
     within "#table_view" do
-      expect(page).not_to have_field("item-#{last_item.id}-property-#{last_property.id}-input", with: 'Test Product')
+      expect(page).to have_no_selector("[data-item-id='#{last_item.id}'][data-property-id='#{last_property.id}']", wait: 5)
     end
 
     fill_in "search", with: "Test"
     click_button "Search"
 
     within "#table_view" do
-      expect(page).to have_field("item-#{last_item.id}-property-#{last_property.id}-input", with: 'Test Product')
+      expect(find_cell_input(last_item.id, last_property.id).value).to eq "Test Product"
     end
   end
 end

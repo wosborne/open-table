@@ -1,56 +1,64 @@
-<%= turbo_frame_tag "item-#{item.id}-property-#{property.id}" do %>
-  <%= form_with model: item, url: set_property_account_table_item_path(current_account, item.table_id, item), format: :turbo_stream, data: { turbo: true } do |f| %>
-    <%= f.hidden_field :property_id, value: property.id %>
-    <% if property.text_type? %>
-      <%= f.text_field :value,
-        value:,
-        class: "input is-static",
-        style: "width: fit-content;",
-        onchange: 'this.form.requestSubmit();',
-        id: "item-#{item.id}-property-#{property.id}-input" %>
-      
-    <% elsif property.number_type? %>
-      <%= f.number_field :value,
-        value:,
-        class: "input is-static",
-        style: "width: fit-content;",
-        onchange: 'this.form.requestSubmit();',
-        id: "item-#{item.id}-property-#{property.id}-input" %>
+<div id=<%= "item-#{item.id}-property-#{property.id}" %>>
+  <% if property.text_type? %>
+    <%= text_field_tag :value,
+      value,
+      class: "input is-static",
+      style: "width: fit-content;",
+      data: {
+        action: 'change->record-attribute#setAndSubmit',
+        item_id: item.id,
+        property_id: property.id
+      } %>
+    
+  <% elsif property.number_type? %>
+    <%= number_field_tag :value,
+      value,
+      class: "input is-static",
+      style: "width: fit-content;",
+      data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id }
+    %>
 
-    <% elsif property.select_type? %>
-      <div class="select is-static">
-        <%= f.select :value,
-          options_for_select(property.options.pluck(:value), value),
-          { style: "width: fit-content;", include_blank: true },
-          { onchange: 'this.form.requestSubmit();', id: "item-#{item.id}-property-#{property.id}-input" } %>
-      </div>
-      
-    <% elsif property.linked_record_type? %>
-      <div class="select">
-        <% identifying_property = property.linked_table.properties.first.id.to_s %>
-        <%# Safe: identifying_property is a DB id and not user-controlled %>
-        <%= f.select :value,
-          options_for_select(property.linked_table.items.where.not("properties ->> ? LIKE ?", identifying_property, "nil").pluck(Arel.sql("properties ->> '#{identifying_property}'"), :id), value),
-          { style: "width: fit-content;", include_blank: true },
-          { onchange: 'this.form.requestSubmit();', id: "item-#{item.id}-property-#{property.id}-input" } %>
-      </div>
+  <% elsif property.select_type? %>
+    <div class="select is-static">
+      <%= select_tag :value,
+        options_for_select(property.options.pluck(:value), value),
+        {
+          style: "width: fit-content;",
+          include_blank: true,
+          data: { action: 'change->record-attribute#setAndSubmit',
+            item_id: item.id,
+            property_id: property.id
+          }
+        } %>
+    </div>
+    
+  <% elsif property.linked_record_type? %>
+    <div class="select">
+      <% identifying_property = property.linked_table.properties.first.id.to_s %>
+      <%# Safe: identifying_property is a DB id and not user-controlled %>
+      <%= select_tag :value,
+        options_for_select(property.linked_table.items.where.not("properties ->> ? LIKE ?", identifying_property, "nil").pluck(Arel.sql("properties ->> '#{identifying_property}'"), :id), value),
+        {
+          style: "width: fit-content;",
+          include_blank: true,
+          data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id }
+        } %>
+    </div>
 
-    <% elsif property.date_type? %>
-      <%= f.date_field :value,
-        value: value,
-        class: "input is-static",
-        style: "width: fit-content;",
-        onchange: 'this.form.requestSubmit();',
-        id: "item-#{item.id}-property-#{property.id}-input" %>
+  <% elsif property.date_type? %>
+    <%= date_field_tag :value,
+      value,
+      class: "input is-static",
+      style: "width: fit-content;",
+      data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id }
+    %>
 
-    <% elsif property.formula_type? %>
-      <%= f.text_field :value,
-        value: property&.formula&.calculate(item),
-        class: "input is-static",
-        style: "width: fit-content;",
-        onchange: 'this.form.requestSubmit();',
-        id: "item-#{item.id}-property-#{property.id}-input",
-        readonly: true %>
-    <% end %>
+  <% elsif property.formula_type? %>
+    <%= text_field_tag :value,
+      property&.formula&.calculate(item),
+      class: "input is-static",
+      style: "width: fit-content;",
+      data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id },
+      readonly: true %>
   <% end %>
-<% end %>
+</div>

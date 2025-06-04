@@ -26,7 +26,7 @@ class PropertiesController < TablesController
 
   def refresh_cells
     property = current_table.properties.find(params[:id])
-    item_ids = params[:item_ids]
+    item_ids = JSON.parse(params[:item_ids])
     items = current_table.items.where(id: item_ids)
 
     render turbo_stream: items.map { |item|

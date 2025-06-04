@@ -24,7 +24,6 @@ Rails.application.routes.draw do
       end
 
       resources :items, only: %w[create update destroy] do
-        patch :set_property, on: :member
         delete :delete_items, on: :collection
       end
 
@@ -33,6 +32,7 @@ Rails.application.routes.draw do
       end
 
       get :property_options, on: :member
+      patch :set_record_attribute, on: :member
     end
   end
 end

@@ -17,19 +17,26 @@
     </div>
   </div>
 
-  <div class="table-container" style="height: 100%;">
-    <table class="table is-hoverable is-narrow mb-2">
-      <thead>
-        <%= render "tables/headers", table: @table %>
-      </thead>
+    <div class="table-container" data-controller="record-attribute" style="height: 100%;">
+      <%= form_with url: set_record_attribute_account_table_path(current_account, @table), method: :patch, format: :turbo_stream, data: { turbo: true } do |f| %>
+        <%= f.hidden_field :item_id, value: "", data: { record_attribute_target: "itemIdInput" } %>
+        <%= f.hidden_field :property_id, value: "", data: { record_attribute_target: "propertyIdInput" } %>
+        <%= f.hidden_field :value, value: "", data: { record_attribute_target: "valueInput" } %>
+      <% end %>
 
-      <tbody>
-        <% @items.each do |item| %>
-          <%= render "tables/row", item:, table: @table %>
-        <% end %>
-        <tr id="new-item-row">
-      </tbody>
-    </table>
+      <table class="table is-hoverable is-narrow mb-2">
+        <thead>
+          <%= render "tables/headers", table: @table %>
+        </thead>
+
+        <tbody>
+          <% @items.each do |item| %>
+            <%= render "tables/row", item:, table: @table %>
+          <% end %>
+          <tr id="new-item-row">
+        </tbody>
+      </table>
+    </div>
 
     <% if @table.properties.any? %>
       <%= button_to account_table_items_path(current_account, @table), data: { turbo_method: :post } do %>

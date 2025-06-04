@@ -7,8 +7,6 @@ export default class extends Controller {
     document.addEventListener("click", (event) => {
       if (!this.dropdownTarget.contains(event.target)) {
         this.close()
-      } else {
-        event.preventDefault();
       }
     })
     document.addEventListener("keydown", (event) => {

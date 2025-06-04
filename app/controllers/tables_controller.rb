@@ -32,6 +32,16 @@ class TablesController < AccountsController
     ]
   end
 
+  def set_record_attribute
+    item = current_table.items.find(set_attribute_params[:item_id])
+    property = current_table.properties.find(set_attribute_params[:property_id])
+    item.set_property(set_attribute_params) if item && property
+
+    render turbo_stream: [
+      turbo_stream.replace("item-#{item.id}-property-#{property.id}", partial: "tables/cell", locals: { item:, property:, value: item.properties[property.id.to_s] })
+    ]
+  end
+
   helper_method :current_table
   def current_table
     @current_table ||= current_account.tables.friendly.find(params[:table_id] || params[:id])
@@ -44,6 +54,10 @@ class TablesController < AccountsController
 
   def table_params
     params.require(:table).permit(:name, :import)
+  end
+
+  def set_attribute_params
+    params.permit(:item_id, :property_id, :value)
   end
 
   def property_value_options

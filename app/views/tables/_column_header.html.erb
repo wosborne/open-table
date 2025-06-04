@@ -2,9 +2,13 @@
   id="property-<%= property.id %>"
   data-id="<%= property.id %>"
   style="min-width: 110px;"
-  data-controller="dropdown">
+  data-controller="dropdown column">
   <div class="dropdown is-clickable" style="width: 100%; height: 100%;" data-dropdown-target="dropdown" data-action="click->dropdown#open">
-    <div class="dropdown-trigger">
+    <div class="dropdown-trigger draggable">
+      <%= form_with url: refresh_cells_account_table_property_path(current_account, current_table, property) do |f| %>
+        <%= f.hidden_field :item_ids, data: { column_target: "refreshItemIdsInput" } %>
+      <% end %>
+
       <%= property.name %>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
@@ -17,7 +21,8 @@
             nested_form_wrapper_selector_value: '.nested-form-wrapper',
             property_id: property.id,
             table_id: property.table_id,
-            action: "turbo:submit-end->table#refreshColumns"
+            action: "turbo:submit-end->column#refreshCells",
+            url_template: type_fields_account_table_property_path(current_account, current_table, property)
           },
           format: :turbo_stream do |f| %>
           <%= f.hidden_field :id %>
@@ -43,7 +48,7 @@
 
         <div class="dropdown-item">
           <div class="field is-grouped">
-            <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: false, }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
+            <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
               <span class="icon">
                 <i class="fas fa-trash"></i>
               </span>

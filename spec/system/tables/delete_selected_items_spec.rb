@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Delete selected items", type: :system do
+  include CellInputHelper
+
   before(:each) do
     @user = create(:user)
 
@@ -19,9 +21,9 @@ RSpec.describe "Delete selected items", type: :system do
     expect(@table.items.count).to eq(3)
 
     within "#table_view" do
-      expect(page).to have_field("item-#{@toast.id}-property-#{@property.id}-input", with: 'Toast')
-      expect(page).to have_field("item-#{@cheese.id}-property-#{@property.id}-input", with: 'Cheese')
-      expect(page).to have_field("item-#{@butter.id}-property-#{@property.id}-input", with: 'Butter')
+      expect(find_cell_input(@toast.id, @property.id).value).to eq "Toast"
+      expect(find_cell_input(@cheese.id, @property.id).value).to eq "Cheese"
+      expect(find_cell_input(@butter.id, @property.id).value).to eq "Butter"
     end
 
     find("input[type='checkbox'][aria-label='Select item #{@toast.id}']").set(true)
@@ -30,9 +32,9 @@ RSpec.describe "Delete selected items", type: :system do
     find("button[aria-label='Delete selected items']").click
 
     within "#table_view" do
-      expect(page).not_to have_field("item-#{@toast.id}-property-#{@property.id}-input", with: 'Toast')
-      expect(page).not_to have_field("item-#{@cheese.id}-property-#{@property.id}-input", with: 'Cheese')
-      expect(page).to have_field("item-#{@butter.id}-property-#{@property.id}-input", with: 'Butter')
+      expect(page).to have_no_selector("[data-item-id='#{@toast.id}'][data-property-id='#{@property.id}']")
+      expect(page).to have_no_selector("[data-item-id='#{@cheese.id}'][data-property-id='#{@property.id}']")
+      expect(find_cell_input(@butter.id, @property.id).value).to eq "Butter"
     end
 
     expect(@table.items.count).to eq(1)
