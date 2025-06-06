@@ -6,7 +6,7 @@ export default class extends Controller {
   
   addFilter(event) {
     event.preventDefault()
-
+    
     const key = this.propertySelectTarget.value
     const value = this.valueInputTarget.value.trim()
     if (!key || !value) return

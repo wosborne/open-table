@@ -7,7 +7,7 @@
   </td>
 
   <% current_view.visible_properties.each do |property| %>
-    <td>
+    <td class="is-align-content-center">
       <%= render "components/table/cell", item:, property: property, value: item.properties[property.id.to_s]%>
     </td>
   <% end %>

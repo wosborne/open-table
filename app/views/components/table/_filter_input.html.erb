@@ -8,8 +8,27 @@
         <% end %>
       </select>
     </span>
+
   <% elsif property&.text_type? %>
     <input class="input" type="text" placeholder="Enter value" data-filter-target="valueInput" data-action="keydown.enter->filter#addFilter">
+
+  <% elsif property&.date_type? %>
+    <input
+      class="input"
+      data-controller="date-picker",
+      data-date-picker-format-value="<%=property.format.gsub("%", "") %>"
+      data-action="change->filter#addFilter"
+      data-filter-target="valueInput">
+
+  <% elsif property&.checkbox_type? %>
+    <span class="select is-fullwidth">
+      <select data-filter-target="valueInput" data-action="select->filter#addFilter">
+        <option value="1">Yes</option>
+        <option value="0">No</option>
+      </select>
+    </span>
+
+
   <% else %>
     <input class="input" disabled type="text" placeholder="Select a property">
   <% end %>

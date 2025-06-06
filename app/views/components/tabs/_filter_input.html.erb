@@ -7,6 +7,9 @@
         </span>
       <% elsif property&.text_type? %>
         <%= tag.input type: "text", name: "view[filters_attributes][#{index}][value]", value:, class: "input is-small", placeholder: "Enter value" %>
+      <% elsif property&.checkbox_type? %>
+        <%= hidden_field_tag "view[filters_attributes][#{index}][value]", "0" %>
+        <%= checkbox_tag "view[filters_attributes][#{index}][value]", checked: ActiveModel::Type::Boolean.new.cast(value), class: "checkbox is-small" %>
       <% end %>
     </div>
   </div>

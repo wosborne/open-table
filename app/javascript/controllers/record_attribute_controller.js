@@ -5,7 +5,12 @@ export default class extends Controller {
 
   setAndSubmit(event) {
     const target = event.currentTarget
-    const { value, dataset: { itemId, propertyId } } = target
+    const { itemId, propertyId } = target.dataset
+
+    const value =
+      target.type === "checkbox"
+        ? target.checked ? "1" : "0"
+        : target.value
 
     this.itemIdInputTarget.value = itemId
     this.propertyIdInputTarget.value = propertyId

@@ -1,7 +1,7 @@
 class Property < ApplicationRecord
   include Positionable
 
-  enum :data_type, %i[text number date select linked_record formula], suffix: "type"
+  enum :data_type, %i[text number date select checkbox linked_record formula], suffix: "type"
 
   belongs_to :table
   belongs_to :linked_table, class_name: "Table", optional: true

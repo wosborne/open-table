@@ -66,5 +66,13 @@
       style: "width: fit-content;",
       data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id },
       readonly: true %>
+
+  <% elsif property.checkbox_type? %>
+    <label class="checkbox">
+      <%= checkbox_tag :value,
+        checked: ActiveModel::Type::Boolean.new.cast(value),
+        data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id } %>
+      </div>
+    </label>
   <% end %>
 </div>
