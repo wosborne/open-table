@@ -1,4 +1,4 @@
-<% if view.slug == params[:id] %>
+<% if (params[:table_id] && view.slug == params[:id]) || (!params[:table_id] && view.position.zero?) %>
   <li class="is-active" data-controller="dropdown">
     <div class="dropdown is-clickable" data-dropdown-target="dropdown">
       <div class="dropdown-trigger" data-action="click->dropdown#open" aria-label="Open <%= view.name %> view settings">

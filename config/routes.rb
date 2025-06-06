@@ -20,7 +20,6 @@ Rails.application.routes.draw do
       resources :properties, only: %w[create update destroy] do
         get :type_fields, on: :member
         post :refresh_cells, on: :member
-        patch :set_positions, on: :collection
       end
 
       resources :items, only: %w[create update destroy] do
@@ -28,6 +27,11 @@ Rails.application.routes.draw do
       end
 
       resources :views, only: %w[create show update destroy] do
+        resources :view_properties do
+          patch :set_positions, on: :collection
+          patch :set_visibility, on: :member
+        end
+
         get :filter_field, on: :member
       end
 

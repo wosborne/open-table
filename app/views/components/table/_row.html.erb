@@ -6,9 +6,9 @@
     </label>
   </td>
 
-  <% table.properties.order(:position).each do |property| %>
+  <% current_view.visible_properties.each do |property| %>
     <td>
-      <%= render "tables/cell", item:, property: property, value: item.properties[property.id.to_s]%>
+      <%= render "components/table/cell", item:, property: property, value: item.properties[property.id.to_s]%>
     </td>
   <% end %>
 </tr>

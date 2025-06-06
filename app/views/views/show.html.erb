@@ -3,8 +3,6 @@
 
   <div class="tabs" style="overflow: visible;">
     <ul>
-      <li><%= link_to "Everything", account_table_path(current_account, @table) %></li>
-
       <% @table.views.each do |view| %>
         <%= render partial: "components/tabs/tab", locals: { view: } %>
       <% end %>
@@ -22,9 +20,9 @@
     </ul>
   </div>
 
-  <%= render "tables/filters", path: account_table_view_path(current_account, @table, @view) %>
+  <%= render "components/table/filters", path: account_table_view_path(current_account, @table, @view) %>
 
   <%= turbo_frame_tag "table_view", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-    <%= render "tables/table" %>
+    <%= render "components/table/table" %>
   <% end %>
 </section>

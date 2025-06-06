@@ -1,0 +1,5 @@
+
+.is-unclickable:hover {
+  background-color: inherit !important;
+  cursor: default;
+}

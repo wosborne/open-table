@@ -1,6 +1,6 @@
 <tr data-controller="column-position">
   <th class="is-align-content-center" data-id="na">
-    <%= form_with url: set_positions_account_table_properties_path(current_account, current_table), method: :patch do |f| %>
+    <%= form_with url: set_positions_account_table_view_view_properties_path(current_account, current_table, view), method: :patch do |f| %>
       <%= f.hidden_field :positions, data: { column_position_target: "positionsInput" } %>
       <%= f.hidden_field :return_path, value: request.fullpath %>
     <% end %>
@@ -10,12 +10,12 @@
     </label>
   </th>
 
-  <% table.properties.includes(:options).order(:position).each_with_index do |property| %>
-    <%= render "tables/column_header", property:, icon: "fa-chevron-down" %>
+  <% view.visible_properties.includes(:options).each_with_index do |property| %>
+    <%= render "components/table/column_header", property:, icon: "fa-chevron-down" %>
   <% end %>
   
   <th data-id="na">
-    <%= button_to account_table_properties_path(current_account, table), data: { turbo_method: :post }, onclick: "event.stopPropagation();", style: "width: max-content;" do %>
+    <%= button_to account_table_properties_path(current_account, current_table), data: { turbo_method: :post }, onclick: "event.stopPropagation();", style: "width: max-content;" do %>
       <span class="icon-text">
         <span class="icon is-clickable">
           <i class="fas fa-plus"></i>

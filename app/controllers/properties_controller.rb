@@ -21,7 +21,7 @@ class PropertiesController < TablesController
 
   def type_fields
     property = current_table.properties.find(params[:id])
-    render partial: "tables/properties/type_fields", locals: { property:, f: nil }
+    render partial: "components/table/properties/type_fields", locals: { property:, f: nil }
   end
 
   def refresh_cells
@@ -32,18 +32,10 @@ class PropertiesController < TablesController
     render turbo_stream: items.map { |item|
       turbo_stream.replace(
         "item-#{item.id}-property-#{property.id}",
-        partial: "tables/cell",
+        partial: "components/table/cell",
         locals: { item: item, property: property, value: item.properties[property.id.to_s] }
       )
     }
-  end
-
-  def set_positions
-    cleansed_position_ids.each_with_index do |id, index|
-      current_table.properties.find(id).update(position: index)
-    end
-
-    redirect_to params[:return_path] || account_table_path(current_account, current_table)
   end
 
   helper_method :current_property
@@ -62,13 +54,5 @@ class PropertiesController < TablesController
       options_attributes: [ :id, :value, :_destroy ],
       formula_attributes: [ :id, :formula_data ]
     )
-  end
-
-  def cleansed_position_ids
-    param_ids = params[:positions].split(",") || []
-    param_ids.select! { |val| val.match?(/\A\d+\z/) }
-    param_ids.map!(&:to_i)
-    param_ids.uniq!
-    param_ids.reject(&:zero?)
   end
 end

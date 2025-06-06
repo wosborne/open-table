@@ -42,10 +42,6 @@ class ViewsController < TablesController
     render partial: "components/tabs/filter_input", locals: { property:, value: nil, index: }
   end
 
-  def current_view
-    @current_view ||= current_table.views.friendly.find(params[:id])
-  end
-
   private
 
   def view_params

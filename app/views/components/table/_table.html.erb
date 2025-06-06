@@ -1,0 +1,108 @@
+<div data-controller="table" data-table-table-id-value="<%= @table.id %>" class="is-flex is-flex-direction-column is-flex-grow-1" >
+  <div class="level">
+    <div class="level-left">
+      <div class="level-item">
+        <p class="subtitle is-5"><strong data-table-target="selectedCount">0</strong> selected</p>
+      </div>
+      <div class="level-item">
+        <%= form_with url: delete_items_account_table_items_path(current_account, current_table), method: :delete, data: { turbo_method: :delete, confirm: "Are you sure?" } do |f| %>
+          <%= f.hidden_field :item_ids, value: [], data: { table_target: "deleteInput" } %>
+          <%= f.button type: "submit", class: "button is-small", disabled: true, data: { table_target: "deleteButton"}, aria: { label: "Delete selected items" } do %>
+            <span class="icon">
+              <i class="fas fa-trash"></i>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="level-right">
+      <div class="level-item" data-controller="dropdown">
+        <div class="dropdown is-right" data-dropdown-target="dropdown">
+          <div class="dropdown-trigger">
+            <button class="button is-small"data-action="click->dropdown#open">
+              <span class="icon">
+                <i class="fas fa-ellipsis"></i>
+              </span>
+            </button>
+          </div>
+
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content" style="max-height: 400px; overflow: scroll;">
+              <div class="menu dropdown-item">
+                <p class="menu-label">Visible Columns</p>
+                <ul class="menu-list">
+                  <% current_view.visible_view_properties.each do |view_property| %>
+                    <li class="menu-item is-unclickable is-flex is-justify-content-space-between p-0">
+                      <span class="is-align-content-center"><%= view_property.property.name %></span>
+                      <span>
+                        <%= button_to set_visibility_account_table_view_view_property_path(current_account, current_table, current_view, view_property), method: :patch, class: "button is-small is-text" do %>
+                          <span class="icon m-0">
+                            <i class="fas fa-eye"></i>
+                          </span>
+                          <%= hidden_field_tag :visible, false %>
+                        <% end %>
+                      </span>
+                    </li>
+                  <% end %>
+                </ul>
+                <p class="menu-label">Hidden Columns</p>
+                <ul class="menu-list">
+                  <% current_view.hidden_view_properties.each do |view_property| %>
+                    <li class="menu-item is-unclickable is-flex is-justify-content-space-between p-0">
+                      <span class="is-align-content-center"><%= view_property.property.name %></span>
+                      <span>
+                        <%= button_to set_visibility_account_table_view_view_property_path(current_account, current_table, current_view, view_property), method: :patch, class: "button is-small is-text" do %>
+                          <span class="icon m-0">
+                            <i class="fas fa-eye-slash"></i>
+                          </span>
+                          <%= hidden_field_tag :visible, true %>
+                        <% end %>
+                      </span>
+                    </li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container" data-controller="record-attribute" style="height: 100%;">
+    <%= form_with url: set_record_attribute_account_table_path(current_account, @table), method: :patch, format: :turbo_stream, data: { turbo: true } do |f| %>
+      <%= f.hidden_field :item_id, value: "", data: { record_attribute_target: "itemIdInput" } %>
+      <%= f.hidden_field :property_id, value: "", data: { record_attribute_target: "propertyIdInput" } %>
+      <%= f.hidden_field :value, value: "", data: { record_attribute_target: "valueInput" } %>
+    <% end %>
+
+    <table class="table is-hoverable is-narrow mb-2">
+      <thead>
+        <%= render "components/table/headers", view: @view %>
+      </thead>
+
+      <tbody>
+        <% @items.each do |item| %>
+          <%= render "components/table/row", item:, view: @view %>
+        <% end %>
+        <tr id="new-item-row">
+      </tbody>
+    </table>
+  </div>
+
+  <% if @table.properties.any? %>
+    <%= button_to account_table_items_path(current_account, @table), data: { turbo_method: :post } do %>
+      <span class="icon-text">
+        <span class="icon is-clickable">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>Add Item</span>
+      </span>
+    <% end %>
+  <% else %>
+    <div class="notification is-warning">
+      <strong>A table must have at least one property column.</strong> Please add a property to enable adding records.
+    </div>
+  <% end %>
+</div>

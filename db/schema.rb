@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_01_104332) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_05_071958) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -153,12 +153,24 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_01_104332) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "view_properties", force: :cascade do |t|
+    t.bigint "view_id", null: false
+    t.bigint "property_id", null: false
+    t.integer "position", default: 0
+    t.boolean "visible", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["property_id"], name: "index_view_properties_on_property_id"
+    t.index ["view_id"], name: "index_view_properties_on_view_id"
+  end
+
   create_table "views", force: :cascade do |t|
     t.string "name", null: false
     t.bigint "table_id", null: false
     t.string "slug", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "position"
     t.index ["name", "table_id"], name: "index_views_on_name_and_table_id", unique: true
     t.index ["table_id"], name: "index_views_on_table_id"
   end
@@ -178,5 +190,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_01_104332) do
   add_foreign_key "properties", "tables", column: "linked_table_id"
   add_foreign_key "property_options", "properties"
   add_foreign_key "tables", "accounts"
+  add_foreign_key "view_properties", "properties"
+  add_foreign_key "view_properties", "views"
   add_foreign_key "views", "tables"
 end
