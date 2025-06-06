@@ -46,11 +46,17 @@
     </div>
 
   <% elsif property.date_type? %>
-    <%= date_field_tag :value,
+    <%= text_field_tag :value,
       value,
       class: "input is-static",
       style: "width: fit-content;",
-      data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id }
+      data: {
+        controller: "date-picker",
+        date_picker_format_value: property.format.gsub("%", ""),
+        action: 'change->record-attribute#setAndSubmit',
+        item_id: item.id,
+        property_id: property.id
+      }
     %>
 
   <% elsif property.formula_type? %>

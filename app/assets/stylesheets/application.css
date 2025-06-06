@@ -10,6 +10,7 @@
  */
 
  @import "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
+ @import "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css";
 
 .sidebar {
   border-right: 1px solid var(--bulma-border);

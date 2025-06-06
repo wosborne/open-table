@@ -24,6 +24,8 @@ class Property < ApplicationRecord
 
   after_create :create_view_properties_for_each_view
 
+  before_save :convert_date_item_values, if: :format_changed?
+
   def all_values
     table.items.where("properties ->> ? IS NOT NULL", id.to_s).pluck(Arel.sql("properties ->> '#{id}'")).uniq
   end
@@ -60,6 +62,32 @@ class Property < ApplicationRecord
   def create_view_properties_for_each_view
     table.views.each do |view|
       view_properties.create(view:)
+    end
+  end
+
+  def convert_date_item_values
+    return unless date_type?
+
+    table.items.each do |item|
+      value = item.properties[id.to_s]
+      next unless value
+
+      begin
+        original_date = Date.strptime(value, format_was)
+        new_date = original_date.strftime(format)
+        item.properties[id.to_s] = new_date
+        item.save
+      rescue
+        begin
+          new_date = Date.strptime(value, format)
+          item.properties[id.to_s] = new_date
+          item.save
+        rescue Date::Error => e
+          next
+        end
+      rescue Date::Error => e
+        next
+      end
     end
   end
 end

@@ -51,6 +51,7 @@ class PropertiesController < TablesController
       :data_type,
       :position,
       :linked_table_id,
+      :format,
       options_attributes: [ :id, :value, :_destroy ],
       formula_attributes: [ :id, :formula_data ]
     )

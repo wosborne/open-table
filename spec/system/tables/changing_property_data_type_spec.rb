@@ -97,11 +97,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
     end
 
     within "#table_view" do
-      expect(page).to have_no_selector("input[type='text'][data-item-id='#{@toast.id}'][data-property-id='#{@property.id}']", wait: 5)
-
-      expect(find_cell_input(@toast.id, @property.id)[:type]).to eq "date"
-      expect(find_cell_input(@cheese.id, @property.id)[:type]).to eq "date"
-      expect(find_cell_input(@butter.id, @property.id)[:type]).to eq "date"
+      expect(page).to have_selector("input[type='text'][data-item-id='#{@toast.id}'][data-property-id='#{@property.id}'][data-controller='date-picker']", wait: 5)
     end
   end
 end

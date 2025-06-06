@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_05_071958) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_06_090812) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -119,6 +119,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_05_071958) do
     t.datetime "updated_at", null: false
     t.integer "data_type", default: 0, null: false
     t.bigint "linked_table_id"
+    t.string "format", default: ""
     t.index ["linked_table_id"], name: "index_properties_on_linked_table_id"
     t.index ["table_id"], name: "index_properties_on_table_id"
   end
