@@ -1,7 +1,7 @@
 require "rails_helper"
 
-RSpec.describe "NewUserAndAccount", type: :system do
-  it "sets up a new user and account" do
+RSpec.describe "New User And Account", type: :system do
+  it "sets up a new user and account with an inventory table" do
     visit root_path
 
     click_on "Sign up"
@@ -23,5 +23,11 @@ RSpec.describe "NewUserAndAccount", type: :system do
 
     expect(page).to have_selector("h2", text: "Test Account")
     expect(page).to have_link("Create New Table")
+    expect(page).to have_link("Inventory")
+    expect(page).to have_link("Everything")
+
+    click_on "Everything"
+
+    expect(page).to have_selector('.dropdown-trigger', text: 'ID')
   end
 end
