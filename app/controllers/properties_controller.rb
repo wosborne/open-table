@@ -6,9 +6,7 @@ class PropertiesController < TablesController
   end
 
   def update
-    @property = current_table.properties.find(params[:id])
-
-    @property.update(property_params)
+    @property = Properties::UpdateProperty.call(current_property, property_params)
   end
 
   def destroy
