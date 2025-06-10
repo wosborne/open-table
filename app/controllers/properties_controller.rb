@@ -1,6 +1,6 @@
 class PropertiesController < TablesController
   def create
-    @property = current_table.properties.create(data_type: :text)
+    @property = current_table.properties.create(type: "Properties::TextProperty")
 
     redirect_to account_table_path(current_account, current_table)
   end
@@ -48,7 +48,7 @@ class PropertiesController < TablesController
     params.require(:property).permit(
       :id,
       :name,
-      :data_type,
+      :type,
       :position,
       :linked_table_id,
       :format,

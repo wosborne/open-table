@@ -117,7 +117,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_09_093750) do
     t.integer "position", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "data_type", default: 0, null: false
     t.bigint "linked_table_id"
     t.string "format", default: ""
     t.string "type"

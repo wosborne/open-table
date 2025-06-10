@@ -7,7 +7,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
     @user = create(:user)
 
     @table = create(:table, name: "Products", account: @user.accounts.first)
-    @property = create(:property, table: @table, data_type: "text", name: "Name")
+    @property = create(:property, table: @table, type: "text", name: "Name")
     @toast = create(:item, table: @table, properties: { @property.id => "Toast" })
     @cheese = create(:item, table: @table, properties: { @property.id => "Cheese" })
     @butter = create(:item, table: @table, properties: { @property.id => "Butter" })
@@ -28,7 +28,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
     within "#property-#{@property.id}" do
       find('.dropdown-trigger', text: 'Name').click
 
-      select "select", from: "property_data_type"
+      select "select", from: "property_type"
 
       expect(page).to have_field(with: 'Toast')
       expect(page).to have_field(with: 'Cheese')
@@ -53,7 +53,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
     within "#property-#{@property.id}" do
       find('.dropdown-trigger', text: 'Name').click
 
-      select "number", from: "property_data_type"
+      select "number", from: "property_type"
 
       click_button "Save"
     end
@@ -70,7 +70,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
     within "#property-#{@property.id}" do
       find('.dropdown-trigger', text: 'Name').click
 
-      select "text", from: "property_data_type"
+      select "text", from: "property_type"
 
       click_button "Save"
     end
@@ -91,7 +91,7 @@ RSpec.describe "ChangingPropetyDataType", type: :system do
     within "#property-#{@property.id}" do
       find('.dropdown-trigger', text: 'Name').click
 
-      select "date", from: "property_data_type"
+      select "date", from: "property_type"
 
       click_button "Save"
     end

@@ -20,5 +20,7 @@ class AddTypeToProperty < ActiveRecord::Migration[8.0]
         property.update(type: "Properties::FormulaProperty")
       end
     end
+
+    remove_column :properties, :data_type
   end
 end

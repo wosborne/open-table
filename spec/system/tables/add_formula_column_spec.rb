@@ -4,9 +4,9 @@ RSpec.describe "Add Formula Column", type: :system do
   before(:each) do
     @user = create(:user)
     @table = create(:table, name: "Products", account: @user.accounts.first)
-    @first_number_property = create(:property, table: @table, data_type: "number", name: "First Number")
-    @second_number_property = create(:property, table: @table, data_type: "number", name: "Second Number")
-    text_property = create(:property, table: @table, data_type: "text", name: "Name")
+    @first_number_property = create(:property, table: @table, type: "number", name: "First Number")
+    @second_number_property = create(:property, table: @table, type: "number", name: "Second Number")
+    text_property = create(:property, table: @table, type: "text", name: "Name")
     @toast = create(:item, table: @table, properties: { text_property.id => "Toast", @first_number_property.id => "2", @second_number_property.id => "3" })
     @cheese = create(:item, table: @table, properties: { text_property.id => "Cheese", @first_number_property.id => "2", @second_number_property.id => "4" })
   end
@@ -27,7 +27,7 @@ RSpec.describe "Add Formula Column", type: :system do
 
       fill_in "property_name", with: "Formula"
 
-      select "formula", from: "property_data_type"
+      select "formula", from: "property_type"
 
       expect(page).to have_button "Edit Formula"
 

@@ -4,8 +4,8 @@ RSpec.describe "Change Property Order", type: :system do
   before(:each) do
     @user = create(:user)
     @table = create(:table, name: "Products", account: @user.accounts.first)
-    @text_property = create(:property, table: @table, data_type: "text", name: "Name")
-    @select_property = create(:property, table: @table, data_type: "select", name: "Color")
+    @text_property = create(:property, table: @table, type: "text", name: "Name")
+    @select_property = create(:property, table: @table, type: "select", name: "Color")
     create(:property_option, property: @select_property, value: "Red")
     create(:property_option, property: @select_property, value: "Green")
     create(:property_option, property: @select_property, value: "Blue")

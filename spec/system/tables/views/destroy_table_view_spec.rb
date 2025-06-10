@@ -5,11 +5,10 @@ RSpec.describe "Destroy Table View", type: :system do
     @user = create(:user)
 
     @table = create(:table, name: "Products", account: @user.accounts.first)
-    @property = create(:property, table: @table, data_type: "text", name: "Name")
+    @property = create(:property, table: @table, type: "text", name: "Name")
     @toast = create(:item, table: @table, properties: { @property.id => "Toast" })
     @cheese = create(:item, table: @table, properties: { @property.id => "Cheese" })
     @butter = create(:item, table: @table, properties: { @property.id => "Butter" })
-    @property.update(data_type: "select")
     @view = create(:view, table: @table, name: "Toast")
   end
 

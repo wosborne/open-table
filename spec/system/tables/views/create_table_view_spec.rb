@@ -7,11 +7,13 @@ RSpec.describe "Create Table View", type: :system do
     @user = create(:user)
 
     @table = create(:table, name: "Products", account: @user.accounts.first)
-    @property = create(:property, table: @table, data_type: "text", name: "Name")
+    @property = create(:property, table: @table, type: "select", name: "Name")
+    create(:property_option, property: @property, value: "Toast")
+    create(:property_option, property: @property, value: "Cheese")
+    create(:property_option, property: @property, value: "Butter")
     @toast = create(:item, table: @table, properties: { @property.id => "Toast" })
     @cheese = create(:item, table: @table, properties: { @property.id => "Cheese" })
     @butter = create(:item, table: @table, properties: { @property.id => "Butter" })
-    @property.update(data_type: "select")
   end
 
   it "creates a table view with set base filters" do

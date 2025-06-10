@@ -11,6 +11,6 @@ class InventoryTable < Table
   end
 
   def create_id_property
-    properties.create(name: "ID")
+    properties.create(name: "ID", type: "Properties::IdProperty")
   end
 end

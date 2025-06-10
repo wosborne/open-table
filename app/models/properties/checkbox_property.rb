@@ -1,2 +1,2 @@
-class Properties::TextProperty < Property
+class Properties::CheckboxProperty < Property
 end

@@ -14,6 +14,7 @@
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
         <%= form_with model: property,
+          scope: :property,
           url: account_table_property_path(current_account, property.table_id, property),
           id: "property-form-#{property.id}",
           data: {
@@ -35,7 +36,7 @@
             <div class="field">
               <div class="control is-expanded">
                 <div class="select is-small is-fullwidth">
-                  <%= f.select :data_type, Property.data_types.keys, {}, { data: { action: "change->property-type#typeChanged" } } %>
+                  <%= f.select :type, Property::TYPE_MAP.keys, { selected: Property::TYPE_MAP.invert[property.type] }, { data: { action: "change->property-type#typeChanged" } } %>
                 </div>
               </div>
             </div>

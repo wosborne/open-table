@@ -1,2 +1,2 @@
-class Properties::CheckboxProperty < Property
+class Properties::SelectProperty < Property
 end
