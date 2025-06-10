@@ -1,6 +1,6 @@
 class PropertiesController < TablesController
   def create
-    @property = current_table.properties.create(type: "Properties::TextProperty")
+    @property = current_table.properties.create(type: Property::TYPE_MAP[property_params[:type]] || "Properties::TextProperty")
 
     redirect_to account_table_path(current_account, current_table)
   end
@@ -50,6 +50,7 @@ class PropertiesController < TablesController
       :position,
       :linked_table_id,
       :format,
+      :prefix,
       options_attributes: [ :id, :value, :_destroy ],
       formula_attributes: [ :id, :formula_data ]
     )

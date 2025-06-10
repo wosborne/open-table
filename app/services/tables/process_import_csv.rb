@@ -18,7 +18,7 @@ module Tables
         item_properties = {}
 
         row.each do |header, value|
-          property = @table.properties.find_or_create_by(name: header, type: :text)
+          property = @table.properties.find_or_create_by(name: header, type: Property::TYPE_MAP["text"])
           item_properties[property.id] = value
         end
 

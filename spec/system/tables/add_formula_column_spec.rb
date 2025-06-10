@@ -18,6 +18,8 @@ RSpec.describe "Add Formula Column", type: :system do
 
     click_on "Add Property"
 
+    click_on "Formula"
+
     expect(page).to have_text "Untitled"
 
     property = Property.last

@@ -19,6 +19,8 @@ RSpec.describe "AddItemsToANewTable", type: :system do
 
     click_on "Add Property"
 
+    click_on "Text"
+
     within "#table_view" do
       find('.dropdown', match: :first)
 

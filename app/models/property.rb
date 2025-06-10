@@ -32,8 +32,6 @@ class Property < ApplicationRecord
   before_validation :map_type
 
   before_save :remove_linked_table, unless: :linked_record_type?
-  before_save :convert_date_item_values, if: :format_changed?
-  before_save :create_options_from_existing_values, if: :type_changed?
 
   after_create :create_view_properties_for_each_view
 
@@ -84,39 +82,6 @@ class Property < ApplicationRecord
   def map_type
     if type_changed? && !VALID_TYPES.include?(type)
       self.type = TYPE_MAP[type]
-    end
-  end
-
-  def convert_date_item_values
-    table.items.each do |item|
-      value = item.properties[id.to_s]
-      next unless value
-
-      begin
-        original_date = Date.strptime(value, format_was)
-        new_date = original_date.strftime(format)
-        item.properties[id.to_s] = new_date
-        item.save
-      rescue
-        begin
-          new_date = Date.strptime(value, format)
-          item.properties[id.to_s] = new_date
-          item.save
-        rescue Date::Error => e
-          next
-        end
-      rescue Date::Error => e
-        next
-      end
-    end
-  end
-
-  def create_options_from_existing_values
-    options.destroy_all
-    return unless select_type?
-
-    all_values.each do |value|
-      options.find_or_create_by(value: value)
     end
   end
 end

@@ -14,14 +14,31 @@
     <%= render "components/table/column_header", property:, icon: "fa-chevron-down" %>
   <% end %>
   
-  <th data-id="na">
-    <%= button_to account_table_properties_path(current_account, current_table), data: { turbo_method: :post }, onclick: "event.stopPropagation();", style: "width: max-content;" do %>
-      <span class="icon-text">
-        <span class="icon is-clickable">
-          <i class="fas fa-plus"></i>
+  <th data-id="na" data-controller="dropdown">
+    <div class="dropdown is-right" data-dropdown-target="dropdown" data-action="click->dropdown#open">
+      <button class="dropddown-trigger is-clickable" style="width: max-content;">
+        <span class="icon-text">
+          <span class="icon is-clickable">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>Add Property</span>
         </span>
-        <span>Add Property</span>
-      </span>
-    <% end %>
+      </button>
+
+
+      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+          <% Property::TYPE_MAP.keys.each do |type| %>
+            <%= button_to account_table_properties_path(current_account, current_table), params: { property: { type: type } },  data: { turbo_method: :post }, style: "width: 100%;", class: "dropdown-item" do |f| %>
+              <span class="icon-text">
+                <span class="icon is-clickable">
+                  <i class="fas <%= property_symbol(type)%>"></i>
+                </span>
+                <span><%= type == "id" ? type.humanize.upcase : type.humanize.capitalize %></span>
+              </span>
+            <% end %>
+          <% end %>
+        </div>
+    </div>
   </th>
 </tr>

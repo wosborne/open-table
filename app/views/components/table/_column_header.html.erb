@@ -9,7 +9,12 @@
         <%= f.hidden_field :item_ids, data: { column_target: "refreshItemIdsInput" } %>
       <% end %>
 
-      <%= property.name %>
+      <span class="icon-text">
+        <span class="icon is-clickable has-text-grey">
+          <i class="fas <%= property_symbol(Property::TYPE_MAP.invert[property.type])%>"></i>
+        </span>
+        <span><%= property.name %></span>
+      </span>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
@@ -32,15 +37,17 @@
             <%= f.text_field :name, class: "input is-small" %>
           </div>
           
-          <div class="dropdown-item">
-            <div class="field">
-              <div class="control is-expanded">
-                <div class="select is-small is-fullwidth">
-                  <%= f.select :type, Property::TYPE_MAP.keys, { selected: Property::TYPE_MAP.invert[property.type] }, { data: { action: "change->property-type#typeChanged" } } %>
+          <% unless property.type == Property::TYPE_MAP["id"] %>
+            <div class="dropdown-item">
+              <div class="field">
+                <div class="control is-expanded">
+                  <div class="select is-small is-fullwidth">
+                    <%= f.select :type, Property::TYPE_MAP.keys.excluding("id"), { selected: Property::TYPE_MAP.invert[property.type] }, { data: { action: "change->property-type#typeChanged" } } %>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          <% end %>
 
           <%= render partial: "components/table/properties/type_fields", locals: { f: f, property: } %>
         <% end %>

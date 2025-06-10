@@ -74,5 +74,13 @@
         data: { action: 'change->record-attribute#setAndSubmit', item_id: item.id, property_id: property.id } %>
       </div>
     </label>
+
+  <% elsif property.id_type? %>
+    <%= text_field_tag :value,
+      value,
+      class: "input is-static",
+      style: "width: fit-content; cursor: unset;",
+      disabled: true
+    %>
   <% end %>
 </div>
