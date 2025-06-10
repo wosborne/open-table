@@ -14,5 +14,8 @@
 
   <% when "id", "Properties::IdProperty" %>
     <%= render "components/table/properties/id", f:, property: %>
+
+  <% when "timestamp", "Properties::TimestampProperty" %>
+    <%= render "components/table/properties/timestamp", f:, property: %>
   <% end %>
 <% end %>

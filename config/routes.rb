@@ -15,6 +15,8 @@ Rails.application.routes.draw do
 
   resources :accounts, only: %w[new create]
 
+  get "/marketplace", to: "marketplace#index"
+
   scope "/:account_slug", as: :account do
     resources :tables do
       resources :properties, only: %w[create update destroy] do

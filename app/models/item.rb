@@ -7,8 +7,37 @@ class Item < ApplicationRecord
   has_many :linked_items, through: :outgoing_links, source: :to_item
   has_many :linked_from_items, through: :incoming_links, source: :from_item
 
+  before_create :set_created_at_property
+  before_create :set_id_property
+
+  before_save :set_updated_at_property
+
   def set_property(params)
     properties[params[:property_id]] = params[:value]
     save
+  end
+
+  private
+
+  def set_id_property
+    property = table.properties.find_by(type: "Properties::IdProperty")
+    if property
+      next_id = table.last_item_id + 1
+      properties[property.id.to_s] = property.prefix_id(next_id)
+      table.update(last_item_id: next_id)
+    end
+  end
+
+  def set_created_at_property
+    created_at_property = table.properties.find_by(name: "Created at")
+    updated_at_property = table.properties.find_by(name: "Updated at")
+    time = Time.now
+    properties[created_at_property.id.to_s] = time
+    properties[updated_at_property.id.to_s] = time
+  end
+
+  def set_updated_at_property
+    property = table.properties.find_by(name: "Updated at")
+    properties[property.id.to_s] = Time.zone.now
   end
 end

@@ -17,6 +17,8 @@ module PropertyHelper
       "fa-arrows-up-down"
     when "checkbox"
       "fa-square-check"
+    when "timestamp"
+      "fa-clock"
     else ""
     end
   end

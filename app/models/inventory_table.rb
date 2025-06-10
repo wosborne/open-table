@@ -1,7 +1,7 @@
 class InventoryTable < Table
   before_destroy :prevent_destroy
 
-  after_create :create_id_property
+  after_create :create_default_properties
 
   private
 
@@ -10,7 +10,10 @@ class InventoryTable < Table
     throw(:abort)
   end
 
-  def create_id_property
-    properties.create(name: "ID", type: "Properties::IdProperty")
+  def create_default_properties
+    properties.create(name: "ID", type: "Properties::IdProperty", editable: false)
+    properties.create(name: "Created at", type: "Properties::TimestampProperty", deletable: false, editable: false)
+    properties.create(name: "Updated at", type: "Properties::TimestampProperty", deletable: false, editable: false)
+    properties.create(name: "Marketplace", type: "Properties::CheckboxProperty", deletable: false, editable: false)
   end
 end

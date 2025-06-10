@@ -82,5 +82,13 @@
       style: "width: fit-content; cursor: unset;",
       disabled: true
     %>
+
+  <% elsif property.timestamp_type? %>
+    <%= text_field_tag :value,
+      time = Time.iso8601(value).strftime("#{property.format || "%d/%m/%Y"} %H:%M"),
+      class: "input is-static",
+      style: "width: fit-content; cursor: unset;",
+      disabled: true
+    %>
   <% end %>
 </div>

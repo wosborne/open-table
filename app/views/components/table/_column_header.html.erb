@@ -11,7 +11,7 @@
 
       <span class="icon-text">
         <span class="icon is-clickable has-text-grey">
-          <i class="fas <%= property_symbol(Property::TYPE_MAP.invert[property.type])%>"></i>
+          <i class="fas <%= property_symbol(Property::ALL_TYPE_MAP.invert[property.type])%>"></i>
         </span>
         <span><%= property.name %></span>
       </span>
@@ -34,15 +34,15 @@
           <%= f.hidden_field :id %>
 
           <div class="dropdown-item">
-            <%= f.text_field :name, class: "input is-small" %>
+            <%= f.text_field :name, class: "input is-small", disabled: !property.editable %>
           </div>
           
-          <% unless property.type == Property::TYPE_MAP["id"] %>
+          <% unless Property::ALL_TYPE_MAP.slice("id", "timestamp").values.include?(property.type) %>
             <div class="dropdown-item">
               <div class="field">
                 <div class="control is-expanded">
                   <div class="select is-small is-fullwidth">
-                    <%= f.select :type, Property::TYPE_MAP.keys.excluding("id"), { selected: Property::TYPE_MAP.invert[property.type] }, { data: { action: "change->property-type#typeChanged" } } %>
+                    <%= f.select :type, Property::TYPE_MAP.keys.excluding("id"), { selected: Property::TYPE_MAP.invert[property.type], disabled: !property.editable }, { data: { action: "change->property-type#typeChanged" } } %>
                   </div>
                 </div>
               </div>
@@ -56,10 +56,12 @@
 
         <div class="dropdown-item">
           <div class="field is-grouped">
-            <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
-              <span class="icon">
-                <i class="fas fa-trash"></i>
-              </span>
+            <% if property.deletable %>
+              <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
+                <span class="icon">
+                  <i class="fas fa-trash"></i>
+                </span>
+              <% end %>
             <% end %>
             
             <p class="control is-expanded">

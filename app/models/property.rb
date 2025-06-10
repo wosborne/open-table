@@ -1,7 +1,7 @@
 class Property < ApplicationRecord
   include Positionable
 
-  TYPE_MAP = {
+  ALL_TYPE_MAP = {
     "id" => "Properties::IdProperty",
     "text" => "Properties::TextProperty",
     "number" => "Properties::NumberProperty",
@@ -9,10 +9,13 @@ class Property < ApplicationRecord
     "select" => "Properties::SelectProperty",
     "checkbox" => "Properties::CheckboxProperty",
     "linked_record" => "Properties::LinkedRecordProperty",
-    "formula" => "Properties::FormulaProperty"
+    "formula" => "Properties::FormulaProperty",
+    "timestamp" => "Properties::TimestampProperty"
   }.freeze
 
-  VALID_TYPES = TYPE_MAP.values
+  TYPE_MAP = ALL_TYPE_MAP.except("fixed", "timestamp")
+
+  VALID_TYPES = ALL_TYPE_MAP.values
 
   belongs_to :table
   belongs_to :linked_table, class_name: "Table", optional: true
@@ -35,6 +38,8 @@ class Property < ApplicationRecord
 
   after_create :create_view_properties_for_each_view
 
+  before_destroy :prevent_destroy
+
   scope :select_type, -> { where(type: TYPE_MAP["select"]) }
   scope :number_type, -> { where(type: TYPE_MAP["number"]) }
 
@@ -52,7 +57,7 @@ class Property < ApplicationRecord
     options.any? ? options : potential_options
   end
 
-  TYPE_MAP.each do |key, klass|
+  ALL_TYPE_MAP.each do |key, klass|
     define_method("#{key}_type?") do
       is_a?(klass.constantize) || type == klass
     end
@@ -83,5 +88,11 @@ class Property < ApplicationRecord
     if type_changed? && !VALID_TYPES.include?(type)
       self.type = TYPE_MAP[type]
     end
+  end
+
+  def prevent_destroy
+    return unless deletable
+    errors.add(:base, "Cannot delete fixed properties")
+    throw(:abort)
   end
 end

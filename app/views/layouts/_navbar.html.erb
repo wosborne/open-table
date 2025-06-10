@@ -6,16 +6,20 @@
   </div>
 
   <div class="navbar-menu">
-    <div class="navbar-end">
-      <div class="navbar-item">
-        <div class="buttons">
-          <%= link_to edit_user_registration_path, class: "button is-link" do %>
-            <span>Profile</span>
-          <% end %>
+    <div class="navbar-start">
+      <%= link_to "Marketplace", marketplace_path, class:"navbar-item" %>
+    </div>
 
-          <%= button_to destroy_user_session_path, class: "button", method: :delete, data: { turbo_confirm: "Are you sure?" } do %>
-            <span>Log out</span>
-          <% end %>
+    <div class="navbar-end">
+      <a class="navbar-item">
+        Dealer page
+      </a>
+
+      <div class="navbar-item has-dropdown" data-controller="dropdown" data-dropdown-target="dropdown">
+        <div class="navbar-link" data-action="click->dropdown#toggle">Account</div>
+        <div class="navbar-dropdown is-boxed is-active">
+          <%= link_to "Edit profile", edit_user_registration_path, class: "navbar-item" %>
+          <%= button_to "Log out", destroy_user_session_path, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "navbar-item", style: "width: 100%;" %>
         </div>
       </div>
     </div>

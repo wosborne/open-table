@@ -1,0 +1,12 @@
+<hr class="dropdown-divider" />
+
+<div class="dropdown-item">
+  <label class="label is-small">Format</label>
+  <div class="field">
+    <div class="control is-expanded">
+      <div class="select is-small is-fullwidth">
+        <%= select :property, :format, format_options, { selected: property.format } %>
+      </div>
+    </div>
+  </div>
+</div>

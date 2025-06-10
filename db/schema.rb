@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_10_091256) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_10_180150) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,6 +111,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_091256) do
     t.index ["to_item_id"], name: "index_links_on_to_item_id"
   end
 
+  create_table "marketplace_items", force: :cascade do |t|
+    t.bigint "item_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_marketplace_items_on_item_id"
+  end
+
   create_table "properties", force: :cascade do |t|
     t.bigint "table_id", null: false
     t.string "name", default: "Untitled", null: false
@@ -121,6 +128,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_091256) do
     t.string "format", default: ""
     t.string "type"
     t.string "prefix"
+    t.boolean "deletable", default: true
+    t.boolean "editable", default: true
     t.index ["linked_table_id"], name: "index_properties_on_linked_table_id"
     t.index ["table_id"], name: "index_properties_on_table_id"
   end
@@ -140,6 +149,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_091256) do
     t.bigint "account_id", null: false
     t.string "slug"
     t.string "type"
+    t.integer "last_item_id", default: 0
     t.index ["account_id"], name: "index_tables_on_account_id"
     t.index ["slug"], name: "index_tables_on_slug", unique: true
   end

@@ -3,6 +3,10 @@ class Properties::IdProperty < Property
 
   before_save :update_ids_with_prefix, if: :prefix_changed?
 
+  def prefix_id(item_id)
+    prefix.present? ? "#{prefix}-#{item_id}" : "#{item_id}"
+  end
+
   private
 
   def create_ids_for_existing_values
@@ -15,7 +19,7 @@ class Properties::IdProperty < Property
   def update_ids_with_prefix
     old_prefix = "#{prefix_was}-"
     table.items.each_with_index do |item|
-      id_value = item.properties[id.to_s].gsub(old_prefix, "")
+      id_value = item.properties[id.to_s]&.gsub(old_prefix, "")
       item.properties[id.to_s] = "#{prefix}#{prefix.present? ? "-" : ""}#{id_value}"
       item.save
     end
