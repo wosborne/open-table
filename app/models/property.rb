@@ -10,12 +10,13 @@ class Property < ApplicationRecord
     "checkbox" => "Properties::CheckboxProperty",
     "linked_record" => "Properties::LinkedRecordProperty",
     "formula" => "Properties::FormulaProperty",
-    "timestamp" => "Properties::TimestampProperty"
+    "timestamp" => "Properties::TimestampProperty",
+    "shopify" => "Properties::ShopifyProperty"
   }.freeze
 
-  TYPE_MAP = ALL_TYPE_MAP.except("fixed", "timestamp")
+  TYPE_MAP = ALL_TYPE_MAP.except("fixed", "timestamp", "shopify").freeze
 
-  VALID_TYPES = ALL_TYPE_MAP.values
+  VALID_TYPES = ALL_TYPE_MAP.values.freeze
 
   belongs_to :table
   belongs_to :linked_table, class_name: "Table", optional: true

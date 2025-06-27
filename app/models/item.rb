@@ -12,6 +12,8 @@ class Item < ApplicationRecord
 
   before_save :set_updated_at_property
 
+  # after_save :update_shopify
+
   def set_property(params)
     properties[params[:property_id]] = params[:value]
     save
@@ -39,5 +41,18 @@ class Item < ApplicationRecord
   def set_updated_at_property
     property = table.properties.find_by(name: "Updated at")
     properties[property.id.to_s] = Time.zone.now
+  end
+
+  def update_shopify
+    shopify_property = table.properties.find_by(type: "Properties::ShopifyProperty")
+    id_property = table.properties.find_by(type: "Properties::IdProperty")  
+
+    product = Shopify.new(
+      shop_domain: "naoaz-test-store.myshopify.com",
+      access_token: table.account.external_accounts.find_by(service_name: "shopify")&.api_token
+    ).publish_product(
+      title: "Test Product",
+      sku: properties[id_property.id.to_s]
+    )
   end
 end

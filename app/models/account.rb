@@ -7,7 +7,7 @@ class Account < ApplicationRecord
   has_many :tables, dependent: :destroy
   has_one :inventory_table, -> { where(type: "InventoryTable") }, class_name: "Table"
 
-  has_many :tables, dependent: :destroy
+  has_many :external_accounts, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true

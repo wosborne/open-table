@@ -40,5 +40,10 @@ Rails.application.routes.draw do
       get :property_options, on: :member
       patch :set_record_attribute, on: :member
     end
+
+    resources :shopify
   end
+
+  get '/shopify_auth', to: 'shopify_auth#oauth_redirect'
+  get '/shopify_auth/callback', to: 'shopify_auth#callback'
 end

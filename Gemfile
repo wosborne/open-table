@@ -72,3 +72,9 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "shopify_api", "~> 14.10"
+
+gem "jwt", "~> 3.1"
+
+gem "rest-client", "~> 2.1"

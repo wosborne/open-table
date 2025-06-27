@@ -15,5 +15,6 @@ class InventoryTable < Table
     properties.create(name: "Created at", type: "Properties::TimestampProperty", deletable: false, editable: false)
     properties.create(name: "Updated at", type: "Properties::TimestampProperty", deletable: false, editable: false)
     properties.create(name: "Marketplace", type: "Properties::CheckboxProperty", deletable: false, editable: false)
+    properties.create(name: "Shopify", type: "Properties::ShopifyProperty", deletable: false, editable: false)
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_10_180150) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_26_063348) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_180150) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "external_accounts", force: :cascade do |t|
+    t.string "service_name", null: false
+    t.string "api_token", null: false
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_external_accounts_on_account_id"
   end
 
   create_table "filters", force: :cascade do |t|
@@ -162,8 +171,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_180150) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "state_nonce"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["state_nonce"], name: "index_users_on_state_nonce", unique: true
   end
 
   create_table "view_properties", force: :cascade do |t|
@@ -192,6 +203,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_180150) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "external_accounts", "accounts"
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"
