@@ -1,0 +1,53 @@
+<%= turbo_frame_tag "product_form" do %>
+  <%= form_with model: [current_account, @product],
+    class: "box",
+    data: {
+      controller: 'nested-form',
+      nested_form_wrapper_selector_value: '.nested-form-wrapper',
+      turbo_frame: "_top"
+    } do |form| %>
+
+    <%= render "/components/form/input_wrapper",
+      label: form.label(:name, class: "label"),
+      input: form.text_field(:name, autofocus: true, class: "input"),
+      errors: form.object.errors.full_messages_for(:name) %>
+
+    <%= render "/components/form/input_wrapper",
+      label: form.label(:description, class: "label"),
+      input: form.text_area(:description, autofocus: true, class: "textarea"),
+      errors: form.object.errors.full_messages_for(:description) %>
+
+    <hr/>
+    
+    <template data-nested-form-target="template">
+      <%= render "products/variant_fields", f: form, variant: Variant.new, child_index: "NEW_RECORD" %>
+    </template>
+
+    <h3 class="title is-size-4">Variants</h3>
+    <% @product.variants.each_with_index do |variant, index| %>
+      <%= render "products/variant_fields", f: form, variant:, child_index: index %>
+    <% end %>
+
+    <div data-nested-form-target="target"></div>
+
+    <div class="field pt-2">
+      <div class="control">
+        <button id="add-view-filter" class="button is-small is-info" type="button" data-action="nested-form#add">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>Add Variant</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <%= form.submit class: "button is-primary" %>
+      </div>
+      <div class="control">
+        <%= link_to 'Cancel', account_products_path(current_account), class: "button is-light", data: { turbo_frame: "_top" } %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

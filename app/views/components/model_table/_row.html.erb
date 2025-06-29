@@ -1,0 +1,5 @@
+<tr class="is-clickable" data-url="<%= edit_polymorphic_path([current_account, resource]) %>" >
+  <% resource.class::TABLE_COLUMNS.each do |attribute| %>
+    <td ><%= resource.send(attribute) %></td>
+  <% end %>
+</tr>

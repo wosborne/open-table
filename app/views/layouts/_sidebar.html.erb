@@ -1,6 +1,10 @@
 <aside class="menu p-4">
   <h2 class="title is-4"><%= current_account.name %></h2>
-  <p class="menu-label">Tables</p>
+  <ul class="menu-list">
+    <li><%= link_to "Products", account_products_path(current_account) %></li>
+  </ul>
+
+  <p class="menu-label">Custom Tables</p>
   <ul class="menu-list">
     <% current_account.tables.each do |table| %>
       <li>

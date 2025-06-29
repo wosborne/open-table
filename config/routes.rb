@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   get "/marketplace", to: "marketplace#index"
 
   scope "/:account_slug", as: :account do
+    resources :products
     resources :tables do
       resources :properties, only: %w[create update destroy] do
         get :type_fields, on: :member
@@ -44,6 +45,6 @@ Rails.application.routes.draw do
     resources :shopify
   end
 
-  get '/shopify_auth', to: 'shopify_auth#oauth_redirect'
-  get '/shopify_auth/callback', to: 'shopify_auth#callback'
+  get "/shopify_auth", to: "shopify_auth#oauth_redirect"
+  get "/shopify_auth/callback", to: "shopify_auth#callback"
 end

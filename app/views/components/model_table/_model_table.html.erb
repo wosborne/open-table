@@ -1,0 +1,19 @@
+<div data-controller="table clickable" class="is-flex is-flex-direction-column is-flex-grow-1" >
+  <div class="table-container" data-controller="record-attribute" style="height: 100%;">
+    <table class="table is-hoverable is-narrow mb-2">
+      <thead>
+        <tr data-controller="column-position">
+          <% klass::TABLE_COLUMNS.each do |attribute| %>
+            <th><%= attribute.humanize.titleize %></th>
+          <% end %>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% resources.each do |resource| %>
+          <%= render "components/model_table/row", resource: %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

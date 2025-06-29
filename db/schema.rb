@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_26_063348) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -127,6 +127,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_26_063348) do
     t.index ["item_id"], name: "index_marketplace_items_on_item_id"
   end
 
+  create_table "products", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_products_on_account_id"
+  end
+
   create_table "properties", force: :cascade do |t|
     t.bigint "table_id", null: false
     t.string "name", default: "Untitled", null: false
@@ -177,6 +186,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_26_063348) do
     t.index ["state_nonce"], name: "index_users_on_state_nonce", unique: true
   end
 
+  create_table "variants", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.string "sku", null: false
+    t.string "name", null: false
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_variants_on_product_id"
+  end
+
   create_table "view_properties", force: :cascade do |t|
     t.bigint "view_id", null: false
     t.bigint "property_id", null: false
@@ -211,10 +230,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_26_063348) do
   add_foreign_key "links", "items", column: "from_item_id"
   add_foreign_key "links", "items", column: "to_item_id"
   add_foreign_key "links", "properties"
+  add_foreign_key "products", "accounts"
   add_foreign_key "properties", "tables"
   add_foreign_key "properties", "tables", column: "linked_table_id"
   add_foreign_key "property_options", "properties"
   add_foreign_key "tables", "accounts"
+  add_foreign_key "variants", "products"
   add_foreign_key "view_properties", "properties"
   add_foreign_key "view_properties", "views"
   add_foreign_key "views", "tables"

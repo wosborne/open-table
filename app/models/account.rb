@@ -1,6 +1,8 @@
 class Account < ApplicationRecord
   extend FriendlyId
 
+  has_many :products, dependent: :destroy
+
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
 
