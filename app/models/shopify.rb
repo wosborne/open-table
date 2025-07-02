@@ -4,7 +4,6 @@ class Shopify
     @shop_domain = shop_domain
     @access_token = access_token
     @session = setup_session
-
   end
 
   def get_products
@@ -27,6 +26,7 @@ class Shopify
       end
     else
       # ✅ Create new product
+      binding.pry
       response = @session.post(
         path: "products",
         body: { product: product_params }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,12 +60,34 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "connected_inventories", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "access_token", null: false
+    t.string "app_id", null: false
+    t.string "table_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_connected_inventories_on_account_id"
+  end
+
+  create_table "external_account_products", force: :cascade do |t|
+    t.bigint "external_account_id", null: false
+    t.bigint "product_id", null: false
+    t.string "external_id"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_account_id"], name: "index_external_account_products_on_external_account_id"
+    t.index ["product_id"], name: "index_external_account_products_on_product_id"
+  end
+
   create_table "external_accounts", force: :cascade do |t|
     t.string "service_name", null: false
     t.string "api_token", null: false
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "domain"
     t.index ["account_id"], name: "index_external_accounts_on_account_id"
   end
 
@@ -127,6 +149,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
     t.index ["item_id"], name: "index_marketplace_items_on_item_id"
   end
 
+  create_table "product_option_values", force: :cascade do |t|
+    t.bigint "product_option_id", null: false
+    t.string "value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_option_id"], name: "index_product_option_values_on_product_option_id"
+  end
+
+  create_table "product_options", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_product_options_on_product_id"
+  end
+
   create_table "products", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -186,14 +224,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
     t.index ["state_nonce"], name: "index_users_on_state_nonce", unique: true
   end
 
+  create_table "variant_option_values", force: :cascade do |t|
+    t.bigint "variant_id", null: false
+    t.bigint "product_option_id", null: false
+    t.bigint "product_option_value_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_option_id"], name: "index_variant_option_values_on_product_option_id"
+    t.index ["product_option_value_id"], name: "index_variant_option_values_on_product_option_value_id"
+    t.index ["variant_id"], name: "index_variant_option_values_on_variant_id"
+  end
+
   create_table "variants", force: :cascade do |t|
     t.bigint "product_id", null: false
     t.string "sku", null: false
-    t.string "name", null: false
     t.decimal "price", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["product_id"], name: "index_variants_on_product_id"
+    t.index ["sku"], name: "index_variants_on_sku", unique: true
   end
 
   create_table "view_properties", force: :cascade do |t|
@@ -222,6 +271,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "connected_inventories", "accounts"
+  add_foreign_key "external_account_products", "external_accounts"
+  add_foreign_key "external_account_products", "products"
   add_foreign_key "external_accounts", "accounts"
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
@@ -230,11 +282,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_27_103627) do
   add_foreign_key "links", "items", column: "from_item_id"
   add_foreign_key "links", "items", column: "to_item_id"
   add_foreign_key "links", "properties"
+  add_foreign_key "product_option_values", "product_options"
+  add_foreign_key "product_options", "products"
   add_foreign_key "products", "accounts"
   add_foreign_key "properties", "tables"
   add_foreign_key "properties", "tables", column: "linked_table_id"
   add_foreign_key "property_options", "properties"
   add_foreign_key "tables", "accounts"
+  add_foreign_key "variant_option_values", "product_option_values"
+  add_foreign_key "variant_option_values", "product_options"
+  add_foreign_key "variant_option_values", "variants"
   add_foreign_key "variants", "products"
   add_foreign_key "view_properties", "properties"
   add_foreign_key "view_properties", "views"

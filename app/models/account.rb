@@ -10,6 +10,7 @@ class Account < ApplicationRecord
   has_one :inventory_table, -> { where(type: "InventoryTable") }, class_name: "Table"
 
   has_many :external_accounts, dependent: :destroy
+  has_one :shopify_account, -> { where(service_name: "shopify") }, class_name: "ExternalAccount"
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true

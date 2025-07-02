@@ -18,7 +18,10 @@ Rails.application.routes.draw do
   get "/marketplace", to: "marketplace#index"
 
   scope "/:account_slug", as: :account do
-    resources :products
+    resources :products do
+      resources :external_account_products
+    end
+
     resources :tables do
       resources :properties, only: %w[create update destroy] do
         get :type_fields, on: :member
