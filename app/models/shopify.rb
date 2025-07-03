@@ -40,8 +40,8 @@ class Shopify
 
   # Remove a product from the user's store by product ID
   def remove_product(product_id)
-    product = ShopifyAPI::Product.find(product_id)
-    product.destroy
+    response = @session.delete(path: "products/#{product_id}")
+    response.code == 200 || response.code == 204
   end
 
   private

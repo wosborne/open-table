@@ -17,7 +17,7 @@
             <div class="media-content">
               <p class="title is-5 mb-1">Shopify</p>
               <% if current_account.shopify_account&.persisted? %>
-                <% if @product.external_account_products.find_by(external_account: current_account.shopify_account).present? %>
+                <% if (eap = @product.external_account_products.find_by(external_account: current_account.shopify_account)) %>
                   <span class="tag is-success is-light">Synced</span>
                 <% else %>
                   <span class="tag is-info is-light">Connected</span>
@@ -29,7 +29,7 @@
           </div>
           <div class="content mt-3">
             <% if current_account.shopify_account&.persisted? %>
-              <% if @product.external_account_products.find_by(external_account: current_account.shopify_account).present? %>
+              <% if (eap = @product.external_account_products.find_by(external_account: current_account.shopify_account)) %>
                 <div class="mb-2">
                   <label class="label is-small">Status</label>
                   <div class="control">
@@ -43,14 +43,12 @@
                     </label>
                   </div>
                 </div>
-                <form method="post" action="#">
-                  <button class="button is-danger is-small" type="button">
-                    <span class="icon">
-                      <i class="fas fa-trash"></i>
-                    </span>
-                    <span>Remove from Shopify</span>
-                  </button>
-                </form>
+                <%= button_to account_product_external_account_product_path(current_account, @product, eap), method: :delete, data: { turbo_confirm: "Are you sure you want to remove this product from Shopify?" }, class: "button is-danger is-small" do %>
+                  <span class="icon">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                  <span>Remove from Shopify</span>
+                <% end %>
               <% else %>
                 <%= form_with model: [current_account, @product, ExternalAccountProduct.new], method: :post do |form| %>
                   <%= form.hidden_field :external_account_id, value: current_account.shopify_account.id %>

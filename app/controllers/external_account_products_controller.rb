@@ -11,6 +11,12 @@ class ExternalAccountProductsController < ProductsController
     end
   end
 
+  def destroy
+    @external_account_product = current_product.external_account_products.find(params[:id])
+    @external_account_product.destroy
+    redirect_to account_product_path(current_account, current_product), notice: "Product was removed from Shopify.", status: :see_other
+  end
+
   def update
     # if @product.update(product_params)
     #   redirect_to account_products_path(current_account), notice: "Product was successfully updated.", status: :see_other

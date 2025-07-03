@@ -5,6 +5,7 @@ class ExternalAccountProduct < ApplicationRecord
   enum :status, [ :active, :draft ]
 
   after_save :sync_to_external_account
+  after_destroy :remove_from_external_account
 
   def sync_to_external_account
     shopify = Shopify.new(
@@ -24,6 +25,16 @@ class ExternalAccountProduct < ApplicationRecord
       self.update_column(:external_id, shopify_product["id"])
     end
     sync_shopify_ids(shopify_product)
+  end
+
+  def remove_from_external_account
+    if external_id.present?
+      shopify = Shopify.new(
+        shop_domain: external_account.domain,
+        access_token: external_account.api_token
+      )
+      shopify.remove_product(external_id)
+    end
   end
 
   private
