@@ -25,7 +25,6 @@ class ShopifyAuthController < ApplicationController
   def callback
     state = decode_state(params["state"])
     user = User.find_by(id: state["user_id"], state_nonce: state["nonce"])
-    binding.pry
 
     if user
       response = RestClient.post "https://#{params["shop"]}/admin/oauth/access_token",

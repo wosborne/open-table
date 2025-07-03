@@ -26,7 +26,6 @@ class Shopify
       end
     else
       # ✅ Create new product
-      binding.pry
       response = @session.post(
         path: "products",
         body: { product: product_params }
