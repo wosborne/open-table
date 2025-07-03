@@ -1,0 +1,74 @@
+<h3 class="title is-size-4">Marketplaces</h3>
+<% if @product.new_record? %>
+  <div class="notification is-warning">
+    <strong>Save required:</strong> You must save the product before it can be synced to a marketplace.
+  </div>
+<% else %>
+  <div class="columns is-multiline">
+    <div class="column is-6-tablet is-4-desktop">
+      <div class="card">
+        <div class="card-content">
+          <div class="media">
+            <div class="media-left">
+              <span class="icon is-large">
+                <i class="fab fa-shopify fa-2x"></i>
+              </span>
+            </div>
+            <div class="media-content">
+              <p class="title is-5 mb-1">Shopify</p>
+              <% if current_account.shopify_account&.persisted? %>
+                <% if @product.external_account_products.find_by(external_account: current_account.shopify_account).present? %>
+                  <span class="tag is-success is-light">Synced</span>
+                <% else %>
+                  <span class="tag is-info is-light">Connected</span>
+                <% end %>
+              <% else %>
+                <span class="tag is-light">Not Connected</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="content mt-3">
+            <% if current_account.shopify_account&.persisted? %>
+              <% if @product.external_account_products.find_by(external_account: current_account.shopify_account).present? %>
+                <div class="mb-2">
+                  <label class="label is-small">Status</label>
+                  <div class="control">
+                    <label class="radio">
+                      <input type="radio" name="shopify_status" />
+                      Active
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="shopify_status" />
+                      Draft
+                    </label>
+                  </div>
+                </div>
+                <form method="post" action="#">
+                  <button class="button is-danger is-small" type="button">
+                    <span class="icon">
+                      <i class="fas fa-trash"></i>
+                    </span>
+                    <span>Remove from Shopify</span>
+                  </button>
+                </form>
+              <% else %>
+                <%= form_with model: [current_account, @product, ExternalAccountProduct.new], method: :post do |form| %>
+                  <%= form.hidden_field :external_account_id, value: current_account.shopify_account.id %>
+                  <%= form.button class: "button is-info is-small" do %>
+                    <span class="icon">
+                      <i class="fas fa-plus"></i>
+                    </span>
+                    <span>Add to Shopify</span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% else %>
+              <%= link_to "Connect Shopify", new_account_shopify_account_path(current_account), class: "button is-primary is-small" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Repeat for other marketplaces in the future -->
+  </div>
+<% end %> 

@@ -1,0 +1,65 @@
+<h3 class="title is-size-4">Variants</h3>
+<% if @product.new_record? %>
+  <p class="help is-warning">You must save the product before you can create variants.</p>
+<% else %>
+  <p class="help is-info">
+    SKUs cannot be changed after they are saved.
+    <% unsaved_count = @product.variants.select { |v| v.new_record? }.size %>
+    <% if unsaved_count > 0 %>
+      <br/>
+      <strong><%= unsaved_count %> variant<%= 's' if unsaved_count > 1 %> not yet saved.</strong>
+    <% end %>
+  </p>
+  <table class="table is-fullwidth is-hoverable" data-controller="variant-sort" data-variant-sort-variant-rows-value="tbody">
+    <thead>
+      <tr>
+        <th data-action="click->variant-sort#sort" data-variant-sort-column-value="sku" class="is-clickable">
+          SKU <span data-variant-sort-target="symbol" data-column="sku" class="icon"><i></i></span>
+        </th>
+        <% @product.product_options.each do |option| %>
+          <th data-action="click->variant-sort#sort" data-variant-sort-column-value="option-<%= option.id %>" class="is-clickable">
+            <%= option.name.presence || 'Option' %> <span data-variant-sort-target="symbol" data-column="option-<%= option.id %>" class="icon"><i></i></span>
+          </th>
+        <% end %>
+        <th data-action="click->variant-sort#sort" data-variant-sort-column-value="price" class="is-clickable">
+          Price <span data-variant-sort-target="symbol" data-column="price" class="icon"><i></i></span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @product.variants.empty? %>
+        <tr>
+          <td colspan="<%= 2 + @product.product_options.size %>">
+            <span class="has-text-grey">No variants yet. Add options above to generate variants.</span>
+          </td>
+        </tr>
+      <% else %>
+        <%= form.fields_for :variants do |variant_form| %>
+          <tr>
+            <%# Hidden fields for variant_option_values to preserve associations %>
+            <% variant_form.object.variant_option_values.each do |vov| %>
+              <%= variant_form.fields_for :variant_option_values, vov do |vov_form| %>
+                <%= vov_form.hidden_field :id %>
+                <%= vov_form.hidden_field :product_option_id %>
+                <%= vov_form.hidden_field :product_option_value_id %>
+              <% end %>
+            <% end %>
+            <td>
+              <%= variant_form.text_field :sku, class: "input is-small", value: (variant_form.object.sku || variant_form.object.suggested_sku), disabled: variant_form.object.sku.present? %>
+            </td>
+            <% @product.product_options.each do |option| %>
+              <% vov = variant_form.object.variant_option_values.find { |v| v.product_option_id == option.id } %>
+              <td data-option-id="option-<%= option.id %>"><%= vov&.product_option_value&.value %></td>
+            <% end %>
+            <td>
+              <%= variant_form.text_field :price, class: "input is-small", placeholder: "Price", value: (variant_form.object.price.presence || 0) %>
+              <% variant_form.object.errors.full_messages_for(:price).each do |error| %>
+                <p class="help is-danger"><%= error %></p>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+<% end %> 

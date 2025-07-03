@@ -5,126 +5,15 @@
         turbo_frame: "_top"
       } do |form| %>
 
-      <%= render "/components/form/input_wrapper",
-        label: form.label(:name, class: "label"),
-        input: form.text_field(:name, autofocus: true, class: "input"),
-        errors: form.object.errors.full_messages_for(:name) %>
-
-      <%= render "/components/form/input_wrapper",
-        label: form.label(:description, class: "label"),
-        input: form.text_area(:description, autofocus: true, class: "textarea"),
-        errors: form.object.errors.full_messages_for(:description) %>
+      <%= render "products/form_fields", form: form %>
 
       <hr/>
 
-      <h3 class="title is-size-5">Options (max 3)</h3>
-      <div class="columns">
-        <%= form.fields_for :product_options do |option_form| %>
-          <div class="column">
-            <%= option_form.label :name, class: "label is-small" %>
-            <%= option_form.text_field :name, class: "input is-small", placeholder: "Option name (e.g. Color)" %>
-            <div class="mt-2" data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
-              <label class="label is-small">Values</label>
-
-              <template data-nested-form-target="template">
-                <div class="field is-grouped mb-1 nested-form-wrapper">
-                  <%= option_form.fields_for :product_option_values, ProductOptionValue.new, child_index: "NEW_RECORD" do |value_form| %>
-                    <%= value_form.text_field :value, class: "input is-small", placeholder: "Value (e.g. Red)" %>
-                    <div class="field is-grouped is-align-items-center">
-                      <%= value_form.button :remove, class: "button is-danger is-small is-outlined", data: { action: "nested-form#remove" } do %>
-                        <span class="icon is-small">
-                          <i class="fas fa-trash"></i>
-                        </span>
-                      <% end %>
-                      <%= value_form.hidden_field :_destroy %>
-                    </div>
-                  <% end %>
-                </div>
-              </template>
-
-              <% option_form.object.product_option_values.each_with_index do |value, idx| %>
-                <%= option_form.fields_for :product_option_values, value, child_index: idx do |value_form| %>
-                  <div class="field is-grouped mb-1 nested-form-wrapper">
-                    <%= value_form.text_field :value, class: "input is-small", placeholder: "Value (e.g. Red)" %>
-                    <div class="field is-grouped is-align-items-center">
-                      <%= value_form.button :remove, class: "button is-danger is-small is-outlined", data: { action: "nested-form#remove" } do %>
-                        <span class="icon is-small">
-                          <i class="fas fa-trash"></i>
-                        </span>
-                      <% end %>
-                      <%= value_form.hidden_field :_destroy %>
-                    </div>
-                  </div>
-                <% end %>
-              <% end %>
-
-              <div data-nested-form-target="target"></div>
-              <button class="button is-small is-info mt-1" type="button" data-action="nested-form#add">
-                <span class="icon">
-                  <i class="fas fa-plus"></i>
-                </span>
-                <span>Add Value</span>
-              </button>
-            </div>
-          </div>
-        <% end %>
-      </div>
+      <%= render "products/form_options", form: form %>
 
       <hr/>
 
-      <h3 class="title is-size-4">Variants</h3>
-      <p class="help is-info">
-        SKUs cannot be changed after they are saved.
-        <% unsaved_count = @product.variants.select { |v| v.new_record? }.size %>
-        <% if unsaved_count > 0 %>
-          <br/>
-          <strong><%= unsaved_count %> variant<%= 's' if unsaved_count > 1 %> not yet saved.</strong>
-        <% end %>
-      </p>
-      <table class="table is-fullwidth is-hoverable" data-controller="variant-sort" data-variant-sort-variant-rows-value="tbody">
-        <thead>
-          <tr>
-            <th data-action="click->variant-sort#sort" data-variant-sort-column-value="sku" class="is-clickable">
-              SKU <span data-variant-sort-target="symbol" data-column="sku" class="icon"><i></i></span>
-            </th>
-            <% @product.product_options.each do |option| %>
-              <th data-action="click->variant-sort#sort" data-variant-sort-column-value="option-<%= option.id %>" class="is-clickable">
-                <%= option.name.presence || 'Option' %> <span data-variant-sort-target="symbol" data-column="option-<%= option.id %>" class="icon"><i></i></span>
-              </th>
-            <% end %>
-            <th data-action="click->variant-sort#sort" data-variant-sort-column-value="price" class="is-clickable">
-              Price <span data-variant-sort-target="symbol" data-column="price" class="icon"><i></i></span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= form.fields_for :variants do |variant_form| %>
-            <tr>
-              <%# Hidden fields for variant_option_values to preserve associations %>
-              <% variant_form.object.variant_option_values.each do |vov| %>
-                <%= variant_form.fields_for :variant_option_values, vov do |vov_form| %>
-                  <%= vov_form.hidden_field :id %>
-                  <%= vov_form.hidden_field :product_option_id %>
-                  <%= vov_form.hidden_field :product_option_value_id %>
-                <% end %>
-              <% end %>
-              <td>
-                <%= variant_form.text_field :sku, class: "input is-small", value: (variant_form.object.sku || variant_form.object.suggested_sku), disabled: variant_form.object.sku.present? %>
-              </td>
-              <% @product.product_options.each do |option| %>
-                <% vov = variant_form.object.variant_option_values.find { |v| v.product_option_id == option.id } %>
-                <td data-option-id="option-<%= option.id %>"><%= vov&.product_option_value&.value %></td>
-              <% end %>
-              <td>
-                <%= variant_form.text_field :price, class: "input is-small", placeholder: "Price", value: (variant_form.object.price.presence || 0) %>
-                <% variant_form.object.errors.full_messages_for(:price).each do |error| %>
-                  <p class="help is-danger"><%= error %></p>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+      <%= render "products/form_variants", form: form %>
 
       <div class="field is-grouped">
         <div class="control">
@@ -138,8 +27,6 @@
 
     <hr/>
 
-    <h3 class="title is-size-4">Marketplaces</h3>
-    <%= render "products/external_account_product_manager", external_account: current_account.shopify_account %>
-
+    <%= render "products/form_marketplaces" %>
   </div>
 <% end %>

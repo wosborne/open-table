@@ -1,0 +1,9 @@
+<%= render "/components/form/input_wrapper",
+  label: form.label(:name, class: "label"),
+  input: form.text_field(:name, autofocus: true, class: "input"),
+  errors: form.object.errors.full_messages_for(:name) %>
+
+<%= render "/components/form/input_wrapper",
+  label: form.label(:description, class: "label"),
+  input: form.text_area(:description, autofocus: true, class: "textarea"),
+  errors: form.object.errors.full_messages_for(:description) %> 
