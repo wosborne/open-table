@@ -4,45 +4,22 @@ class ExternalAccountProduct < ApplicationRecord
 
   enum :status, [ :active, :draft ]
 
-  after_create :add_to_external_account
+  after_save :sync_to_external_account
 
-  def update_on_external_account
+  def sync_to_external_account
     shopify = Shopify.new(
       shop_domain: external_account.domain,
       access_token: external_account.api_token
     )
 
-    options = product.product_options.map do |option|
-      {
-        id: option.external_id_for(self.id),
-        name: option.name,
-        values: option.product_option_values.map(&:value)
-      }
-    end
-
-    variants = product.variants.map do |variant|
-      option_values = product.product_options.map do |option|
-        vov = variant.variant_option_values.find { |v| v.product_option_id == option.id }
-        vov&.product_option_value&.value
-      end
-      variant_hash = {
-        id: variant.external_id_for(self.id),
-        sku: variant.sku,
-        price: variant.price
-      }
-      option_values.each_with_index do |val, idx|
-        variant_hash["option#{idx+1}"] = val
-      end
-      variant_hash
-    end
-
-    shopify_product = shopify.publish_product({
-      id: self.external_id, # Only present if already synced
+    payload = {
       title: product.name,
-      variants: variants,
-      options: options
-    })
-    # Save the Shopify product ID if not already set (shouldn't happen here, but for safety)
+      variants: shopify_variants,
+      options: shopify_options
+    }
+    payload[:id] = self.external_id if self.external_id.present?
+
+    shopify_product = shopify.publish_product(payload)
     if self.external_id.blank? && shopify_product && shopify_product["id"]
       self.update_column(:external_id, shopify_product["id"])
     end
@@ -50,48 +27,6 @@ class ExternalAccountProduct < ApplicationRecord
   end
 
   private
-
-  def add_to_external_account
-    shopify = Shopify.new(
-      shop_domain: external_account.domain,
-      access_token: external_account.api_token
-    )
-
-    options = product.product_options.map do |option|
-      {
-        id: option.external_id_for(self.id),
-        name: option.name,
-        values: option.product_option_values.map(&:value)
-      }
-    end
-
-    variants = product.variants.map do |variant|
-      option_values = product.product_options.map do |option|
-        vov = variant.variant_option_values.find { |v| v.product_option_id == option.id }
-        vov&.product_option_value&.value
-      end
-      variant_hash = {
-        id: variant.external_id_for(self.id),
-        sku: variant.sku,
-        price: variant.price
-      }
-      option_values.each_with_index do |val, idx|
-        variant_hash["option#{idx+1}"] = val
-      end
-      variant_hash
-    end
-
-    shopify_product = shopify.publish_product({
-      title: product.name,
-      variants: variants,
-      options: options
-    })
-    # Save the Shopify product ID if not already set
-    if self.external_id.blank? && shopify_product && shopify_product["id"]
-      self.update_column(:external_id, shopify_product["id"])
-    end
-    sync_shopify_ids(shopify_product)
-  end
 
   def sync_shopify_ids(shopify_product)
     # Sync options
@@ -107,6 +42,34 @@ class ExternalAccountProduct < ApplicationRecord
         local_variant = product.variants.find_by(sku: shopify_variant["sku"])
         local_variant&.set_external_id_for(self.id, shopify_variant["id"])
       end
+    end
+  end
+
+  def shopify_options
+    product.product_options.map do |option|
+      {
+        id: option.external_id_for(self.id),
+        name: option.name,
+        values: option.product_option_values.map(&:value)
+      }
+    end
+  end
+
+  def shopify_variants
+    product.variants.map do |variant|
+      option_values = product.product_options.map do |option|
+        vov = variant.variant_option_values.find { |v| v.product_option_id == option.id }
+        vov&.product_option_value&.value
+      end
+      variant_hash = {
+        id: variant.external_id_for(self.id),
+        sku: variant.sku,
+        price: variant.price
+      }
+      option_values.each_with_index do |val, idx|
+        variant_hash["option#{idx+1}"] = val
+      end
+      variant_hash
     end
   end
 end

@@ -1,4 +1,5 @@
 class Product < ApplicationRecord
+  belongs_to :account
   TABLE_COLUMNS = attribute_names - [ "account_id" ]
   has_many :product_options, dependent: :destroy
   has_many :product_option_values, through: :product_options
@@ -52,6 +53,6 @@ class Product < ApplicationRecord
   private
 
   def update_external_accounts
-    external_account_products.each(&:update_on_external_account)
+    external_account_products.find_each(&:sync_to_external_account)
   end
 end
