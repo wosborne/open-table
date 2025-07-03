@@ -73,7 +73,7 @@
       <hr/>
 
       <h3 class="title is-size-4">Variants</h3>
-      <p class="help is-info mb-2">
+      <p class="help is-info">
         SKUs cannot be changed after they are saved.
         <% unsaved_count = @product.variants.select { |v| v.new_record? }.size %>
         <% if unsaved_count > 0 %>
@@ -81,14 +81,20 @@
           <strong><%= unsaved_count %> variant<%= 's' if unsaved_count > 1 %> not yet saved.</strong>
         <% end %>
       </p>
-      <table class="table is-fullwidth is-striped mt-3">
+      <table class="table is-fullwidth is-hoverable" data-controller="variant-sort" data-variant-sort-variant-rows-value="tbody">
         <thead>
           <tr>
-            <th>SKU</th>
+            <th data-action="click->variant-sort#sort" data-variant-sort-column-value="sku" class="is-clickable">
+              SKU <span data-variant-sort-target="symbol" data-column="sku" class="icon"><i></i></span>
+            </th>
             <% @product.product_options.each do |option| %>
-              <th><%= option.name.presence || 'Option' %></th>
+              <th data-action="click->variant-sort#sort" data-variant-sort-column-value="option-<%= option.id %>" class="is-clickable">
+                <%= option.name.presence || 'Option' %> <span data-variant-sort-target="symbol" data-column="option-<%= option.id %>" class="icon"><i></i></span>
+              </th>
             <% end %>
-            <th>Price</th>
+            <th data-action="click->variant-sort#sort" data-variant-sort-column-value="price" class="is-clickable">
+              Price <span data-variant-sort-target="symbol" data-column="price" class="icon"><i></i></span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -107,7 +113,7 @@
               </td>
               <% @product.product_options.each do |option| %>
                 <% vov = variant_form.object.variant_option_values.find { |v| v.product_option_id == option.id } %>
-                <td><%= vov&.product_option_value&.value %></td>
+                <td data-option-id="option-<%= option.id %>"><%= vov&.product_option_value&.value %></td>
               <% end %>
               <td>
                 <%= variant_form.text_field :price, class: "input is-small", placeholder: "Price", value: (variant_form.object.price.presence || 0) %>
