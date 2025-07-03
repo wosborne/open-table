@@ -154,6 +154,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.string "value", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "external_ids", default: {}, null: false
     t.index ["product_option_id"], name: "index_product_option_values_on_product_option_id"
   end
 
@@ -162,6 +163,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "external_ids", default: {}, null: false
     t.index ["product_id"], name: "index_product_options_on_product_id"
   end
 
@@ -241,6 +243,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.decimal "price", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "external_ids", default: {}, null: false
     t.index ["product_id"], name: "index_variants_on_product_id"
     t.index ["sku"], name: "index_variants_on_sku", unique: true
   end

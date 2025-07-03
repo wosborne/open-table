@@ -14,6 +14,7 @@ class Product < ApplicationRecord
   validate :options_limit
 
   after_save :generate_variants_from_options!
+  after_save :update_external_accounts
 
   def options_limit
     errors.add(:product_options, "can't have more than 3 options") if product_options.size > 3
@@ -46,5 +47,11 @@ class Product < ApplicationRecord
       end
     end
     save if changed?
+  end
+
+  private
+
+  def update_external_accounts
+    external_account_products.each(&:update_on_external_account)
   end
 end
