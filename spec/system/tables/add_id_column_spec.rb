@@ -5,8 +5,8 @@ RSpec.describe "Add ID Column", type: :system do
     @user = create(:user)
     @table = create(:table, name: "Products", account: @user.accounts.first)
     text_property = create(:property, table: @table, type: "text", name: "Name")
-    @toast = create(:item, table: @table, properties: { text_property.id => "Toast" })
-    @cheese = create(:item, table: @table, properties: { text_property.id => "Cheese" })
+    @toast = create(:record, table: @table, properties: { text_property.id => "Toast" })
+    @cheese = create(:record, table: @table, properties: { text_property.id => "Cheese" })
   end
 
   it "allows users to create a unique id column with a prefix" do
@@ -20,12 +20,12 @@ RSpec.describe "Add ID Column", type: :system do
 
     expect(page).to have_text "Untitled"
 
-    within "#item-#{@toast.id}" do
+    within "#record-#{@toast.id}" do
       expect(page).to have_field(with: "Toast")
       expect(page).to have_field(with: "1", disabled: true)
     end
 
-    within "#item-#{@cheese.id}" do
+    within "#record-#{@cheese.id}" do
       expect(page).to have_field(with: "Cheese")
       expect(page).to have_field(with: "2", disabled: true)
     end
@@ -42,12 +42,12 @@ RSpec.describe "Add ID Column", type: :system do
       find('button', text: 'Save').click
     end
 
-    within "#item-#{@toast.id}" do
+    within "#record-#{@toast.id}" do
       expect(page).to have_field(with: "Toast")
       expect(page).to have_field(with: "PRO-1", disabled: true)
     end
 
-    within "#item-#{@cheese.id}" do
+    within "#record-#{@cheese.id}" do
       expect(page).to have_field(with: "Cheese")
       expect(page).to have_field(with: "PRO-2", disabled: true)
     end

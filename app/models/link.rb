@@ -1,6 +1,6 @@
 class Link < ApplicationRecord
-  belongs_to :from_item, class_name: "Item"
-  belongs_to :to_item, class_name: "Item"
+  belongs_to :from_record, class_name: "Record"
+  belongs_to :to_record, class_name: "Record"
 
   belongs_to :property
 end

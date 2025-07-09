@@ -28,8 +28,8 @@ Rails.application.routes.draw do
         post :refresh_cells, on: :member
       end
 
-      resources :items, only: %w[create update destroy] do
-        delete :delete_items, on: :collection
+      resources :records, only: %w[create update destroy] do
+        delete :delete_records, on: :collection
       end
 
       resources :views, only: %w[create show update destroy] do
@@ -39,6 +39,7 @@ Rails.application.routes.draw do
         end
 
         get :filter_field, on: :member
+        patch :set_record_attribute, on: :member
       end
 
       get :property_options, on: :member

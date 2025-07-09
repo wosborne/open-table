@@ -6,9 +6,9 @@ RSpec.describe "Destroy Table View", type: :system do
 
     @table = create(:table, name: "Products", account: @user.accounts.first)
     @property = create(:property, table: @table, type: "text", name: "Name")
-    @toast = create(:item, table: @table, properties: { @property.id => "Toast" })
-    @cheese = create(:item, table: @table, properties: { @property.id => "Cheese" })
-    @butter = create(:item, table: @table, properties: { @property.id => "Butter" })
+    @toast = create(:record, table: @table, properties: { @property.id => "Toast" })
+    @cheese = create(:record, table: @table, properties: { @property.id => "Cheese" })
+    @butter = create(:record, table: @table, properties: { @property.id => "Butter" })
     @view = create(:view, table: @table, name: "Toast")
   end
 

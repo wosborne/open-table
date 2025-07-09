@@ -21,6 +21,7 @@
             <% end %>
           </div>
         </template>
+        
         <% option_form.object.product_option_values.each_with_index do |value, idx| %>
           <%= option_form.fields_for :product_option_values, value, child_index: idx do |value_form| %>
             <div class="field is-grouped mb-1 nested-form-wrapper">

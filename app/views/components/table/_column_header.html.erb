@@ -6,7 +6,7 @@
   <div class="dropdown is-clickable" style="width: 100%; height: 100%;" data-dropdown-target="dropdown" data-action="click->dropdown#open">
     <div class="dropdown-trigger draggable">
       <%= form_with url: refresh_cells_account_table_property_path(current_account, current_table, property) do |f| %>
-        <%= f.hidden_field :item_ids, data: { column_target: "refreshItemIdsInput" } %>
+        <%= f.hidden_field :record_ids, data: { column_target: "refreshRecordIdsInput" } %>
       <% end %>
 
       <span class="icon-text">

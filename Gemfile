@@ -71,6 +71,7 @@ group :test do
   gem "simplecov", require: false
   gem "capybara"
   gem "selenium-webdriver"
+  gem "launchy"
 end
 
 gem "shopify_api", "~> 14.10"

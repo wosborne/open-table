@@ -11,9 +11,9 @@ RSpec.describe "Create Table View", type: :system do
     create(:property_option, property: @property, value: "Toast")
     create(:property_option, property: @property, value: "Cheese")
     create(:property_option, property: @property, value: "Butter")
-    @toast = create(:item, table: @table, properties: { @property.id => "Toast" })
-    @cheese = create(:item, table: @table, properties: { @property.id => "Cheese" })
-    @butter = create(:item, table: @table, properties: { @property.id => "Butter" })
+    @toast = create(:record, table: @table, properties: { @property.id => "Toast" })
+    @cheese = create(:record, table: @table, properties: { @property.id => "Cheese" })
+    @butter = create(:record, table: @table, properties: { @property.id => "Butter" })
   end
 
   it "creates a table view with set base filters" do
@@ -71,10 +71,10 @@ RSpec.describe "Create Table View", type: :system do
     end
 
     within "#table_view" do
-      expect(page).to have_selector("#item-#{@toast.id}")
+      expect(page).to have_selector("#record-#{@toast.id}")
 
-      expect(page).not_to have_selector("#item-#{@butter.id}")
-      expect(page).not_to have_selector("#item-#{@cheese.id}")
+      expect(page).not_to have_selector("#record-#{@butter.id}")
+      expect(page).not_to have_selector("#record-#{@cheese.id}")
     end
   end
 end

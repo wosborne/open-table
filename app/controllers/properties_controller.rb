@@ -24,14 +24,14 @@ class PropertiesController < TablesController
 
   def refresh_cells
     property = current_table.properties.find(params[:id])
-    item_ids = JSON.parse(params[:item_ids])
-    items = current_table.items.where(id: item_ids)
+    record_ids = JSON.parse(params[:record_ids])
+    records = current_table.records.where(id: record_ids)
 
-    render turbo_stream: items.map { |item|
+    render turbo_stream: records.map { |record|
       turbo_stream.replace(
-        "item-#{item.id}-property-#{property.id}",
+        "record-#{record.id}-property-#{property.id}",
         partial: "components/table/cell",
-        locals: { item: item, property: property, value: item.properties[property.id.to_s] }
+        locals: { record:, property: property, value: record.properties[property.id.to_s] }
       )
     }
   end

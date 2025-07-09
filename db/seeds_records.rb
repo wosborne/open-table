@@ -26,11 +26,11 @@ size_id   = size.id
 weight_id = weight.id
 
 # Constants
-TOTAL_ITEMS = 50_000
-BATCH_SIZE  = 1_000
+TOTAL_RECORDS = 50_000
+BATCH_SIZE = 1_000
 
-(TOTAL_ITEMS / BATCH_SIZE).times do |batch|
-  items = Array.new(BATCH_SIZE) do
+(TOTAL_RECORDS / BATCH_SIZE).times do |batch|
+  records = Array.new(BATCH_SIZE) do
     {
       table_id: table.id,
       properties: {
@@ -43,6 +43,6 @@ BATCH_SIZE  = 1_000
     }
   end
 
-  Item.insert_all(items)
-  puts "✅ Inserted batch #{batch + 1} (#{(batch + 1) * BATCH_SIZE}/#{TOTAL_ITEMS})"
+  Record.insert_all(records)
+  puts "✅ Inserted batch #{batch + 1} (#{(batch + 1) * BATCH_SIZE}/#{TOTAL_RECORDS})"
 end

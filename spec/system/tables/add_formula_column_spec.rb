@@ -7,8 +7,8 @@ RSpec.describe "Add Formula Column", type: :system do
     @first_number_property = create(:property, table: @table, type: "number", name: "First Number")
     @second_number_property = create(:property, table: @table, type: "number", name: "Second Number")
     text_property = create(:property, table: @table, type: "text", name: "Name")
-    @toast = create(:item, table: @table, properties: { text_property.id => "Toast", @first_number_property.id => "2", @second_number_property.id => "3" })
-    @cheese = create(:item, table: @table, properties: { text_property.id => "Cheese", @first_number_property.id => "2", @second_number_property.id => "4" })
+    @toast = create(:record, table: @table, properties: { text_property.id => "Toast", @first_number_property.id => "2", @second_number_property.id => "3" })
+    @cheese = create(:record, table: @table, properties: { text_property.id => "Cheese", @first_number_property.id => "2", @second_number_property.id => "4" })
   end
 
   it "allows users to create formulas with number columns" do
@@ -54,14 +54,14 @@ RSpec.describe "Add Formula Column", type: :system do
     end
 
 
-    within "#item-#{@toast.id}" do
+    within "#record-#{@toast.id}" do
       expect(page).to have_field(with: "1")
       expect(page).to have_field(with: "3")
       expect(page).to have_field(with: "6")
     end
 
 
-    within "#item-#{@cheese.id}" do
+    within "#record-#{@cheese.id}" do
       expect(page).to have_field(with: "2")
       expect(page).to have_field(with: "4")
       expect(page).to have_field(with: "8")

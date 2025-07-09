@@ -10,18 +10,18 @@ class Properties::IdProperty < Property
   private
 
   def create_ids_for_existing_values
-    table.items.order(:created_at).each_with_index do |item, index|
-      item.properties[id.to_s] = "#{index+1}"
-      item.save
+    table.records.order(:created_at).each_with_index do |record, index|
+      record.properties[id.to_s] = "#{index+1}"
+      record.save
     end
   end
 
   def update_ids_with_prefix
     old_prefix = "#{prefix_was}-"
-    table.items.each_with_index do |item|
-      id_value = item.properties[id.to_s]&.gsub(old_prefix, "")
-      item.properties[id.to_s] = "#{prefix}#{prefix.present? ? "-" : ""}#{id_value}"
-      item.save
+    table.records.each_with_index do |record|
+      id_value = record.properties[id.to_s]&.gsub(old_prefix, "")
+      record.properties[id.to_s] = "#{prefix}#{prefix.present? ? "-" : ""}#{id_value}"
+      record.save
     end
   end
 end

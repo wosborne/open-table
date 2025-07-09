@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_03_093342) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,16 +58,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "connected_inventories", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "access_token", null: false
-    t.string "app_id", null: false
-    t.string "table_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_connected_inventories_on_account_id"
   end
 
   create_table "external_account_products", force: :cascade do |t|
@@ -121,32 +111,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
-  create_table "items", force: :cascade do |t|
-    t.bigint "table_id", null: false
-    t.jsonb "properties", default: {}
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["properties"], name: "index_items_on_properties", using: :gin
-    t.index ["table_id"], name: "index_items_on_table_id"
-  end
-
   create_table "links", force: :cascade do |t|
-    t.bigint "from_item_id", null: false
-    t.bigint "to_item_id", null: false
+    t.bigint "from_record_id", null: false
+    t.bigint "to_record_id", null: false
     t.bigint "property_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["from_item_id", "to_item_id"], name: "index_links_on_from_item_id_and_to_item_id", unique: true
-    t.index ["from_item_id"], name: "index_links_on_from_item_id"
+    t.index ["from_record_id", "to_record_id"], name: "index_links_on_from_record_id_and_to_record_id", unique: true
+    t.index ["from_record_id"], name: "index_links_on_from_record_id"
     t.index ["property_id"], name: "index_links_on_property_id"
-    t.index ["to_item_id"], name: "index_links_on_to_item_id"
-  end
-
-  create_table "marketplace_items", force: :cascade do |t|
-    t.bigint "item_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["item_id"], name: "index_marketplace_items_on_item_id"
+    t.index ["to_record_id"], name: "index_links_on_to_record_id"
   end
 
   create_table "product_option_values", force: :cascade do |t|
@@ -200,6 +174,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.index ["property_id"], name: "index_property_options_on_property_id"
   end
 
+  create_table "records", force: :cascade do |t|
+    t.bigint "table_id", null: false
+    t.jsonb "properties", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["properties"], name: "index_records_on_properties", using: :gin
+    t.index ["table_id"], name: "index_records_on_table_id"
+  end
+
   create_table "tables", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -207,7 +190,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
     t.bigint "account_id", null: false
     t.string "slug"
     t.string "type"
-    t.integer "last_item_id", default: 0
+    t.integer "last_record_id", default: 0
     t.index ["account_id"], name: "index_tables_on_account_id"
     t.index ["slug"], name: "index_tables_on_slug", unique: true
   end
@@ -274,23 +257,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_02_142504) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "connected_inventories", "accounts"
   add_foreign_key "external_account_products", "external_accounts"
   add_foreign_key "external_account_products", "products"
   add_foreign_key "external_accounts", "accounts"
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"
-  add_foreign_key "items", "tables"
-  add_foreign_key "links", "items", column: "from_item_id"
-  add_foreign_key "links", "items", column: "to_item_id"
   add_foreign_key "links", "properties"
+  add_foreign_key "links", "records", column: "from_record_id"
+  add_foreign_key "links", "records", column: "to_record_id"
   add_foreign_key "product_option_values", "product_options"
   add_foreign_key "product_options", "products"
   add_foreign_key "products", "accounts"
   add_foreign_key "properties", "tables"
   add_foreign_key "properties", "tables", column: "linked_table_id"
   add_foreign_key "property_options", "properties"
+  add_foreign_key "records", "tables"
   add_foreign_key "tables", "accounts"
   add_foreign_key "variant_option_values", "product_option_values"
   add_foreign_key "variant_option_values", "product_options"

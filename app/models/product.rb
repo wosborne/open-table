@@ -14,7 +14,6 @@ class Product < ApplicationRecord
   # Limit to 3 options
   validate :options_limit
 
-  after_save :generate_variants_from_options!
   after_save :update_external_accounts
 
   def options_limit
@@ -29,8 +28,8 @@ class Product < ApplicationRecord
     value_lists.first.product(*value_lists[1..])
   end
 
-  # Generate variants for all combinations of option values
-  def generate_variants_from_options!
+  # Generate variants for all combinations of option values (in memory only, do not persist)
+  def generate_variants_from_options
     combos = all_variant_combinations
     return if combos.empty?
     combos.each do |combination|
@@ -47,7 +46,6 @@ class Product < ApplicationRecord
         )
       end
     end
-    save if changed?
   end
 
   private

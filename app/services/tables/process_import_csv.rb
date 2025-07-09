@@ -22,7 +22,7 @@ module Tables
           item_properties[property.id] = value
         end
 
-        @table.items.create(properties: item_properties)
+        @table.records.create(properties: item_properties)
       end
 
       @table.import.destroy

@@ -2,8 +2,8 @@ class Table < ApplicationRecord
   extend FriendlyId
 
   belongs_to :account
-  has_many :items, dependent: :destroy
-  has_many :limited_items, -> { limit(100) }, class_name: "Item"
+  has_many :records, dependent: :destroy
+  has_many :limited_records, -> { limit(100) }, class_name: "Record"
   has_many :properties, dependent: :destroy
   has_many :views, -> { order(:position) }, dependent: :destroy
 

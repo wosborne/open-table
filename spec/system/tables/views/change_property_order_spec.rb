@@ -9,9 +9,9 @@ RSpec.describe "Change Property Order", type: :system do
     create(:property_option, property: @select_property, value: "Red")
     create(:property_option, property: @select_property, value: "Green")
     create(:property_option, property: @select_property, value: "Blue")
-    @toast = create(:item, table: @table, properties: { @text_property.id => "Toast", @select_property.id => "Red" })
-    @cheese = create(:item, table: @table, properties: { @text_property.id => "Cheese", @select_property.id => "Green" })
-    @butter = create(:item, table: @table, properties: { @text_property.id => "Butter", @select_property.id => "Blue" })
+    @toast = create(:record, table: @table, properties: { @text_property.id => "Toast", @select_property.id => "Red" })
+    @cheese = create(:record, table: @table, properties: { @text_property.id => "Cheese", @select_property.id => "Green" })
+    @butter = create(:record, table: @table, properties: { @text_property.id => "Butter", @select_property.id => "Blue" })
     @table.reload
     @view = create(:view, table: @table, name: "Toast")
   end

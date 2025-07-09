@@ -1,6 +1,6 @@
 class MarketplaceController < ApplicationController
   def index
-    @items = Item.joins(:table)
+    @records = Record.joins(:table)
                  .where(table: { type: "InventoryTable" })
   end
 end

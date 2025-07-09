@@ -1,30 +1,30 @@
 module SearchAndFilterable
-  def search_and_filter_items(scope)
-    items = scope
-    items = filter_items(items) if params[:filters].present?
-    items = search_items(items) if params[:search].present?
+  def search_and_filter_records(scope)
+    records = scope
+    records = filter_records(records) if params[:filters].present?
+    records = search_records(records) if params[:search].present?
 
-    items.limit(100)
+    records.limit(100)
   end
 
-  def search_items(items)
-    items.where(properties_query, search: "%#{params[:search]}%").limit(100)
+  def search_records(records)
+    records.where(properties_query, search: "%#{params[:search]}%").limit(100)
   end
 
-  def filter_items(items)
+  def filter_records(records)
     JSON.parse(params[:filters])&.each do |property_id, value|
       pid = properties.find_by(id: property_id).id
 
       if pid && value.present?
-        items = items.where("properties ->> ? ILIKE ?", pid.to_s, "%#{value}%")
+        records = records.where("properties ->> ? ILIKE ?", pid.to_s, "%#{value}%")
       end
     end
 
-    items
+    records
   end
 
   def properties_query
-    properties.map do |property|
+    properties.searchable.map do |property|
       "properties ->> '#{property.id}' ILIKE :search"
     end.join(" OR ")
   end

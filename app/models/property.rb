@@ -14,7 +14,7 @@ class Property < ApplicationRecord
     "shopify" => "Properties::ShopifyProperty"
   }.freeze
 
-  TYPE_MAP = ALL_TYPE_MAP.except("fixed", "timestamp", "shopify").freeze
+  TYPE_MAP = ALL_TYPE_MAP.except("timestamp", "shopify").freeze
 
   VALID_TYPES = ALL_TYPE_MAP.values.freeze
 
@@ -43,9 +43,10 @@ class Property < ApplicationRecord
 
   scope :select_type, -> { where(type: TYPE_MAP["select"]) }
   scope :number_type, -> { where(type: TYPE_MAP["number"]) }
+  scope :searchable, -> { where.not(type: [ ALL_TYPE_MAP["timestamp"], ALL_TYPE_MAP["shopify"] ]) }
 
   def all_values
-    table.items.where("properties ->> ? IS NOT NULL", id.to_s).pluck(Arel.sql("properties ->> '#{id}'")).uniq
+    table.records.where("properties ->> ? IS NOT NULL", id.to_s).pluck(Arel.sql("properties ->> '#{id}'")).uniq
   end
 
   def potential_options

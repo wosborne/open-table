@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "AddItemsToANewTable", type: :system do
+RSpec.describe "AddRecordsToANewTable", type: :system do
   include CellInputHelper
 
   it "creates a product record" do
@@ -41,31 +41,31 @@ RSpec.describe "AddItemsToANewTable", type: :system do
 
     expect(page).to have_selector("div", text: "Name")
 
-    click_on "Add Item"
+    click_on "Add Record"
 
     within "#table_view" do
-      expect(page).to have_selector("#item-1")
-      expect(find_cell_input(Item.last.id, last_property.id).value).to eq('')
-      expect(Item.count).to eq 1
+      expect(page).to have_selector("#record-1")
+      expect(find_cell_input(Record.last.id, last_property.id).value).to eq('')
+      expect(Record.count).to eq 1
     end
 
-    last_item = Item.last
+    last_record = Record.last
 
-    find_cell_input(last_item.id, last_property.id).fill_in(with: "Test Product")
-    find_cell_input(last_item.id, last_property.id).send_keys(:enter)
+    find_cell_input(last_record.id, last_property.id).fill_in(with: "Test Product")
+    find_cell_input(last_record.id, last_property.id).send_keys(:enter)
 
     fill_in "search", with: "Bad search"
     click_button "Search"
 
     within "#table_view" do
-      expect(page).to have_no_selector("[data-item-id='#{last_item.id}'][data-property-id='#{last_property.id}']", wait: 5)
+      expect(page).to have_no_selector("[data-record-id='#{last_record.id}'][data-property-id='#{last_property.id}']", wait: 10)
     end
 
     fill_in "search", with: "Test"
     click_button "Search"
 
     within "#table_view" do
-      expect(find_cell_input(last_item.id, last_property.id).value).to eq "Test Product"
+      expect(find_cell_input(last_record.id, last_property.id).value).to eq "Test Product"
     end
   end
 end

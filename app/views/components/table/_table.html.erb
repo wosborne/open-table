@@ -5,9 +5,9 @@
         <p class="subtitle is-5"><strong data-table-target="selectedCount">0</strong> selected</p>
       </div>
       <div class="level-item">
-        <%= form_with url: delete_items_account_table_items_path(current_account, current_table), method: :delete, data: { turbo_method: :delete, confirm: "Are you sure?" } do |f| %>
-          <%= f.hidden_field :item_ids, value: [], data: { table_target: "deleteInput" } %>
-          <%= f.button type: "submit", class: "button is-small", disabled: true, data: { table_target: "deleteButton"}, aria: { label: "Delete selected items" } do %>
+        <%= form_with url: delete_records_account_table_records_path(current_account, current_table), method: :delete, data: { turbo_method: :delete, confirm: "Are you sure?" } do |f| %>
+          <%= f.hidden_field :record_ids, value: [], data: { table_target: "deleteInput" } %>
+          <%= f.button type: "submit", class: "button is-small", disabled: true, data: { table_target: "deleteButton"}, aria: { label: "Delete selected records" } do %>
             <span class="icon">
               <i class="fas fa-trash"></i>
             </span>
@@ -72,7 +72,7 @@
 
   <div class="table-container" data-controller="record-attribute" style="height: 100%;">
     <%= form_with url: set_record_attribute_account_table_path(current_account, @table), method: :patch, format: :turbo_stream, data: { turbo: true } do |f| %>
-      <%= f.hidden_field :item_id, value: "", data: { record_attribute_target: "itemIdInput" } %>
+      <%= f.hidden_field :record_id, value: "", data: { record_attribute_target: "recordIdInput" } %>
       <%= f.hidden_field :property_id, value: "", data: { record_attribute_target: "propertyIdInput" } %>
       <%= f.hidden_field :value, value: "", data: { record_attribute_target: "valueInput" } %>
     <% end %>
@@ -83,21 +83,21 @@
       </thead>
 
       <tbody>
-        <% @items.each do |item| %>
-          <%= render "components/table/row", item:, view: @view %>
+        <% @records.each do |record| %>
+          <%= render "components/table/row", record: record, view: @view %>
         <% end %>
-        <tr id="new-item-row">
+        <tr id="new-record-row">
       </tbody>
     </table>
   </div>
 
   <% if @table.properties.any? %>
-    <%= button_to account_table_items_path(current_account, @table), data: { turbo_method: :post } do %>
+    <%= button_to account_table_records_path(current_account, @table), data: { turbo_method: :post } do %>
       <span class="icon-text">
         <span class="icon is-clickable">
           <i class="fas fa-plus"></i>
         </span>
-        <span>Add Item</span>
+        <span>Add Record</span>
       </span>
     <% end %>
   <% else %>
