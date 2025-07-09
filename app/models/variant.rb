@@ -3,6 +3,7 @@ class Variant < ApplicationRecord
   has_many :variant_option_values, dependent: :destroy
   has_many :product_options, through: :variant_option_values
   has_many :product_option_values, through: :variant_option_values
+  has_many :inventory_units, dependent: :destroy
 
   validates :sku, presence: true, uniqueness: { scope: :product_id }
   validates :price, numericality: { greater_than_or_equal_to: 0 }
@@ -28,6 +29,10 @@ class Variant < ApplicationRecord
     self.external_ids ||= {}
     self.external_ids[external_account_product_id.to_s] = value
     save!
+  end
+
+  def inventory_count
+    inventory_units.in_stock.count
   end
 
   private

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_03_093342) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_09_081549) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -109,6 +109,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_03_093342) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "inventory_units", force: :cascade do |t|
+    t.bigint "variant_id", null: false
+    t.string "serial_number"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["serial_number"], name: "index_inventory_units_on_serial_number", unique: true
+    t.index ["variant_id"], name: "index_inventory_units_on_variant_id"
   end
 
   create_table "links", force: :cascade do |t|
@@ -263,6 +273,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_03_093342) do
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"
+  add_foreign_key "inventory_units", "variants"
   add_foreign_key "links", "properties"
   add_foreign_key "links", "records", column: "from_record_id"
   add_foreign_key "links", "records", column: "to_record_id"
