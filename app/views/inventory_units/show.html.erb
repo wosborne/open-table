@@ -1,0 +1,8 @@
+<h1>Inventory Unit Details</h1>
+
+<p><strong>Serial Number:</strong> <%= @inventory_unit.serial_number %></p>
+<p><strong>Status:</strong> <%= @inventory_unit.status.humanize %></p>
+<p><strong>Variant SKU:</strong> <%= @inventory_unit.variant&.sku %></p>
+<p><strong>Product:</strong> <%= @inventory_unit.variant&.product&.name %></p>
+
+<%= link_to "Back to Inventory Units", account_inventory_units_path(current_account), class: "button" %>

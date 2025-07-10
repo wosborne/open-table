@@ -1,10 +1,11 @@
 class Product < ApplicationRecord
   belongs_to :account
-  TABLE_COLUMNS = attribute_names - [ "account_id" ]
+  TABLE_COLUMNS = attribute_names - [ "account_id" ] + [ "in_stock" ]
   has_many :product_options, dependent: :destroy
   has_many :product_option_values, through: :product_options
   has_many :variants, dependent: :destroy
   has_many :external_account_products, dependent: :destroy
+  has_many :inventory_units, through: :variants
 
   validates :name, presence: true, uniqueness: { scope: :account_id }
 
@@ -46,6 +47,10 @@ class Product < ApplicationRecord
         )
       end
     end
+  end
+
+  def in_stock
+    variants.sum(&:inventory_count)
   end
 
   private

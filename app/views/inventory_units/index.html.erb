@@ -1,0 +1,23 @@
+<h1 class="title">Inventory Units</h1>
+
+<div class="level">
+  <div class="level-left">
+  </div>
+
+  <div class="level-right">
+    <div class="level-item">
+      <%= link_to new_account_inventory_unit_path(current_account), class: "button" do %>
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>New Inventory Unit</span>
+        </span>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= turbo_frame_tag "inventory_units", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
+  <%= render "components/model_table/model_table", klass: InventoryUnit, resources: @inventory_units %>
+<% end %>

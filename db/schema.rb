@@ -112,11 +112,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_081549) do
   end
 
   create_table "inventory_units", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.bigint "variant_id", null: false
     t.string "serial_number"
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_inventory_units_on_account_id"
     t.index ["serial_number"], name: "index_inventory_units_on_serial_number", unique: true
     t.index ["variant_id"], name: "index_inventory_units_on_variant_id"
   end
@@ -273,6 +275,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_081549) do
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"
+  add_foreign_key "inventory_units", "accounts"
   add_foreign_key "inventory_units", "variants"
   add_foreign_key "links", "properties"
   add_foreign_key "links", "records", column: "from_record_id"

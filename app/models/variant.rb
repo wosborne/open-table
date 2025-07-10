@@ -35,6 +35,10 @@ class Variant < ApplicationRecord
     inventory_units.in_stock.count
   end
 
+  def title
+    sku
+  end
+
   private
 
   def prevent_sku_change

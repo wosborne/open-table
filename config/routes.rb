@@ -22,6 +22,10 @@ Rails.application.routes.draw do
       resources :external_account_products
     end
 
+    resources :inventory_units do
+      get :variant_selector
+    end
+
     resources :tables do
       resources :properties, only: %w[create update destroy] do
         get :type_fields, on: :member

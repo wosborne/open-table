@@ -1,7 +1,12 @@
 <aside class="menu p-4">
   <h2 class="title is-4"><%= current_account.name %></h2>
   <ul class="menu-list">
-    <li><%= link_to "Products", account_products_path(current_account) %></li>
+    <li>
+      <%= link_to "Products", account_products_path(current_account) %>
+    </li>
+    <li>
+      <%= link_to "Inventory Units", account_inventory_units_path(current_account) %>
+    </li>
   </ul>
 
   <p class="menu-label">Custom Tables</p>

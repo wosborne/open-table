@@ -1,0 +1,46 @@
+<%= turbo_frame_tag "variant_selector" do %>
+  <div data-controller="product-option-selector">
+    <div class="field is-horizontal">
+      <div class="field-body">
+        <div class="field">
+          <label class="label">Product</label>
+          <div class="control">
+            <%= select_tag :product_id, options_from_collection_for_select(products, :id, :name, selected_product&.id), prompt: "Select Product", class: "input", data: { action: "change->product-option-selector#updateFrame" } %>
+          </div>
+        </div>
+
+        <% if selected_product %>
+          <% selected_product.product_options.each_with_index do |option, idx| %>
+            <div class="field">
+              <label class="label"><%= option.name %></label>
+              <div class="control">
+                <%= select_tag "option_value_ids[]", options_from_collection_for_select(option.product_option_values, :id, :value, selected_option_values[idx]), prompt: "Select #{option.name}", class: "input", data: { action: "change->product-option-selector#updateFrame" }, disabled: (idx > 0 && selected_option_values[idx-1].blank?) %>
+              </div>
+            </div>
+          <% end %>
+          
+          <%= fields_for :inventory_unit do |f| %>
+            <%= f.hidden_field :variant_id, value: variant&.id %>
+          <% end %>
+        <% else %>
+
+          <div class="field">
+            <p class="label">Options</p>
+            <p class="control">
+              <a class="button is-static">Select a product.</a>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="field mb-3">
+      <p class="label">Variant</p>
+      <p class="control">
+        <a class="button is-static">
+          <%= variant ? "#{variant.sku} #{number_to_currency(variant.price)}" : "Select a product." %>
+        </a>
+      </p>
+    </div>
+  </div>
+<% end %>

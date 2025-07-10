@@ -1,0 +1,35 @@
+
+
+<%= form_with model: [current_account, @inventory_unit], local: true do |form| %>
+  <% if @inventory_unit.errors.any? %>
+    <div class="notification is-danger">
+      <ul>
+        <% @inventory_unit.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= render "product_option_selector", products: @products, selected_product: @selected_product, selected_option_values: @selected_option_values, variant: @variant %>
+
+  <div class="field">
+    <%= form.label :serial_number, "S/N or Unique ID", class: "label" %>
+    <div class="control">
+      <%= form.text_field :serial_number, class: "input" %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :status, class: "label" %>
+    <div class="control">
+      <%= form.select :status, InventoryUnit.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "input" %>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="control">
+      <%= form.submit (form.object.new_record? ? "Create Inventory Unit" : "Update Inventory Unit"), class: "button is-primary" %>
+    </div>
+  </div>
+<% end %> 
