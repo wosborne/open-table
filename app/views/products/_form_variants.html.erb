@@ -24,6 +24,10 @@
         <th data-action="click->variant-sort#sort" data-variant-sort-column-value="price" class="is-clickable">
           Price <span data-variant-sort-target="symbol" data-column="price" class="icon"><i></i></span>
         </th>
+
+        <th data-action="click->variant-sort#sort" data-variant-sort-column-value="stock" class="is-clickable">
+          Stock <span data-variant-sort-target="symbol" data-column="stock" class="icon"><i></i></span>
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -56,6 +60,9 @@
               <% variant_form.object.errors.full_messages_for(:price).each do |error| %>
                 <p class="help is-danger"><%= error %></p>
               <% end %>
+            </td>
+            <td>
+              <%= variant_form.object.inventory_count %>
             </td>
           </tr>
         <% end %>
