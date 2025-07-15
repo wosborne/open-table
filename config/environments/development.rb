@@ -1,7 +1,7 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  config.hosts << "f7e0-91-125-14-171.ngrok-free.app"
+  config.hosts << "64fbd59ed37a.ngrok-free.app"
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Make code changes take effect immediately without server restart.
@@ -43,6 +43,9 @@ Rails.application.configure do
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
+
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load

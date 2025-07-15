@@ -13,11 +13,15 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "root#index"
 
-  resources :accounts, only: %w[new create]
+  resources :accounts, only: %w[new create edit update]
 
   get "/marketplace", to: "marketplace#index"
 
+  post "/webhooks/shopify", to: "shopify_webhooks#receive"
+
   scope "/:account_slug", as: :account do
+    resources :external_accounts, only: %w[new create]
+
     resources :products do
       resources :external_account_products
     end
@@ -53,6 +57,5 @@ Rails.application.routes.draw do
     resources :shopify
   end
 
-  get "/shopify_auth", to: "shopify_auth#oauth_redirect"
-  get "/shopify_auth/callback", to: "shopify_auth#callback"
+  get "/external_accounts/shopify_callback", to: "external_accounts#shopify_callback"
 end

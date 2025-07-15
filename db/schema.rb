@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_09_081549) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_15_202411) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -133,6 +133,33 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_081549) do
     t.index ["from_record_id"], name: "index_links_on_from_record_id"
     t.index ["property_id"], name: "index_links_on_property_id"
     t.index ["to_record_id"], name: "index_links_on_to_record_id"
+  end
+
+  create_table "order_line_items", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.string "external_line_item_id", null: false
+    t.string "sku"
+    t.string "title"
+    t.integer "quantity", null: false
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_line_item_id"], name: "index_order_line_items_on_external_line_item_id"
+    t.index ["order_id"], name: "index_order_line_items_on_order_id"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "external_account_id", null: false
+    t.string "external_id", null: false
+    t.string "name"
+    t.string "currency", null: false
+    t.decimal "total_price", precision: 12, scale: 2, null: false
+    t.datetime "external_created_at", null: false
+    t.string "financial_status"
+    t.string "fulfillment_status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_account_id"], name: "index_orders_on_external_account_id"
   end
 
   create_table "product_option_values", force: :cascade do |t|
@@ -280,6 +307,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_081549) do
   add_foreign_key "links", "properties"
   add_foreign_key "links", "records", column: "from_record_id"
   add_foreign_key "links", "records", column: "to_record_id"
+  add_foreign_key "order_line_items", "orders"
+  add_foreign_key "orders", "external_accounts"
   add_foreign_key "product_option_values", "product_options"
   add_foreign_key "product_options", "products"
   add_foreign_key "products", "accounts"

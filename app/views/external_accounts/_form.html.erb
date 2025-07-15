@@ -1,0 +1,33 @@
+<%= form_with model: @external_account, url: account_external_accounts_path(current_account), data: { turbo: false } do |f| %>
+  <div class="field">
+    <%= f.label :service_name, class: "label" %>
+    <div class="control">
+      <div class="select">
+        <%= f.select :service_name, 
+            options_for_select([['Shopify', 'shopify']], @external_account.service_name),
+            { prompt: 'Select a service' },
+            { class: 'input' } %>
+      </div>
+    </div>
+    <% @external_account.errors.full_messages_for(:service_name)&.each do |error| %>
+      <p class="help is-danger"><%= error %></p>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :domain, class: "label" %>
+    <div class="control">
+      <%= f.text_field :domain, 
+          placeholder: "your-store.myshopify.com",
+          class: "input" %>
+    </div>
+    <p class="help">Enter your Shopify store domain (e.g., your-store.myshopify.com)</p>
+    <% @external_account.errors.full_messages_for(:domain)&.each do |error| %>
+      <p class="help is-danger"><%= error %></p>
+    <% end %>
+  </div>
+
+  <div class="is-flex is-flex-direction-column is-align-items-center">
+    <%= f.submit "Connect Account", class: "button is-primary" %>
+  </div>
+<% end %> 

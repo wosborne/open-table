@@ -1,0 +1,39 @@
+<h1 class="title">Edit account</h1>
+<p class="subtitle">Update your account settings</p>
+
+<%= render "form" %>
+
+<div class="columns is-multiline">
+  <div class="column is-6-tablet is-4-desktop">
+    <div class="card">
+      <div class="card-content">
+        <div class="media">
+          <div class="media-left">
+            <span class="icon is-large">
+              <i class="fab fa-shopify fa-2x"></i>
+            </span>
+          </div>
+          <div class="media-content">
+            <p class="title is-5 mb-1">Shopify</p>
+            <% if current_account&.shopify_account&.persisted? %>
+              <span class="tag is-info is-light">Connected</span>
+            <% else %>
+              <span class="tag is-light">Not Connected</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="content mt-3">
+          <% if current_account&.shopify_account&.persisted?  %>
+            <%= link_to edit_account_path(current_account), class: "button is-danger is-small" do %>
+              <span class="icon">
+                <i class="fas fa-trash"></i>
+              </span>
+              <span>Disconnect</span>
+            <% end %>
+          <% else %>
+            <%= link_to "Connect Shopify", new_account_external_account_path(current_account), class: "button is-primary is-small" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>

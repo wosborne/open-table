@@ -1,5 +1,5 @@
 class AccountsController < ApplicationController
-  before_action :find_account, except: [ :new, :create ]
+  before_action :find_account, except: [ :new, :create, :edit, :update ]
 
   def new
     @account = Account.new
@@ -13,6 +13,20 @@ class AccountsController < ApplicationController
       redirect_to account_tables_path(account_slug: @account.slug), notice: "Account created successfully."
     else
       render :new
+    end
+  end
+
+  def edit
+    @account = current_account
+  end
+
+  def update
+    @account = current_account
+
+    if @account.update(account_params)
+      redirect_to account_tables_path(account_slug: @account.slug), notice: "Account updated successfully."
+    else
+      render :edit
     end
   end
 

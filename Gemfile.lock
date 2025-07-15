@@ -139,6 +139,7 @@ GEM
       railties (>= 5.0.0)
     faker (3.5.1)
       i18n (>= 1.8.11, < 2)
+    foreman (0.88.1)
     friendly_id (5.5.1)
       activerecord (>= 4.0.0)
     fugit (1.11.1)
@@ -482,6 +483,7 @@ DEPENDENCIES
   devise
   factory_bot_rails
   faker
+  foreman (~> 0.88.1)
   friendly_id
   importmap-rails
   jbuilder
