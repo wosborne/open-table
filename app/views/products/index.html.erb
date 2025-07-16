@@ -1,25 +1,24 @@
-<section class="section is-flex is-flex-direction-column" style="height: 100%">
-  <h1 class="title">Products</h1>
 
-  <div class="level">
-    <div class="level-left">
-    </div>
+<h1 class="title">Products</h1>
 
-    <div class="level-right">
-      <div class="level-item">
-        <%= link_to new_account_product_path(current_account), class: "button" do %>
-          <span class="icon-text">
-            <span class="icon">
-              <i class="fas fa-plus"></i>
-            </span>
-            <span>New Product</span>
-          </span>
-        <% end %>
-      </div>
-    </div>
+<div class="level">
+  <div class="level-left">
   </div>
 
-  <%= turbo_frame_tag "products", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-    <%= render "components/model_table/model_table", klass: Product, resources: @products %>
-  <% end %>
-</section>
+  <div class="level-right">
+    <div class="level-item">
+      <%= link_to new_account_product_path(current_account), class: "button" do %>
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>New Product</span>
+        </span>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= turbo_frame_tag "products", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
+  <%= render "components/model_table/model_table", klass: Product, resources: @products %>
+<% end %>

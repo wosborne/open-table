@@ -19,6 +19,7 @@ Rails.application.routes.draw do
 
   post "/webhooks/shopify", to: "shopify_webhooks#receive"
 
+
   scope "/:account_slug", as: :account do
     resources :external_accounts, only: %w[new create]
 
@@ -29,6 +30,8 @@ Rails.application.routes.draw do
     resources :inventory_units do
       get :variant_selector
     end
+
+    resources :orders, only: [ :index, :show, :edit ]
 
     resources :tables do
       resources :properties, only: %w[create update destroy] do

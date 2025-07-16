@@ -1,4 +1,6 @@
 class AccountsController < ApplicationController
+  layout :set_layout
+
   before_action :find_account, except: [ :new, :create, :edit, :update ]
 
   def new
@@ -49,5 +51,9 @@ class AccountsController < ApplicationController
     elsif current_user && current_account && params[:account_slug] != current_account.slug
       redirect_to account_tables_path(current_account)
     end
+  end
+
+  def set_layout
+    self.class == AccountsController ? "accounts" : "dashboard"
   end
 end

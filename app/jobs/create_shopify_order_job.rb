@@ -26,12 +26,21 @@ class CreateShopifyOrderJob < ApplicationJob
 
     # Create line items
     Array(order_data[:line_items]).each do |item|
+      # Find the matching variant by SKU
+      variant = Variant.where(sku: item[:sku]).order(:created_at).first
+      # Find the oldest available inventory unit for this variant
+      inventory_unit = variant&.inventory_units&.in_stock&.order(:created_at)&.first
+      # Reserve the inventory unit if found
+      if inventory_unit
+        inventory_unit.update!(status: :reserved)
+      end
       order.order_line_items.create!(
         external_line_item_id: item[:id].to_s,
         sku: item[:sku],
         title: item[:title],
         quantity: item[:quantity],
-        price: item[:price]
+        price: item[:price],
+        inventory_unit: inventory_unit
       )
     end
   end

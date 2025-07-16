@@ -14,6 +14,10 @@ class ExternalAccount < ApplicationRecord
     service_name == "shopify"
   end
 
+  def title
+    service_name.titleize
+  end
+
   private
 
   def register_shopify_webhooks
