@@ -1,0 +1,135 @@
+<section class="section is-flex is-flex-direction-column" style="height: 100%">
+  <div class="container is-max-tablet">
+    
+    <div class="level">
+      <div class="level-left">
+        <div class="level-item">
+          <h1 class="title"><%= @product.name %></h1>
+        </div>
+      </div>
+      
+      <div class="level-right">
+        <div class="level-item">
+          <%= link_to edit_account_product_path(current_account, @product), class: "button is-primary" do %>
+            <span class="icon-text">
+              <span class="icon">
+                <i class="fas fa-edit"></i>
+              </span>
+              <span>Edit Product</span>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="column">
+        <div class="card">
+          <div class="card-header">
+            <p class="card-header-title">Product Details</p>
+          </div>
+          <div class="card-content">
+            <div class="content">
+              <% if @product.description.present? %>
+                <p><strong>Description:</strong></p>
+                <p><%= @product.description %></p>
+              <% else %>
+                <p class="has-text-grey-light">No description provided</p>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <% if @product.product_options.any? %>
+          <div class="card mt-4">
+            <div class="card-header">
+              <p class="card-header-title">Options</p>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <% @product.product_options.each do |option| %>
+                  <div class="field">
+                    <label class="label"><%= option.name %></label>
+                    <div class="tags">
+                      <% option.product_option_values.each do |value| %>
+                        <span class="tag"><%= value.value %></span>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @product.variants.any? %>
+          <div class="card mt-4">
+            <div class="card-header">
+              <p class="card-header-title">Variants</p>
+            </div>
+            <div class="card-content">
+              <div class="table-container">
+                <table class="table is-fullwidth">
+                  <thead>
+                    <tr>
+                      <th>SKU</th>
+                      <th>Price</th>
+                      <% @product.product_options.each do |option| %>
+                        <th><%= option.name %></th>
+                      <% end %>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @product.variants.each do |variant| %>
+                      <tr>
+                        <td><%= variant.sku %></td>
+                        <td>$<%= variant.price %></td>
+                        <% @product.product_options.each do |option| %>
+                          <td>
+                            <% vov = variant.variant_option_values.find { |v| v.product_option_id == option.id } %>
+                            <%= vov&.product_option_value&.value %>
+                          </td>
+                        <% end %>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @product.external_account_products.any? %>
+          <div class="card mt-4">
+            <div class="card-header">
+              <p class="card-header-title">External Accounts</p>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <% @product.external_account_products.each do |eap| %>
+                  <div class="level">
+                    <div class="level-left">
+                      <div class="level-item">
+                        <span class="icon-text">
+                          <span class="icon">
+                            <i class="fab fa-shopify"></i>
+                          </span>
+                          <span><%= eap.external_account.service_name.titleize %></span>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="level-right">
+                      <div class="level-item">
+                        <span class="tag is-success">Connected</span>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

@@ -5,12 +5,13 @@ class ExternalAccountProduct < ApplicationRecord
   enum :status, [ :active, :draft ]
 
   after_save :sync_to_external_account
-  after_destroy :remove_from_external_account
+  before_destroy :remove_from_external_account
 
   def sync_to_external_account
     shopify = Shopify.new(
       shop_domain: external_account.domain,
-      access_token: external_account.api_token
+      access_token: external_account.api_token,
+      external_account: external_account
     )
 
     payload = {
@@ -31,7 +32,8 @@ class ExternalAccountProduct < ApplicationRecord
     if external_id.present?
       shopify = Shopify.new(
         shop_domain: external_account.domain,
-        access_token: external_account.api_token
+        access_token: external_account.api_token,
+        external_account: external_account
       )
       shopify.remove_product(external_id)
     end
@@ -72,6 +74,10 @@ class ExternalAccountProduct < ApplicationRecord
         vov = variant.variant_option_values.find { |v| v.product_option_id == option.id }
         vov&.product_option_value&.value
       end
+      
+      # Skip variants that have any nil option values
+      next if option_values.any?(&:nil?)
+      
       variant_hash = {
         id: variant.external_id_for(self.id),
         sku: variant.sku,
@@ -81,6 +87,6 @@ class ExternalAccountProduct < ApplicationRecord
         variant_hash["option#{idx+1}"] = val
       end
       variant_hash
-    end
+    end.compact
   end
 end

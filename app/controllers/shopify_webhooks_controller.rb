@@ -17,6 +17,8 @@ class ShopifyWebhooksController < ApplicationController
 
   def valid_shopify_hmac?(request)
     hmac_header = request.headers["X-Shopify-Hmac-Sha256"]
+    return false if hmac_header.nil?
+    
     body = request.raw_post
     secret = Rails.application.credentials.shopify[:client_secret]
 

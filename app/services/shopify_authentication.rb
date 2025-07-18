@@ -23,10 +23,17 @@ class ShopifyAuthentication
   end
 
   def create_external_account_for(user)
-    access_token = JSON.parse(request_access_token.body)["access_token"]
+    token_response = JSON.parse(request_access_token.body)
+    access_token = token_response["access_token"]
+    refresh_token = token_response["refresh_token"]
 
     user.accounts.first.external_accounts.find_by(service_name: "shopify")&.destroy
-    user.accounts.first.external_accounts.create(service_name: "shopify", api_token: access_token, domain: @params["shop"])
+    user.accounts.first.external_accounts.create(
+      service_name: "shopify", 
+      api_token: access_token, 
+      refresh_token: refresh_token,
+      domain: @params["shop"]
+    )
   end
 
   private
@@ -47,8 +54,10 @@ class ShopifyAuthentication
   end
 
   def generate_state(user)
+    return nil if user.nil?
+    
     state = SecureRandom.hex(16)
-    user&.update(state_nonce: state)
+    user.update(state_nonce: state)
     payload = {
       user_id: user.id,
       current_account_id: user.accounts.first.id,

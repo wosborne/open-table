@@ -8,17 +8,26 @@ class CreateShopifyOrderJob < ApplicationJob
 
     order_data = webhook.with_indifferent_access
 
+    # Validate required fields before processing
+    external_id = order_data[:id].to_s
+    return if external_id.blank?
+
     # Create or update the order
     order = Order.find_or_initialize_by(
       external_account: external_account,
-      external_id: order_data[:id].to_s
+      external_id: external_id
     )
+    
+    # Set order attributes with defaults for required fields
     order.name = order_data[:name]
-    order.currency = order_data[:currency]
-    order.total_price = order_data[:total_price]
-    order.external_created_at = order_data[:created_at]
+    order.currency = order_data[:currency] || 'USD'
+    order.total_price = order_data[:total_price] || 0.0
+    order.external_created_at = order_data[:created_at] || Time.current
     order.financial_status = order_data[:financial_status]
     order.fulfillment_status = order_data[:fulfillment_status]
+    
+    # Only save if the order is valid
+    return unless order.valid?
     order.save!
 
     # Remove existing line items to avoid duplicates

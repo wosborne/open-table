@@ -24,7 +24,7 @@
         </div>
         <div class="content mt-3">
           <% if current_account&.shopify_account&.persisted?  %>
-            <%= link_to edit_account_path(current_account), class: "button is-danger is-small" do %>
+            <%= button_to account_external_account_path(current_account, current_account.shopify_account), method: :delete, data: { turbo_confirm: "Are you sure you want to disconnect your Shopify account?" }, class: "button is-danger is-small" do %>
               <span class="icon">
                 <i class="fas fa-trash"></i>
               </span>

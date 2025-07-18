@@ -21,9 +21,12 @@ Rails.application.routes.draw do
 
 
   scope "/:account_slug", as: :account do
-    resources :external_accounts, only: %w[new create]
+    resources :external_accounts, only: %w[new create destroy]
 
     resources :products do
+      member do
+        patch :regenerate_skus
+      end
       resources :external_account_products
     end
 

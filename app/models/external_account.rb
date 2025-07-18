@@ -2,13 +2,15 @@ class ExternalAccount < ApplicationRecord
   SERVICE_NAMES = %w[shopify].freeze
   belongs_to :account
 
-  has_many :external_account_products, dependent: :destroy
+  has_many :external_account_products
 
   validates :service_name, presence: true, uniqueness: { scope: :account_id }
   validates :service_name, inclusion: { in: SERVICE_NAMES }
   validates :api_token, presence: true
 
   after_create :register_shopify_webhooks, if: :shopify?
+
+  before_destroy :destroy_external_account_products
 
   def shopify?
     service_name == "shopify"
@@ -19,6 +21,10 @@ class ExternalAccount < ApplicationRecord
   end
 
   private
+
+  def destroy_external_account_products
+    external_account_products.each(&:destroy)
+  end
 
   def register_shopify_webhooks
     session = ShopifyAPI::Auth::Session.new(

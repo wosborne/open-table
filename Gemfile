@@ -83,3 +83,5 @@ gem "jwt", "~> 3.1"
 gem "rest-client", "~> 2.1"
 
 gem "foreman", "~> 0.88.1"
+
+gem "paper_trail"

@@ -1,5 +1,5 @@
 class ProductsController < AccountsController
-  before_action :set_product, only: [ :edit, :update ]
+  before_action :set_product, only: [ :show, :edit, :update, :regenerate_skus ]
 
   def index
     @products = current_account.products
@@ -20,6 +20,9 @@ class ProductsController < AccountsController
     end
   end
 
+  def show
+  end
+
   def edit
     @product.generate_variants_from_options
     (3 - @product.product_options.size).times { @product.product_options.build }
@@ -32,6 +35,17 @@ class ProductsController < AccountsController
       @product.generate_variants_from_options
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def regenerate_skus
+    affected_variants = @product.variants_affected_by_option_changes
+    
+    affected_variants.each do |variant_info|
+      variant_info[:variant].regenerate_sku!
+    end
+    
+    redirect_to edit_account_product_path(current_account, @product), 
+                notice: "#{affected_variants.count} variant SKUs were regenerated."
   end
 
   helper_method :current_product

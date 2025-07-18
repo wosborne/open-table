@@ -32,6 +32,12 @@ class ExternalAccountsController < AccountsController
     end
   end
 
+  def destroy
+    @external_account = current_account.external_accounts.find(params[:id])
+    @external_account.destroy
+    redirect_to edit_account_path(current_account), notice: "External account disconnected successfully!"
+  end
+
   private
 
   def external_account_params

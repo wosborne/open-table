@@ -1,7 +1,8 @@
 FactoryBot.define do
   factory :inventory_unit do
-    variant { nil }
-    serial_number { "MyString" }
-    status { 1 }
+    account { variant&.product&.account || association(:account) }
+    variant
+    serial_number { "INV-#{SecureRandom.hex(4).upcase}" }
+    status { :in_stock }
   end
 end

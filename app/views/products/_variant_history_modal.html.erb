@@ -1,0 +1,48 @@
+<div class="modal" id="variant-history-<%= variant.id %>">
+  <div class="modal-background" data-action="click->modal#close"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">SKU History: <%= variant.sku %></p>
+      <button type="button" class="delete" aria-label="close" data-action="click->modal#close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="content">
+        <h5>Current Version: <%= variant.sku_version_number %></h5>
+        
+        <% if variant.versions.any? %>
+          <table class="table is-fullwidth">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>SKU</th>
+                <th>Changed At</th>
+                <th>Changed By</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="has-background-success-light">
+                <td><strong><%= variant.sku_version_number %> (Current)</strong></td>
+                <td><code><%= variant.sku %></code></td>
+                <td><%= variant.updated_at.strftime("%b %d, %Y at %I:%M %p") %></td>
+                <td>Current</td>
+              </tr>
+              <% variant.versions.reorder(created_at: :desc).each_with_index do |version, index| %>
+                <% previous_variant = version.reify %>
+                <% if previous_variant %>
+                  <tr>
+                    <td><%= variant.sku_version_number - index - 1 %></td>
+                    <td><code><%= previous_variant.sku %></code></td>
+                    <td><%= version.created_at.strftime("%b %d, %Y at %I:%M %p") %></td>
+                    <td><%= version.whodunnit || "System" %></td>
+                  </tr>
+                <% end %>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p class="has-text-grey">No version history available - this is the original SKU.</p>
+        <% end %>
+      </div>
+    </section>
+  </div>
+</div>

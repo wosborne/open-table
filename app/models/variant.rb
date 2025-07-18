@@ -1,4 +1,6 @@
 class Variant < ApplicationRecord
+  has_paper_trail only: [:sku, :price]
+
   belongs_to :product
   has_many :variant_option_values, dependent: :destroy
   has_many :product_options, through: :variant_option_values
@@ -39,10 +41,36 @@ class Variant < ApplicationRecord
     sku
   end
 
+  def regenerate_sku!
+    @allow_sku_change = true
+    update!(sku: suggested_sku)
+    @allow_sku_change = false
+  end
+
+  def sku_version_number
+    versions.count + 1
+  end
+
+  def sku_history
+    versions.reorder(:created_at).map do |version|
+      {
+        version: version.reify&.sku || sku,
+        changed_at: version.created_at,
+        version_number: version.index + 1
+      }
+    end
+  end
+
+  def previous_sku
+    # Get the most recent version that represents the state before the last change
+    last_version = versions.order(:created_at).last
+    last_version&.reify&.sku
+  end
+
   private
 
   def prevent_sku_change
-    if sku_changed? && persisted?
+    if sku_changed? && persisted? && !@allow_sku_change
       errors.add(:sku, "cannot be changed after save")
       throw :abort
     end

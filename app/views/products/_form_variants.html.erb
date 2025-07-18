@@ -2,14 +2,36 @@
 <% if @product.new_record? %>
   <p class="help is-warning">You must save the product before you can create variants.</p>
 <% else %>
-  <p class="help is-info">
-    SKUs cannot be changed after they are saved.
-    <% unsaved_count = @product.variants.select { |v| v.new_record? }.size %>
-    <% if unsaved_count > 0 %>
-      <br/>
+  <% affected_variants = @product.variants_affected_by_option_changes %>
+  <% if affected_variants.any? %>
+    <div class="notification is-info" id="sku-warning">
+      <div class="content">
+        <p><strong><%= affected_variants.count %> variants</strong> have had changes to their options, would you like to regenerate their SKUs?</p>
+        <details class="mt-2">
+          <summary class="has-text-link is-clickable">Show changes</summary>
+          <ul class="mt-2">
+            <% affected_variants.each do |variant_info| %>
+              <li><code><%= variant_info[:current_sku] %></code> → <code><%= variant_info[:suggested_sku] %></code></li>
+            <% end %>
+          </ul>
+        </details>
+        <%= link_to "Regenerate SKUs", regenerate_skus_account_product_path(current_account, @product), 
+              method: :patch, 
+              class: "button is-warning is-small mt-3",
+              data: { 
+                turbo_method: "patch",
+                turbo_confirm: "Are you sure you want to regenerate #{affected_variants.count} variant SKUs? This will update the SKUs permanently." 
+              } %>
+      </div>
+    </div>
+  <% end %>
+  
+  <% unsaved_count = @product.variants.select { |v| v.new_record? }.size %>
+  <% if unsaved_count > 0 %>
+    <p class="help is-info">
       <strong><%= unsaved_count %> variant<%= 's' if unsaved_count > 1 %> not yet saved.</strong>
-    <% end %>
-  </p>
+    </p>
+  <% end %>
   <table class="table is-fullwidth is-hoverable" data-controller="variant-sort" data-variant-sort-variant-rows-value="tbody">
     <thead>
       <tr>
@@ -28,12 +50,13 @@
         <th data-action="click->variant-sort#sort" data-variant-sort-column-value="stock" class="is-clickable">
           Stock <span data-variant-sort-target="symbol" data-column="stock" class="icon"><i></i></span>
         </th>
+        <th>History</th>
       </tr>
     </thead>
     <tbody>
       <% if @product.variants.empty? %>
         <tr>
-          <td colspan="<%= 2 + @product.product_options.size %>">
+          <td colspan="<%= 3 + @product.product_options.size %>">
             <span class="has-text-grey">No variants yet. Add options above to generate variants.</span>
           </td>
         </tr>
@@ -49,7 +72,23 @@
               <% end %>
             <% end %>
             <td>
-              <%= variant_form.text_field :sku, class: "input is-small", value: (variant_form.object.sku || variant_form.object.suggested_sku), disabled: variant_form.object.sku.present? %>
+              <% current_sku = variant_form.object.sku || variant_form.object.suggested_sku %>
+              <% suggested_sku = variant_form.object.suggested_sku %>
+              <% sku_changed = current_sku != suggested_sku && variant_form.object.persisted? %>
+              <% version_info = variant_form.object.persisted? ? "Version #{variant_form.object.sku_version_number}" : "New variant" %>
+              <% previous_sku = variant_form.object.previous_sku %>
+              <% tooltip_text = if sku_changed
+                                  "Current: #{current_sku} (#{version_info})\nSuggested: #{suggested_sku}"
+                                elsif previous_sku
+                                  "Current: #{current_sku} (#{version_info})\nPrevious: #{previous_sku}"
+                                else
+                                  "#{current_sku} (#{version_info})"
+                                end %>
+              <%= variant_form.text_field :sku, 
+                    class: "input is-small #{'has-background-warning-light' if sku_changed}", 
+                    value: current_sku, 
+                    disabled: variant_form.object.sku.present?,
+                    title: tooltip_text %>
             </td>
             <% @product.product_options.each do |option| %>
               <% vov = variant_form.object.variant_option_values.find { |v| v.product_option_id == option.id } %>
@@ -64,9 +103,34 @@
             <td>
               <%= variant_form.object.inventory_count %>
             </td>
+            <td>
+              <% if variant_form.object.persisted? %>
+                <button type="button" class="button is-small is-info is-outlined" onclick="document.getElementById('variant-history-<%= variant_form.object.id %>').classList.add('is-active')">
+                  <span class="icon is-small">
+                    <i class="fas fa-history"></i>
+                  </span>
+                </button>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       <% end %>
     </tbody>
   </table>
-<% end %> 
+  
+  <!-- Render modals for each variant -->
+  <% @product.variants.each do |variant| %>
+    <%= render "variant_history_modal", variant: variant if variant.persisted? %>
+  <% end %>
+<% end %>
+
+<script>
+// Simple modal close functionality
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-background') || 
+      e.target.classList.contains('delete') || 
+      e.target.closest('.delete')) {
+    e.target.closest('.modal').classList.remove('is-active');
+  }
+});
+</script> 
