@@ -59,6 +59,15 @@ The application retains its original flexible table system for users who need cu
 - SKU versioning and history tracking
 - Product option management (up to 3 options per product)
 
+#### SKU Versioning & History Tracking
+- **PaperTrail Integration**: Complete audit trail for all SKU and price changes
+- **Smart Change Detection**: UI warnings when product option changes would affect existing SKUs
+- **Version History**: Track SKU evolution with `sku_version_number`, `sku_history`, and `previous_sku` methods
+- **Safe SKU Regeneration**: `regenerate_sku!` method for controlled SKU updates
+- **User-Friendly Warnings**: Visual indicators in variant forms when changes will impact SKUs
+- **History Modals**: Detailed SKU change history accessible via UI
+- **Change Prevention**: Prevents accidental SKU modifications while allowing intentional regeneration
+
 ### Marketplace Integration
 - Shopify OAuth integration with token refresh
 - Automatic product publishing to external stores
