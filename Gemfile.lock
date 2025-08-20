@@ -128,6 +128,8 @@ GEM
     domain_name (0.6.20240107)
     dotenv (3.1.7)
     drb (2.2.1)
+    ebay-ruby (0.4.1)
+      http (>= 4.0, < 6.0)
     ed25519 (1.3.0)
     erubi (1.13.1)
     et-orbi (1.2.11)
@@ -139,6 +141,23 @@ GEM
       railties (>= 5.0.0)
     faker (3.5.1)
       i18n (>= 1.8.11, < 2)
+    faraday (2.13.4)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-net_http (3.4.1)
+      net-http (>= 0.5.0)
+    ffi (1.17.2-aarch64-linux-gnu)
+    ffi (1.17.2-aarch64-linux-musl)
+    ffi (1.17.2-arm-linux-gnu)
+    ffi (1.17.2-arm-linux-musl)
+    ffi (1.17.2-arm64-darwin)
+    ffi (1.17.2-x86_64-darwin)
+    ffi (1.17.2-x86_64-linux-gnu)
+    ffi (1.17.2-x86_64-linux-musl)
+    ffi-compiler (1.3.2)
+      ffi (>= 1.15.5)
+      rake
     foreman (0.88.1)
     friendly_id (5.5.1)
       activerecord (>= 4.0.0)
@@ -148,9 +167,16 @@ GEM
     globalid (1.2.1)
       activesupport (>= 6.1)
     hash_diff (1.1.1)
+    hashie (5.0.0)
+    http (5.3.1)
+      addressable (~> 2.8)
+      http-cookie (~> 1.0)
+      http-form_data (~> 2.2)
+      llhttp-ffi (~> 0.5.0)
     http-accept (1.7.0)
     http-cookie (1.0.8)
       domain_name (~> 0.5)
+    http-form_data (2.3.0)
     httparty (0.23.1)
       csv
       mini_mime (>= 1.0.0)
@@ -189,6 +215,9 @@ GEM
       childprocess (~> 5.0)
       logger (~> 1.6)
     lint_roller (1.1.0)
+    llhttp-ffi (0.5.1)
+      ffi-compiler (~> 1.0)
+      rake (~> 13.0)
     logger (1.7.0)
     loofah (2.24.0)
       crass (~> 1.0.2)
@@ -210,6 +239,8 @@ GEM
     msgpack (1.8.0)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
+    net-http (0.6.0)
+      uri
     net-imap (0.5.6)
       date
       net-protocol
@@ -242,9 +273,30 @@ GEM
       racc (~> 1.4)
     nokogiri (1.18.6-x86_64-linux-musl)
       racc (~> 1.4)
+    oauth2 (2.0.12)
+      faraday (>= 0.17.3, < 4.0)
+      jwt (>= 1.0, < 4.0)
+      logger (~> 1.2)
+      multi_xml (~> 0.5)
+      rack (>= 1.2, < 4)
+      snaky_hash (~> 2.0, >= 2.0.3)
+      version_gem (>= 1.1.8, < 3)
     oj (3.16.11)
       bigdecimal (>= 3.0)
       ostruct (>= 0.2)
+    omniauth (2.1.3)
+      hashie (>= 3.4.6)
+      rack (>= 2.2.3)
+      rack-protection
+    omniauth-ebay-oauth (1.0.1)
+      omniauth (>= 1.5, < 3)
+      omniauth-oauth2 (~> 1.4)
+    omniauth-oauth2 (1.8.0)
+      oauth2 (>= 1.4, < 3)
+      omniauth (~> 2.0)
+    omniauth-rails_csrf_protection (1.0.2)
+      actionpack (>= 4.2)
+      omniauth (~> 2.0)
     openssl (3.3.0)
     orm_adapter (0.5.0)
     ostruct (0.6.1)
@@ -279,6 +331,10 @@ GEM
     raabro (1.4.0)
     racc (1.8.1)
     rack (3.1.12)
+    rack-protection (4.1.1)
+      base64 (>= 0.1.0)
+      logger (>= 1.6.0)
+      rack (>= 3.0.0, < 4)
     rack-session (2.1.0)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -406,6 +462,9 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.1)
     simplecov_json_formatter (0.1.4)
+    snaky_hash (2.0.3)
+      hashie (>= 0.1.0, < 6)
+      version_gem (>= 1.1.8, < 3)
     solid_cable (3.0.7)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -450,6 +509,7 @@ GEM
     unicode-emoji (4.0.4)
     uri (1.0.3)
     useragent (0.16.11)
+    version_gem (1.1.8)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.1)
@@ -486,6 +546,7 @@ DEPENDENCIES
   debug
   dentaku
   devise
+  ebay-ruby
   factory_bot_rails
   faker
   foreman (~> 0.88.1)
@@ -495,6 +556,8 @@ DEPENDENCIES
   jwt (~> 3.1)
   kamal
   launchy
+  omniauth-ebay-oauth
+  omniauth-rails_csrf_protection
   paper_trail
   pg (~> 1.1)
   propshaft

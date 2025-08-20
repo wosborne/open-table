@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-RSpec.describe Shopify, type: :model do
+RSpec.describe ShopifyService, type: :service do
   let(:shop_domain) { "test-shop.myshopify.com" }
   let(:access_token) { "test_access_token" }
   let(:external_account) { create(:external_account, service_name: "shopify", domain: shop_domain, api_token: access_token) }
-  let(:shopify_service) { Shopify.new(shop_domain: shop_domain, access_token: access_token, external_account: external_account) }
+  let(:shopify_service) { ShopifyService.new(external_account: external_account, shop_domain: shop_domain, access_token: access_token) }
   
   let(:mock_session) { instance_double(ShopifyAPI::Clients::Rest::Admin) }
   let(:success_response) { double(code: 201, body: { "product" => { "id" => 123, "title" => "Test Product" } }) }
@@ -27,13 +27,13 @@ RSpec.describe Shopify, type: :model do
         is_private: false
       )
       
-      Shopify.new(shop_domain: shop_domain, access_token: access_token)
+      ShopifyService.new(external_account: external_account, shop_domain: shop_domain, access_token: access_token)
     end
 
     it 'creates a REST admin client' do
       expect(ShopifyAPI::Clients::Rest::Admin).to receive(:new)
       
-      Shopify.new(shop_domain: shop_domain, access_token: access_token)
+      ShopifyService.new(external_account: external_account, shop_domain: shop_domain, access_token: access_token)
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe Shopify, type: :model do
 
     it 'can call refresh_access_token when needed' do
       # Test that the private method exists and can be called
-      expect(shopify_service.private_methods).to include(:refresh_access_token)
+      expect(shopify_service.respond_to?(:refresh_access_token, true)).to be true
       
       # Test the actual method works with mocked external account
       allow(external_account).to receive(:refresh_token).and_return('test_refresh_token')
@@ -205,7 +205,7 @@ RSpec.describe Shopify, type: :model do
     end
 
     it 'has the with_token_refresh method available' do
-      expect(shopify_service.private_methods).to include(:with_token_refresh)
+      expect(shopify_service.respond_to?(:with_token_refresh, true)).to be true
     end
   end
 end

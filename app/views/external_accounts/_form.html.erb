@@ -4,9 +4,9 @@
     <div class="control">
       <div class="select">
         <%= f.select :service_name, 
-            options_for_select([['Shopify', 'shopify']], @external_account.service_name),
+            options_for_select([['Shopify', 'shopify'], ['eBay', 'ebay']], @external_account.service_name || params[:service]),
             { prompt: 'Select a service' },
-            { class: 'input' } %>
+            { id: 'service_select' } %>
       </div>
     </div>
     <% @external_account.errors.full_messages_for(:service_name)&.each do |error| %>
@@ -14,14 +14,14 @@
     <% end %>
   </div>
 
-  <div class="field">
+  <div class="field" id="domain_field" style="display: none;">
     <%= f.label :domain, class: "label" %>
     <div class="control">
       <%= f.text_field :domain, 
           placeholder: "your-store.myshopify.com",
           class: "input" %>
     </div>
-    <p class="help">Enter your Shopify store domain (e.g., your-store.myshopify.com)</p>
+    <p class="help" id="domain_help">Enter your Shopify store domain (e.g., your-store.myshopify.com)</p>
     <% @external_account.errors.full_messages_for(:domain)&.each do |error| %>
       <p class="help is-danger"><%= error %></p>
     <% end %>
@@ -30,4 +30,30 @@
   <div class="is-flex is-flex-direction-column is-align-items-center">
     <%= f.submit "Connect Account", class: "button is-primary" %>
   </div>
-<% end %> 
+<% end %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const serviceSelect = document.getElementById('service_select');
+  const domainField = document.getElementById('domain_field');
+  const domainHelp = document.getElementById('domain_help');
+
+  function toggleDomainField() {
+    const selectedService = serviceSelect.value;
+    
+    if (selectedService === 'shopify') {
+      domainField.style.display = 'block';
+      domainHelp.textContent = 'Enter your Shopify store domain (e.g., your-store.myshopify.com)';
+    } else if (selectedService === 'ebay') {
+      domainField.style.display = 'none';
+    } else {
+      domainField.style.display = 'none';
+    }
+  }
+
+  serviceSelect.addEventListener('change', toggleDomainField);
+  
+  // Run once on page load to handle pre-selected values
+  toggleDomainField();
+});
+</script>

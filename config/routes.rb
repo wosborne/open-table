@@ -64,4 +64,7 @@ Rails.application.routes.draw do
   end
 
   get "/external_accounts/shopify_callback", to: "external_accounts#shopify_callback"
+  get "/auth/ebay_oauth", to: "external_accounts#ebay_auth"
+  get "/auth/ebay_oauth/callback", to: "external_accounts#ebay_callback"
+  match "/ebay/marketplace_notifications", to: "ebay_notifications#marketplace_notifications", via: [:get, :post]
 end

@@ -85,3 +85,7 @@ gem "rest-client", "~> 2.1"
 gem "foreman", "~> 0.88.1"
 
 gem "paper_trail"
+
+gem "ebay-ruby"
+gem "omniauth-ebay-oauth"
+gem "omniauth-rails_csrf_protection"

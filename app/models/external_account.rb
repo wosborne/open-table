@@ -1,5 +1,5 @@
 class ExternalAccount < ApplicationRecord
-  SERVICE_NAMES = %w[shopify].freeze
+  SERVICE_NAMES = %w[shopify ebay].freeze
   belongs_to :account
 
   has_many :external_account_products
@@ -14,6 +14,10 @@ class ExternalAccount < ApplicationRecord
 
   def shopify?
     service_name == "shopify"
+  end
+
+  def ebay?
+    service_name == "ebay"
   end
 
   def title

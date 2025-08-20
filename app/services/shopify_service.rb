@@ -1,9 +1,9 @@
 # app/services/shopify_service.rb
-class Shopify
-  def initialize(shop_domain:, access_token:, external_account: nil)
-    @shop_domain = shop_domain
-    @access_token = access_token
-    @external_account = external_account
+class ShopifyService < BaseExternalService
+  def initialize(external_account:, shop_domain: nil, access_token: nil)
+    super(external_account: external_account)
+    @shop_domain = shop_domain || external_account.domain
+    @access_token = access_token || external_account.api_token
     @session = setup_session
   end
 
@@ -51,7 +51,12 @@ class Shopify
     end
   end
 
-  private
+  protected
+
+  def token_expired?(error)
+    error.is_a?(ShopifyAPI::Errors::HttpResponseError) && 
+      error.message.include?("Invalid API key or access token")
+  end
 
   def refresh_access_token
     return unless @external_account&.refresh_token
@@ -77,17 +82,7 @@ class Shopify
     end
   end
 
-  def with_token_refresh(&block)
-    begin
-      block.call
-    rescue ShopifyAPI::Errors::HttpResponseError => e
-      if e.message.include?("Invalid API key or access token") && refresh_access_token
-        block.call
-      else
-        raise e
-      end
-    end
-  end
+  private
 
   def setup_session
     ShopifyAPI::Context.setup(

@@ -6,7 +6,7 @@ RSpec.describe ExternalAccountProduct, type: :model do
   let(:product) { create(:product_with_options, account: account) }
   let(:external_account_product) { create(:external_account_product, external_account: external_account, product: product) }
 
-  let(:mock_shopify_service) { instance_double(Shopify) }
+  let(:mock_shopify_service) { instance_double(ShopifyService) }
   let(:shopify_response) do
     {
       "id" => "12345",
@@ -24,7 +24,7 @@ RSpec.describe ExternalAccountProduct, type: :model do
 
   before do
     # Mock the Shopify service creation
-    allow(Shopify).to receive(:new).and_return(mock_shopify_service)
+    allow(ExternalServiceFactory).to receive(:for).and_return(mock_shopify_service)
     allow(mock_shopify_service).to receive(:publish_product).and_return(shopify_response)
     
     # Mock external account webhook registration to prevent API calls
@@ -54,11 +54,7 @@ RSpec.describe ExternalAccountProduct, type: :model do
 
   describe '#sync_to_external_account' do
     it 'creates Shopify service with correct parameters' do
-      expect(Shopify).to receive(:new).with(
-        shop_domain: external_account.domain,
-        access_token: external_account.api_token,
-        external_account: external_account
-      ).and_return(mock_shopify_service)
+      expect(ExternalServiceFactory).to receive(:for).with(external_account).and_return(mock_shopify_service)
 
       external_account_product.sync_to_external_account
     end

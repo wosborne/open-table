@@ -8,38 +8,64 @@ class ExternalAccountProduct < ApplicationRecord
   before_destroy :remove_from_external_account
 
   def sync_to_external_account
-    shopify = Shopify.new(
-      shop_domain: external_account.domain,
-      access_token: external_account.api_token,
-      external_account: external_account
-    )
+    service = ExternalServiceFactory.for(external_account)
 
-    payload = {
-      title: product.name,
-      variants: shopify_variants,
-      options: shopify_options
-    }
+    payload = build_product_payload
     payload[:id] = self.external_id if self.external_id.present?
 
-    shopify_product = shopify.publish_product(payload)
-    if self.external_id.blank? && shopify_product && shopify_product["id"]
-      self.update_column(:external_id, shopify_product["id"])
+    external_product = service.publish_product(payload)
+    if self.external_id.blank? && external_product && external_product_id(external_product)
+      self.update_column(:external_id, external_product_id(external_product))
     end
-    sync_shopify_ids(shopify_product)
+    sync_external_ids(external_product)
   end
 
   def remove_from_external_account
     if external_id.present?
-      shopify = Shopify.new(
-        shop_domain: external_account.domain,
-        access_token: external_account.api_token,
-        external_account: external_account
-      )
-      shopify.remove_product(external_id)
+      service = ExternalServiceFactory.for(external_account)
+      service.remove_product(external_id)
     end
   end
 
   private
+
+  def build_product_payload
+    case external_account.service_name
+    when 'shopify'
+      {
+        title: product.name,
+        variants: shopify_variants,
+        options: shopify_options
+      }
+    when 'ebay'
+      {
+        title: product.name,
+        description: product.description || product.name,
+        price: product.variants.first&.price || "0.99",
+        sku: product.variants.first&.sku
+      }
+    else
+      raise ArgumentError, "Unknown service: #{external_account.service_name}"
+    end
+  end
+
+  def external_product_id(external_product)
+    case external_account.service_name
+    when 'shopify'
+      external_product["id"]
+    when 'ebay'
+      external_product["ItemID"]
+    end
+  end
+
+  def sync_external_ids(external_product)
+    case external_account.service_name
+    when 'shopify'
+      sync_shopify_ids(external_product)
+    when 'ebay'
+      sync_ebay_ids(external_product)
+    end
+  end
 
   def sync_shopify_ids(shopify_product)
     # Sync options
@@ -56,6 +82,11 @@ class ExternalAccountProduct < ApplicationRecord
         local_variant&.set_external_id_for(self.id, shopify_variant["id"])
       end
     end
+  end
+
+  def sync_ebay_ids(ebay_product)
+    # TODO: Implement eBay ID syncing if needed
+    # eBay structure is different from Shopify
   end
 
   def shopify_options
