@@ -156,3 +156,18 @@ The application is pivoting to prioritize **eBay integration** as the primary ma
 - `app/controllers/tables_controller.rb` - Custom table management
 
 This application successfully bridges the gap between a flexible data management platform and a specialized inventory management system, positioning it well for the secondhand e-commerce market while maintaining the flexibility that power users need for custom workflows.
+
+## Important Development Guidelines
+
+### Method Visibility in Services and Models
+
+**CRITICAL**: When creating methods in service classes or models that need to be called from controllers or other classes, ensure they are defined as PUBLIC methods (above the `private` declaration). 
+
+**Common Mistake**: Adding methods after the `private` keyword and then trying to call them from controllers, which results in:
+```
+private method 'method_name' called for an instance of ServiceClass
+```
+
+**Best Practice**: 
+- Place all methods that will be called from outside the class BEFORE any `private` declaration
+- If a method should only be used internally, keep it private and don't call it from other classes
