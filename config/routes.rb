@@ -18,10 +18,18 @@ Rails.application.routes.draw do
   get "/marketplace", to: "marketplace#index"
 
   post "/webhooks/shopify", to: "shopify_webhooks#receive"
+  match "/webhooks/ebay/marketplace_account_deletion", to: "ebay_webhooks#marketplace_account_deletion", via: [:get, :post]
 
 
   scope "/:account_slug", as: :account do
-    resources :external_accounts, only: %w[new create destroy]
+    resources :external_accounts, only: %w[new create destroy show] do
+      member do
+        post :opt_into_business_policies
+        post :create_fulfillment_policy
+        post :create_custom_fulfillment_policy
+        post :create_inventory_location
+      end
+    end
 
     resources :products do
       member do
@@ -64,7 +72,6 @@ Rails.application.routes.draw do
   end
 
   get "/external_accounts/shopify_callback", to: "external_accounts#shopify_callback"
-  get "/auth/ebay_oauth", to: "external_accounts#ebay_auth"
-  get "/auth/ebay_oauth/callback", to: "external_accounts#ebay_callback"
+  get "/external_accounts/ebay_callback", to: "external_accounts#ebay_callback"
   match "/ebay/marketplace_notifications", to: "ebay_notifications#marketplace_notifications", via: [:get, :post]
 end

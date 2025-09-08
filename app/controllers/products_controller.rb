@@ -21,6 +21,12 @@ class ProductsController < AccountsController
   end
 
   def show
+    # Check eBay requirements if eBay account exists
+    if current_account.ebay_account&.persisted?
+      @ebay_service = EbayService.new(external_account: current_account.ebay_account)
+      @ebay_requirements_met = @ebay_service.can_create_product?(@product)
+      @ebay_validation_errors = @ebay_service.validate_product_requirements(@product) unless @ebay_requirements_met
+    end
   end
 
   def edit
@@ -57,7 +63,7 @@ class ProductsController < AccountsController
 
   def product_params
     params.require(:product).permit(
-      :name, :description,
+      :name, :description, :brand,
       product_options_attributes: [
         :id, :name, :_destroy,
         product_option_values_attributes: [ :id, :value, :_destroy ]
@@ -69,6 +75,6 @@ class ProductsController < AccountsController
   end
 
   def set_product
-    @product = current_account.products.find(params[:id])
+    @product = current_product
   end
 end

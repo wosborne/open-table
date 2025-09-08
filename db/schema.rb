@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_21_091849) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_27_151348) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_21_091849) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "last_sync_error"
+    t.datetime "last_sync_attempted_at"
+    t.string "ebay_category_id"
+    t.string "ebay_category_name"
+    t.json "ebay_field_mappings"
+    t.json "ebay_custom_values"
     t.index ["external_account_id"], name: "index_external_account_products_on_external_account_id"
     t.index ["product_id"], name: "index_external_account_products_on_product_id"
   end
@@ -79,6 +85,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_21_091849) do
     t.datetime "updated_at", null: false
     t.string "domain"
     t.string "refresh_token"
+    t.string "ebay_user_id"
+    t.string "ebay_username"
+    t.string "ebay_display_name"
+    t.string "ebay_email"
     t.index ["account_id"], name: "index_external_accounts_on_account_id"
   end
 
@@ -189,6 +199,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_21_091849) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "brand"
     t.index ["account_id"], name: "index_products_on_account_id"
   end
 

@@ -1,7 +1,7 @@
 class ExternalAccountsController < AccountsController
-  skip_before_action :authenticate_user!, only: [ :shopify_callback, :ebay_callback, :ebay_auth ]
-  skip_before_action :find_account, only: [ :shopify_callback, :ebay_callback, :ebay_auth ]
-  skip_before_action :verify_authenticity_token, only: [ :ebay_callback, :ebay_auth ]
+  skip_before_action :authenticate_user!, only: [ :shopify_callback, :ebay_callback ]
+  skip_before_action :find_account, only: [ :shopify_callback, :ebay_callback ]
+  skip_before_action :verify_authenticity_token, only: [ :ebay_callback ]
 
   def new
     @external_account = ExternalAccount.new
@@ -15,11 +15,9 @@ class ExternalAccountsController < AccountsController
         auth_path = shopify_auth.authentication_path(current_user, external_account_params[:domain])
         redirect_to auth_path, allow_other_host: true
       when "ebay"
-        # Generate unique state and store user ID in cache (not session)
-        state = SecureRandom.hex(32)
-        Rails.cache.write("ebay_oauth_state_#{state}", current_user.id, expires_in: 10.minutes)
-        session[:ebay_oauth_state] = state
-        redirect_to "/auth/ebay_oauth", allow_other_host: true
+        ebay_auth = EbayAuthentication.new
+        auth_path = ebay_auth.authentication_path(current_user)
+        redirect_to auth_path, allow_other_host: true
       else
         redirect_to new_account_external_account_path(current_account), alert: "Invalid service name"
       end
@@ -44,105 +42,186 @@ class ExternalAccountsController < AccountsController
   end
 
   def ebay_callback
-    # Get user ID from cache using the state parameter
-    state = params[:state]
-    user_id = Rails.cache.read("ebay_oauth_state_#{state}") if state
-    user = User.find_by(id: user_id) if user_id
-    
-    # Debug logging
-    Rails.logger.info "Callback params state: #{params[:state]}"
-    Rails.logger.info "User ID from cache: #{user_id}"
-    Rails.logger.info "User found: #{user&.id}"
-    
-    # Verify state parameter exists and user found
-    if !user_id || !user
-      Rails.logger.error "Invalid state or user not found: state=#{state}, user_id=#{user_id}"
-      redirect_to root_path, alert: "Invalid authentication state"
-      return
-    end
+    ebay_auth = EbayAuthentication.new(params: params)
+    state = ebay_auth.decode_state(params["state"])
+    user = User.find_by(id: state["user_id"], state_nonce: state["nonce"]) if state
 
-    if user && params[:code]
-      begin
-        Rails.logger.info "Starting token exchange with code: #{params[:code][0..20]}..."
-        # Exchange authorization code for access token
-        token_response = exchange_code_for_token(params[:code])
-        Rails.logger.info "Token exchange successful: #{token_response.keys}"
-        
-        # Remove existing eBay account for this user
-        existing_account = user.accounts.first.external_accounts.find_by(service_name: "ebay")
-        if existing_account
-          Rails.logger.info "Removing existing eBay account: #{existing_account.id}"
-          existing_account.destroy
-        end
-        
-        # Create external account with token data
-        external_account = user.accounts.first.external_accounts.create!(
-          service_name: "ebay",
-          api_token: token_response["access_token"],
-          refresh_token: token_response["refresh_token"],
-          domain: "ebay.com"
-        )
-        Rails.logger.info "Created external account: #{external_account.id}"
-
-        # Clear cache (one-time use for security)
-        Rails.cache.delete("ebay_oauth_state_#{state}")
-        session.delete(:ebay_oauth_state)
-        
-        # Sign the user back in since the callback loses the authentication context
-        sign_in user
-
-        redirect_to account_tables_path(user.accounts.first), notice: "eBay account connected successfully!"
-      rescue => e
-        Rails.logger.error "eBay token exchange failed: #{e.message}"
-        Rails.logger.error "eBay token exchange error backtrace: #{e.backtrace.first(10).join("\n")}"
-        Rails.cache.delete("ebay_oauth_state_#{state}")
-        session.delete(:ebay_oauth_state)
-        redirect_to root_path, alert: "eBay authentication failed: #{e.message}"
-      end
+    if user
+      ebay_auth.create_external_account_for(user)
+      redirect_to account_tables_path(user.accounts.first), notice: "eBay account connected successfully!"
     else
-      Rails.logger.error "eBay callback failed: user=#{user&.id}, code=#{params[:code].present?}"
-      Rails.cache.delete("ebay_oauth_state_#{state}") if state
-      session.delete(:ebay_oauth_state)
-      redirect_to root_path, alert: "eBay authentication failed"
+      redirect_to root_path, alert: "Invalid authentication state"
+    end
+  rescue => e
+    Rails.logger.error "eBay authentication failed: #{e.message}"
+    redirect_to root_path, alert: "eBay authentication failed: #{e.message}"
+  end
+
+
+  def show
+    @external_account = current_account.external_accounts.find(params[:id])
+    
+    if @external_account.ebay?
+      @ebay_service = EbayService.new(external_account: @external_account)
+      @setup_status = @ebay_service.check_account_setup_status
     end
   end
 
-  def ebay_auth
-    # Get the pre-generated state from session
-    state = session[:ebay_oauth_state]
+  def opt_into_business_policies
+    @external_account = current_account.external_accounts.find(params[:id])
+    ebay_service = EbayService.new(external_account: @external_account)
     
-    if state
-      client_id = Rails.application.credentials.dig(:ebay, :client_id)
-      # Always use the configured redirect URI from credentials (which should be the ngrok URL)
-      redirect_uri = Rails.application.credentials.dig(:ebay, :redirect_url)
-      sandbox = Rails.env.development? || Rails.env.test?
-      
-      # Try with minimal scope first - URL encode it properly
-      scopes = "https://api.ebay.com/oauth/api_scope"
-      
-      base_url = sandbox ? "https://auth.sandbox.ebay.com/oauth2/authorize" : "https://auth.ebay.com/oauth2/authorize"
-      
-      oauth_url = "#{base_url}?" + {
-        client_id: client_id,
-        response_type: 'code',
-        redirect_uri: redirect_uri,
-        scope: scopes,
-        state: state
-      }.to_query
-      
-      # Debug logging
-      Rails.logger.info "eBay OAuth URL: #{oauth_url}"
-      Rails.logger.info "Client ID: #{client_id}"
-      Rails.logger.info "Client Secret: #{Rails.application.credentials.dig(:ebay, :client_secret)&.first(10)}..."
-      Rails.logger.info "Redirect URI: #{redirect_uri}"
-      Rails.logger.info "Scopes: #{scopes}"
-      Rails.logger.info "Sandbox mode: #{sandbox}"
-      Rails.logger.info "State: #{state}"
-      
-      redirect_to oauth_url, allow_other_host: true
+    if ebay_service.opt_into_business_policies
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  notice: "Successfully opted into business policies!"
     else
-      redirect_to root_path, alert: "Session expired, please try again"
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  alert: "Failed to opt into business policies. You may need to do this manually in your eBay account."
     end
+  rescue => e
+    Rails.logger.error "Error opting into business policies: #{e.message}"
+    redirect_to account_external_account_path(current_account, @external_account), 
+                alert: "Error opting into business policies: #{e.message}"
+  end
+
+  def create_fulfillment_policy
+    @external_account = current_account.external_accounts.find(params[:id])
+    ebay_service = EbayService.new(external_account: @external_account)
+    
+    if ebay_service.create_default_fulfillment_policy
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  notice: "Default fulfillment policy created successfully!"
+    else
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  alert: "Failed to create fulfillment policy."
+    end
+  rescue => e
+    Rails.logger.error "Error creating fulfillment policy: #{e.message}"
+    redirect_to account_external_account_path(current_account, @external_account), 
+                alert: "Error creating fulfillment policy: #{e.message}"
+  end
+
+  def create_custom_fulfillment_policy
+    @external_account = current_account.external_accounts.find(params[:id])
+    ebay_service = EbayService.new(external_account: @external_account)
+    
+    policy_params = fulfillment_policy_params
+    
+    # Debug: Log the actual parameters received
+    Rails.logger.info "Fulfillment policy parameters: #{policy_params.to_json}"
+    Rails.logger.info "Domestic cost value: '#{policy_params[:domestic_cost]}'"
+    Rails.logger.info "Domestic cost present?: #{policy_params[:domestic_cost].present?}"
+    Rails.logger.info "Free shipping value: '#{policy_params[:domestic_free_shipping]}'"
+    
+    # Build the policy data structure according to eBay API requirements
+    # Note: categoryTypes is optional and defaults to ALL_EXCLUDING_MOTORS_VEHICLES if omitted
+    policy_data = {
+      name: policy_params[:name],
+      marketplaceId: policy_params[:marketplace_id] || "EBAY_GB",
+      handlingTime: {
+        value: policy_params[:handling_time].to_i,
+        unit: "DAY"
+      },
+      localPickup: false,
+      shipToLocations: {
+        regionIncluded: [
+          {
+            regionType: "COUNTRY",
+            regionId: "GB"
+          }
+        ]
+      },
+      shippingOptions: []
+    }
+    
+    # Add description only if provided (eBay doesn't like empty strings)
+    if policy_params[:description].present?
+      policy_data[:description] = policy_params[:description]
+    end
+    
+    # Add domestic shipping option if provided
+    if policy_params[:domestic_service_code].present?
+      domestic_service = {
+        shippingServiceCode: policy_params[:domestic_service_code],
+        freeShipping: policy_params[:domestic_free_shipping] == "1"
+      }
+      
+      # Only add cost if not free shipping
+      unless policy_params[:domestic_free_shipping] == "1"
+        if policy_params[:domestic_cost].present?
+          domestic_service[:shippingCost] = {
+            value: policy_params[:domestic_cost].to_s,
+            currency: policy_params[:currency] || "GBP"
+          }
+        end
+      end
+      
+      domestic_option = {
+        optionType: "DOMESTIC",
+        costType: "FLAT_RATE",
+        shippingServices: [domestic_service]
+      }
+      
+      policy_data[:shippingOptions] << domestic_option
+    end
+    
+    # Add international shipping option if provided
+    if policy_params[:international_service_code].present?
+      international_service = {
+        shippingServiceCode: policy_params[:international_service_code],
+        freeShipping: policy_params[:international_free_shipping] == "1"
+      }
+      
+      # Only add cost if not free shipping
+      unless policy_params[:international_free_shipping] == "1"
+        if policy_params[:international_cost].present?
+          international_service[:shippingCost] = {
+            value: policy_params[:international_cost].to_s,
+            currency: policy_params[:currency] || "GBP"
+          }
+        end
+      end
+      
+      international_option = {
+        optionType: "INTERNATIONAL",
+        costType: "FLAT_RATE",
+        shippingServices: [international_service]
+      }
+      
+      policy_data[:shippingOptions] << international_option
+    end
+    
+    # Log the policy data for debugging
+    Rails.logger.info "Creating custom fulfillment policy with data: #{policy_data.to_json}"
+    
+    response = ebay_service.create_fulfillment_policy(policy_data)
+    
+    if response && (response.success? || response.code == 201)
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  notice: "Custom fulfillment policy '#{policy_params[:name]}' created successfully!"
+    else
+      Rails.logger.error "Custom fulfillment policy creation failed: #{response&.body}"
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  alert: "Failed to create custom fulfillment policy."
+    end
+  rescue => e
+    Rails.logger.error "Error creating custom fulfillment policy: #{e.message}"
+    Rails.logger.error "Policy data was: #{policy_data.to_json}" if defined?(policy_data)
+    redirect_to account_external_account_path(current_account, @external_account), 
+                alert: "Error creating custom fulfillment policy: #{e.message}"
+  end
+
+  def create_inventory_location
+    @external_account = current_account.external_accounts.find(params[:id])
+    ebay_service = EbayService.new(external_account: @external_account)
+    
+    ebay_service.create_default_inventory_location
+    redirect_to account_external_account_path(current_account, @external_account), 
+                notice: "Default inventory location created successfully!"
+  rescue => e
+    Rails.logger.error "Error creating inventory location: #{e.message}"
+    redirect_to account_external_account_path(current_account, @external_account), 
+                alert: "Error creating inventory location: #{e.message}"
   end
 
   def destroy
@@ -153,32 +232,16 @@ class ExternalAccountsController < AccountsController
 
   private
 
-  def exchange_code_for_token(authorization_code)
-    client_id = Rails.application.credentials.dig(:ebay, :client_id)
-    client_secret = Rails.application.credentials.dig(:ebay, :client_secret)
-    # Always use the configured redirect URI from credentials (which should be the ngrok URL)
-    redirect_uri = Rails.application.credentials.dig(:ebay, :redirect_url)
-    sandbox = Rails.env.development? || Rails.env.test?
-    
-    token_url = sandbox ? "https://api.sandbox.ebay.com/identity/v1/oauth2/token" : "https://api.ebay.com/identity/v1/oauth2/token"
-    
-    response = RestClient.post(
-      token_url,
-      {
-        grant_type: "authorization_code",
-        code: authorization_code,
-        redirect_uri: redirect_uri
-      },
-      {
-        "Authorization" => "Basic #{Base64.strict_encode64("#{client_id}:#{client_secret}")}",
-        "Content-Type" => "application/x-www-form-urlencoded"
-      }
-    )
-    
-    JSON.parse(response.body)
-  end
 
   def external_account_params
     params.require(:external_account).permit(:service_name, :domain)
+  end
+
+  def fulfillment_policy_params
+    params.require(:fulfillment_policy).permit(
+      :name, :description, :marketplace_id, :handling_time, :currency,
+      :domestic_service_code, :domestic_cost_type, :domestic_cost, :domestic_free_shipping,
+      :international_service_code, :international_cost_type, :international_cost, :international_free_shipping
+    )
   end
 end

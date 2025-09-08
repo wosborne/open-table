@@ -35,3 +35,7 @@
 
 # Ignore test coverage reports.
 /coverage/*
+
+/config/credentials/development.key
+
+/config/credentials/test.key
