@@ -3,6 +3,7 @@ class InventoryUnit < ApplicationRecord
 
   belongs_to :account
   belongs_to :variant
+  has_many_attached :images
   validates :serial_number, presence: true, uniqueness: true
   enum :status, %w[in_stock sold reserved]
 

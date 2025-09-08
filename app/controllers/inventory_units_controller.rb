@@ -25,13 +25,23 @@ class InventoryUnitsController < AccountsController
 
   def edit
     @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
+    if @inventory_unit.variant
+      @selected_product = @inventory_unit.variant.product
+      @selected_option_values = @inventory_unit.variant.variant_option_values.map(&:product_option_value_id)
+      @variant = @inventory_unit.variant
+    end
   end
 
   def update
     @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
     if @inventory_unit.update(inventory_unit_params)
-      redirect_to account_inventory_units_path(current_account), notice: "Inventory unit updated."
+      redirect_to account_inventory_unit_path(current_account, @inventory_unit)
     else
+      if @inventory_unit.variant
+        @selected_product = @inventory_unit.variant.product
+        @selected_option_values = @inventory_unit.variant.variant_option_values.map(&:product_option_value_id)
+        @variant = @inventory_unit.variant
+      end
       render :edit, status: :unprocessable_entity
     end
   end
@@ -62,6 +72,6 @@ class InventoryUnitsController < AccountsController
   end
 
   def inventory_unit_params
-    params.require(:inventory_unit).permit(:serial_number, :status, :variant_id)
+    params.require(:inventory_unit).permit(:serial_number, :status, :variant_id, images: [])
   end
 end

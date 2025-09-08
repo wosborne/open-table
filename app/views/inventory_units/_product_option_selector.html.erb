@@ -1,5 +1,5 @@
 <%= turbo_frame_tag "variant_selector" do %>
-  <div data-controller="product-option-selector">
+  <div data-controller="product-option-selector" data-product-option-selector-variant-selector-url-value="<%= variant_selector_account_inventory_units_path(current_account) %>">
     <div class="field is-horizontal">
       <div class="field-body">
         <div class="field">

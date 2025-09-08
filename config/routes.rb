@@ -39,7 +39,7 @@ Rails.application.routes.draw do
     end
 
     resources :inventory_units do
-      get :variant_selector
+      get :variant_selector, on: :collection
     end
 
     resources :orders, only: [ :index, :show, :edit ]
