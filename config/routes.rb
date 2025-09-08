@@ -40,6 +40,9 @@ Rails.application.routes.draw do
 
     resources :inventory_units do
       get :variant_selector, on: :collection
+      member do
+        delete :delete_image_attachment
+      end
     end
 
     resources :orders, only: [ :index, :show, :edit ]

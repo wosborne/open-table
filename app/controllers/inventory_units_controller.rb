@@ -1,5 +1,5 @@
 class InventoryUnitsController < AccountsController
-  before_action :set_inventory_unit, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_inventory_unit, only: [ :show, :edit, :update, :destroy, :delete_image_attachment ]
 
   def index
     @inventory_units = current_account.inventory_units.includes(:variant).order(created_at: :desc)
@@ -49,6 +49,13 @@ class InventoryUnitsController < AccountsController
   def destroy
     @inventory_unit.destroy
     redirect_to account_inventory_units_path(current_account), notice: "Inventory unit deleted."
+  end
+
+  def delete_image_attachment
+    blob = ActiveStorage::Blob.find_signed(params[:signed_id])
+    attachment = @inventory_unit.images.find { |img| img.blob == blob }
+    attachment&.purge
+    redirect_back(fallback_location: account_inventory_unit_path(current_account, @inventory_unit))
   end
 
   # Hotwire endpoint for dynamic variant selection

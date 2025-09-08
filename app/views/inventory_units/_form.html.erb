@@ -54,11 +54,6 @@
       Supported formats: JPG, PNG, GIF
     </p>
     
-    <% if @inventory_unit.persisted? && @inventory_unit.images.attached? %>
-      <% @inventory_unit.images.each do |image| %>
-        <%= form.hidden_field :images, multiple: true, value: image.signed_id %>
-      <% end %>
-    <% end %>
   </div>
 
   <% if @inventory_unit.persisted? && @inventory_unit.images.any? %>
@@ -72,6 +67,14 @@
                 <figure class="image is-square">
                   <%= image_tag image, class: "is-fullwidth", style: "object-fit: cover;" %>
                 </figure>
+                <%= link_to delete_image_attachment_account_inventory_unit_path(current_account, @inventory_unit, signed_id: image.signed_id),
+                    data: { 
+                      turbo_method: :delete,
+                      turbo_confirm: 'Remove this image?' 
+                    },
+                    class: "delete is-large",
+                    style: "position: absolute; top: 0.5rem; right: 0.5rem;" do %>
+                <% end %>
               </div>
             </div>
           </div>
