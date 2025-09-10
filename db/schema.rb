@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_27_151348) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_09_090730) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_27_151348) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "external_account_inventory_units", force: :cascade do |t|
+    t.bigint "external_account_id", null: false
+    t.bigint "inventory_unit_id", null: false
+    t.json "marketplace_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_account_id", "inventory_unit_id"], name: "index_eaiu_on_external_account_and_inventory_unit", unique: true
+    t.index ["external_account_id"], name: "index_external_account_inventory_units_on_external_account_id"
+    t.index ["inventory_unit_id"], name: "index_external_account_inventory_units_on_inventory_unit_id"
   end
 
   create_table "external_account_products", force: :cascade do |t|
@@ -320,6 +331,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_27_151348) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "external_account_inventory_units", "external_accounts"
+  add_foreign_key "external_account_inventory_units", "inventory_units"
   add_foreign_key "external_account_products", "external_accounts"
   add_foreign_key "external_account_products", "products"
   add_foreign_key "external_accounts", "accounts"

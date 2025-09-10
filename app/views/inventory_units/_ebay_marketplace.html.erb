@@ -1,0 +1,48 @@
+<%= turbo_frame_tag "ebay_marketplace" do %>
+  <div class="box">
+    <h2 class="subtitle">eBay Marketplace</h2>
+    <% ebay_listing = inventory_unit.ebay_listing_for_account(current_account) %>
+    
+    <% if ebay_listing %>
+      <div class="notification is-success is-light">
+        <div class="level mb-2">
+          <div class="level-left">
+            <div class="level-item">
+              <span class="tag is-success">
+                <span class="icon is-small">
+                  <i class="fas fa-check-circle"></i>
+                </span>
+                <span>eBay Draft Created</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <p class="is-size-7 has-text-grey">
+          Draft created <%= time_ago_in_words(ebay_listing.created_at) %> ago
+        </p>
+        
+        <div class="buttons is-small mt-3">
+          <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
+                      class: "button is-small is-danger",
+                      data: { turbo_method: :delete, confirm: "Delete this eBay draft? This will remove it from both eBay and your account." } do %>
+            <span class="icon is-small">
+              <i class="fas fa-trash"></i>
+            </span>
+            <span>Delete Draft</span>
+          <% end %>
+        </div>
+        
+      </div>
+    <% else %>
+      <%= link_to account_inventory_unit_external_account_inventory_units_path(current_account, inventory_unit), 
+                  class: "button is-info",
+                  data: { turbo_method: :post, confirm: "Create draft listing on eBay?" } do %>
+        <span class="icon">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>Create eBay Draft</span>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

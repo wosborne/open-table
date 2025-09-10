@@ -27,6 +27,8 @@
         </div>
       </div>
       
+      <%= render 'ebay_marketplace', inventory_unit: @inventory_unit %>
+      
       <div class="buttons">
         <%= link_to "Edit", edit_account_inventory_unit_path(current_account, @inventory_unit), class: "button is-primary" %>
         <%= link_to "Back to Inventory Units", account_inventory_units_path(current_account), class: "button" %>

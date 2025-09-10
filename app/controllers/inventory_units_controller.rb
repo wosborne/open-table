@@ -72,10 +72,16 @@ class InventoryUnitsController < AccountsController
     render partial: "product_option_selector", locals: { products: @products, selected_product: @selected_product, selected_option_values: @selected_option_values, variant: @variant }
   end
 
+
+  def current_inventory_unit
+    @current_inventory_unit ||= current_account.inventory_units.find(params[:inventory_unit_id] || params[:id])
+  end
+  helper_method :current_inventory_unit
+
   private
 
   def set_inventory_unit
-    @inventory_unit = current_account.inventory_units.find(params[:id])
+    @inventory_unit = current_inventory_unit
   end
 
   def inventory_unit_params

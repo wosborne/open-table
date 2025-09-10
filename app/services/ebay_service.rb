@@ -5,7 +5,9 @@ class EbayService < BaseExternalService
     @client_secret = Rails.application.credentials.dig(:ebay, :client_secret)
     @dev_id = Rails.application.credentials.dig(:ebay, :dev_id)
     @access_token = external_account.api_token
-    @sandbox = Rails.env.development? || Rails.env.test?
+    @token_url = Rails.application.credentials.dig(:ebay, :token_url)
+    @api_base_url = Rails.application.credentials.dig(:ebay, :api_base_url)
+    @sandbox = Rails.application.credentials.dig(:ebay, :sandbox)
     @ebay_client = create_ebay_client
   end
 
@@ -20,23 +22,67 @@ class EbayService < BaseExternalService
 
   def publish_product(product_params)
     with_token_refresh do
-      # Use eBay Trading API or Sell API to create listings
-      # For now, return a mock response
-      ebay_item = build_ebay_item(product_params)
+      # Create inventory item using eBay Sell API
+      inventory_item_data = build_inventory_item(product_params)
       
-      {
-        "ItemID" => "123456789",
-        "SKU" => product_params[:sku],
-        "Title" => product_params[:title]
-      }
+      response = RestClient.put(
+        "#{@api_base_url}/sell/inventory/v1/inventory_item/#{product_params[:sku]}",
+        inventory_item_data.to_json,
+        {
+          "Authorization" => "Bearer #{@access_token}",
+          "Content-Type" => "application/json",
+          "Content-Language" => "en-GB",
+          "Accept" => "application/json"
+        }
+      )
+      
+      if response.code == 204
+        # Success - eBay returns 204 No Content for successful inventory item creation
+        {
+          "success" => true,
+          "sku" => product_params[:sku],
+          "title" => product_params[:title]
+        }
+      else
+        JSON.parse(response.body)
+      end
     end
+  rescue RestClient::ExceptionWithResponse => e
+    Rails.logger.error "eBay API error: #{e.response.body}"
+    {
+      "success" => false,
+      "error" => JSON.parse(e.response.body)
+    }
   end
 
-  def remove_product(product_id)
+  def remove_product(sku)
     with_token_refresh do
-      # Use eBay Trading API EndItem to remove listings
-      true
+      # Delete inventory item using eBay Sell API
+      response = RestClient.delete(
+        "#{@api_base_url}/sell/inventory/v1/inventory_item/#{sku}",
+        {
+          "Authorization" => "Bearer #{@access_token}",
+          "Content-Language" => "en-GB",
+          "Accept" => "application/json"
+        }
+      )
+      
+      if response.code == 204
+        # Success - eBay returns 204 No Content for successful deletion
+        {
+          "success" => true,
+          "sku" => sku
+        }
+      else
+        JSON.parse(response.body)
+      end
     end
+  rescue RestClient::ExceptionWithResponse => e
+    Rails.logger.error "eBay API delete error: #{e.response.body}"
+    {
+      "success" => false,
+      "error" => JSON.parse(e.response.body)
+    }
   end
 
   protected
@@ -54,10 +100,9 @@ class EbayService < BaseExternalService
 
     begin
       # Manual token refresh for eBay OAuth
-      token_url = @sandbox ? "https://api.sandbox.ebay.com/identity/v1/oauth2/token" : "https://api.ebay.com/identity/v1/oauth2/token"
       
       response = RestClient.post(
-        token_url,
+        @token_url,
         {
           grant_type: "refresh_token",
           refresh_token: external_account.refresh_token
@@ -96,34 +141,23 @@ class EbayService < BaseExternalService
       config.app_id = @client_id
       config.dev_id = @dev_id
       config.cert_id = @client_secret
-      config.sandbox = @sandbox
     end
 
     # Return a client instance (this may vary based on ebay-ruby gem version)
     Ebay
   end
 
-  def build_ebay_item(product_params)
-    # Map Rails product structure to eBay item structure
-    # This is a basic mapping - you'll need to customize based on your needs
+  def build_inventory_item(product_params)
     {
-      Title: product_params[:title],
-      Description: product_params[:description] || product_params[:title],
-      PrimaryCategory: { CategoryID: "166" }, # Cell Phones & Smartphones
-      StartPrice: product_params[:price] || "0.99",
-      ListingDuration: "Days_7",
-      ListingType: "FixedPriceItem",
-      Country: "US",
-      Currency: "USD",
-      PaymentMethods: ["PayPal"],
-      PayPalEmailAddress: "your-paypal@email.com", # You'll need to make this configurable
-      ShippingDetails: {
-        ShippingType: "Flat",
-        ShippingServiceOptions: [{
-          ShippingServicePriority: 1,
-          ShippingService: "USPSMedia",
-          ShippingServiceCost: "2.50"
-        }]
+      product: {
+        title: product_params[:title],
+        description: product_params[:description] || product_params[:title]
+      },
+      condition: "USED_EXCELLENT",
+      availability: {
+        shipToLocationAvailability: {
+          quantity: 1
+        }
       }
     }
   end

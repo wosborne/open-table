@@ -43,6 +43,7 @@ Rails.application.routes.draw do
       member do
         delete :delete_image_attachment
       end
+      resources :external_account_inventory_units, only: [:create, :destroy]
     end
 
     resources :orders, only: [ :index, :show, :edit ]
