@@ -25,6 +25,15 @@
           <label class="label">Product</label>
           <p class="content"><%= @inventory_unit.variant&.product&.name %></p>
         </div>
+        
+        <% if @inventory_unit.location.present? %>
+          <div class="field">
+            <label class="label">Storage Location</label>
+            <p class="content">
+              <%= link_to @inventory_unit.location.name, account_location_path(current_account, @inventory_unit.location), class: "is-link" %>
+            </p>
+          </div>
+        <% end %>
       </div>
       
       <%= render 'ebay_marketplace', inventory_unit: @inventory_unit %>

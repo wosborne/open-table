@@ -1,0 +1,89 @@
+<%= turbo_frame_tag "location_form" do %>
+  <div class="box">
+    <%= form_with model: [current_account, location],
+      data: {
+        turbo_frame: "_top"
+      } do |form| %>
+
+      <% if location.errors.any? %>
+        <div class="notification is-danger">
+          <h4><%= pluralize(location.errors.count, "error") %> prohibited this location from being saved:</h4>
+          <ul>
+            <% location.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="field">
+        <%= form.label :name, class: "label" %>
+        <div class="control">
+          <%= form.text_field :name, class: "input" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= form.label :address_line_1, "Address Line 1", class: "label" %>
+        <div class="control">
+          <%= form.text_field :address_line_1, class: "input" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= form.label :address_line_2, "Address Line 2", class: "label" %>
+        <div class="control">
+          <%= form.text_field :address_line_2, class: "input" %>
+        </div>
+        <p class="help">Optional - apartment, suite, unit number</p>
+      </div>
+
+      <div class="columns">
+        <div class="column">
+          <div class="field">
+            <%= form.label :city, class: "label" %>
+            <div class="control">
+              <%= form.text_field :city, class: "input" %>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="field">
+            <%= form.label :state, "State/Region", class: "label" %>
+            <div class="control">
+              <%= form.text_field :state, class: "input" %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column">
+          <div class="field">
+            <%= form.label :postcode, class: "label" %>
+            <div class="control">
+              <%= form.text_field :postcode, class: "input" %>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="field">
+            <%= form.label :country, class: "label" %>
+            <div class="control">
+              <%= form.text_field :country, class: "input" %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-grouped">
+        <div class="control">
+          <%= form.submit class: "button is-primary" %>
+        </div>
+        <div class="control">
+          <%= link_to 'Cancel', account_locations_path(current_account), class: "button is-light", data: { turbo_frame: "_top" } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

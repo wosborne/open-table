@@ -29,6 +29,16 @@
     </div>
   </div>
 
+  <div class="field">
+    <%= form.label :location_id, "Storage Location", class: "label" %>
+    <div class="control">
+      <div class="select">
+        <%= form.collection_select :location_id, current_account.locations, :id, :name, { prompt: "Select a location (optional)" }, {} %>
+      </div>
+    </div>
+    <p class="help">Choose where this item is physically stored</p>
+  </div>
+
   <div class="field" data-controller="file-input">
     <%= form.label :images, class: "label" %>
     <div class="control">

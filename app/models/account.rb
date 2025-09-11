@@ -4,6 +4,7 @@ class Account < ApplicationRecord
   has_many :products, dependent: :destroy
   has_many :variants, through: :products
   has_many :inventory_units, dependent: :destroy
+  has_many :locations, dependent: :destroy
 
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users

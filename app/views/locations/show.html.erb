@@ -1,0 +1,44 @@
+<section class="section">
+  <div class="container is-max-tablet">
+    <div class="level">
+      <div class="level-left">
+        <div class="level-item">
+          <h1 class="title"><%= @location.name %></h1>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <%= link_to edit_account_location_path(current_account, @location), class: "button" do %>
+            <span class="icon-text">
+              <span class="icon">
+                <i class="fas fa-edit"></i>
+              </span>
+              <span>Edit</span>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="content">
+        <h4>Address</h4>
+        <address>
+          <%= @location.address_line_1 %><br>
+          <% if @location.address_line_2.present? %>
+            <%= @location.address_line_2 %><br>
+          <% end %>
+          <%= @location.city %><% if @location.state.present? %>, <%= @location.state %><% end %> <%= @location.postcode %><br>
+          <%= @location.country %>
+        </address>
+      </div>
+    </div>
+
+    <% if @location.inventory_units.any? %>
+      <div class="box">
+        <h4 class="title is-5">Inventory at this Location</h4>
+        <p><%= pluralize(@location.inventory_units.count, 'item') %> stored here</p>
+      </div>
+    <% end %>
+  </div>
+</section>

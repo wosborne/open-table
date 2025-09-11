@@ -85,6 +85,6 @@ class InventoryUnitsController < AccountsController
   end
 
   def inventory_unit_params
-    params.require(:inventory_unit).permit(:serial_number, :status, :variant_id, images: [])
+    params.require(:inventory_unit).permit(:serial_number, :status, :variant_id, :location_id, images: [])
   end
 end

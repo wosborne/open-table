@@ -5,6 +5,7 @@ class InventoryUnit < ApplicationRecord
 
   belongs_to :account
   belongs_to :variant
+  belongs_to :location, optional: true
   has_many_attached :images
   has_many :external_account_inventory_units, dependent: :destroy
   validates :serial_number, presence: true, uniqueness: true

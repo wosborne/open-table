@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_09_090730) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_11_135009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -140,7 +140,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_09_090730) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "location_id"
     t.index ["account_id"], name: "index_inventory_units_on_account_id"
+    t.index ["location_id"], name: "index_inventory_units_on_location_id"
     t.index ["serial_number"], name: "index_inventory_units_on_serial_number", unique: true
     t.index ["variant_id"], name: "index_inventory_units_on_variant_id"
   end
@@ -155,6 +157,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_09_090730) do
     t.index ["from_record_id"], name: "index_links_on_from_record_id"
     t.index ["property_id"], name: "index_links_on_property_id"
     t.index ["to_record_id"], name: "index_links_on_to_record_id"
+  end
+
+  create_table "locations", force: :cascade do |t|
+    t.string "name"
+    t.string "address_line_1"
+    t.string "address_line_2"
+    t.string "city"
+    t.string "state"
+    t.string "postcode"
+    t.string "country"
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_locations_on_account_id"
   end
 
   create_table "order_line_items", force: :cascade do |t|
@@ -340,10 +356,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_09_090730) do
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"
   add_foreign_key "inventory_units", "accounts"
+  add_foreign_key "inventory_units", "locations"
   add_foreign_key "inventory_units", "variants"
   add_foreign_key "links", "properties"
   add_foreign_key "links", "records", column: "from_record_id"
   add_foreign_key "links", "records", column: "to_record_id"
+  add_foreign_key "locations", "accounts"
   add_foreign_key "order_line_items", "inventory_units"
   add_foreign_key "order_line_items", "orders"
   add_foreign_key "orders", "external_accounts"

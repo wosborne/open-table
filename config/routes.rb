@@ -46,6 +46,8 @@ Rails.application.routes.draw do
       resources :external_account_inventory_units, only: [:create, :destroy]
     end
 
+    resources :locations
+
     resources :orders, only: [ :index, :show, :edit ]
 
     resources :tables do

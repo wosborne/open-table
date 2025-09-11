@@ -1,0 +1,23 @@
+<h1 class="title">Locations</h1>
+
+<div class="level">
+  <div class="level-left">
+  </div>
+
+  <div class="level-right">
+    <div class="level-item">
+      <%= link_to new_account_location_path(current_account), class: "button" do %>
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>New Location</span>
+        </span>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= turbo_frame_tag "locations", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
+  <%= render "components/model_table/model_table", klass: Location, resources: @locations %>
+<% end %>
