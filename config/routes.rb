@@ -22,7 +22,7 @@ Rails.application.routes.draw do
 
 
   scope "/:account_slug", as: :account do
-    resources :external_accounts, only: %w[new create destroy show] do
+    resources :external_accounts, only: %w[new create destroy show edit update] do
       member do
         post :opt_into_business_policies
         post :create_fulfillment_policy

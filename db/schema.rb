@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_11_135009) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_12_132222) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,7 +100,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_11_135009) do
     t.string "ebay_username"
     t.string "ebay_display_name"
     t.string "ebay_email"
+    t.bigint "inventory_location_id"
     t.index ["account_id"], name: "index_external_accounts_on_account_id"
+    t.index ["inventory_location_id"], name: "index_external_accounts_on_inventory_location_id"
   end
 
   create_table "filters", force: :cascade do |t|
@@ -352,6 +354,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_11_135009) do
   add_foreign_key "external_account_products", "external_accounts"
   add_foreign_key "external_account_products", "products"
   add_foreign_key "external_accounts", "accounts"
+  add_foreign_key "external_accounts", "locations", column: "inventory_location_id"
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"

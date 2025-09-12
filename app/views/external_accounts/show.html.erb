@@ -1,0 +1,62 @@
+<% content_for :title, "#{@external_account.service_name.humanize} Account" %>
+
+<div class="container">
+  <div class="mb-5">
+    <%= link_to "← Back", :back, class: "button is-text" %>
+  </div>
+
+  <div class="box">
+    <div class="level mb-5">
+      <div class="level-left">
+        <div class="level-item">
+          <h1 class="title is-3">
+            <%= @external_account.service_name.humanize %> Account
+          </h1>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <span class="tag is-success">Connected</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3 class="title is-5 mb-4">Account Information</h3>
+      <p><strong>Service:</strong> <%= @external_account.service_name.humanize %></p>
+      <p><strong>Connected:</strong> <%= time_ago_in_words(@external_account.created_at) %> ago</p>
+      <% if @external_account.inventory_location %>
+        <p><strong>Inventory Location:</strong> <%= @external_account.inventory_location.name %></p>
+      <% else %>
+        <% if @external_account.ebay? %>
+          <p><strong>Inventory Location:</strong> <em>Not set</em></p>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @external_account.ebay? && @external_account.inventory_location.blank? %>
+      <div class="notification is-warning">
+        <p><strong>Inventory location required:</strong> You need to select an inventory location to manage eBay inventories. 
+           <%= link_to "Edit account settings", edit_account_external_account_path(current_account, @external_account), class: "has-text-link has-text-weight-semibold" %> 
+           to configure this.</p>
+      </div>
+    <% end %>
+
+    <!-- Actions -->
+    <div class="buttons mt-5">
+      <%= link_to "Edit Account", 
+            edit_account_external_account_path(current_account, @external_account), 
+            class: "button is-primary" %>
+            
+      <% if @external_account.ebay? %>
+        <%= link_to "Manage Business Policies", "#", class: "button is-light" %>
+      <% end %>
+      
+      <%= link_to "Disconnect Account", 
+            account_external_account_path(current_account, @external_account), 
+            method: :delete,
+            data: { confirm: "Are you sure you want to disconnect this #{@external_account.service_name} account?" },
+            class: "button is-danger is-outlined" %>
+    </div>
+  </div>
+</div>

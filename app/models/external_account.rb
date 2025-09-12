@@ -1,6 +1,7 @@
 class ExternalAccount < ApplicationRecord
   SERVICE_NAMES = %w[shopify ebay].freeze
   belongs_to :account
+  belongs_to :inventory_location, class_name: 'Location', optional: true
 
   has_many :external_account_products
   has_many :external_account_inventory_units, dependent: :destroy

@@ -1,0 +1,54 @@
+<% content_for :title, "Edit #{@external_account.service_name.humanize} Account" %>
+
+<div class="container">
+  <div class="mb-5">
+    <%= link_to "← Back to Account", account_external_account_path(current_account, @external_account), class: "button is-text" %>
+  </div>
+
+  <div class="box">
+    <h1 class="title is-3 mb-5">
+      Edit <%= @external_account.service_name.humanize %> Account
+    </h1>
+
+    <%= form_with model: [@external_account.account, @external_account], local: true, class: "form" do |form| %>
+      <% if @external_account.errors.any? %>
+        <div class="notification is-danger mb-5">
+          <p class="has-text-weight-semibold">Please fix the following errors:</p>
+          <ul>
+            <% @external_account.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if @external_account.ebay? %>
+        <div class="field">
+          <label class="label">Inventory Location</label>
+          <div class="control">
+            <div class="select is-fullwidth">
+              <%= form.collection_select :inventory_location_id, @locations, :id, :name, 
+                    { prompt: "Select a location for inventory management", include_blank: "No location selected", selected: @external_account.inventory_location_id },
+                    { class: "form-control" } %>
+            </div>
+          </div>
+          <p class="help">
+            This location will be used as the default shipping location for eBay listings.
+            <% if @locations.empty? %>
+              <br><strong>No locations found.</strong> <%= link_to "Create a location first", account_locations_path(current_account), class: "has-text-link" %>.
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+
+      <div class="field is-grouped mt-5">
+        <div class="control">
+          <%= form.submit "Update Account", class: "button is-primary" %>
+        </div>
+        <div class="control">
+          <%= link_to "Cancel", account_external_account_path(current_account, @external_account), class: "button" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

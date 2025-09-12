@@ -72,11 +72,11 @@
         <div class="content mt-3">
           <% if current_account&.ebay_account&.persisted?  %>
             <div class="buttons">
-              <%= link_to account_external_account_path(current_account, current_account.ebay_account), class: "button is-warning is-small" do %>
+              <%= link_to account_external_account_path(current_account, current_account.ebay_account), class: "button is-info is-small" do %>
                 <span class="icon">
-                  <i class="fas fa-tools"></i>
+                  <i class="fas fa-cog"></i>
                 </span>
-                <span>Setup</span>
+                <span>Manage</span>
               <% end %>
               <%= button_to account_external_account_path(current_account, current_account.ebay_account), method: :delete, data: { turbo_confirm: "Are you sure you want to disconnect your eBay account?" }, class: "button is-danger is-small" do %>
                 <span class="icon">

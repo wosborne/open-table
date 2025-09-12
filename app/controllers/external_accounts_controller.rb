@@ -60,10 +60,22 @@ class ExternalAccountsController < AccountsController
 
   def show
     @external_account = current_account.external_accounts.find(params[:id])
+  end
+
+  def edit
+    @external_account = current_account.external_accounts.find(params[:id])
+    @locations = current_account.locations
+  end
+
+  def update
+    @external_account = current_account.external_accounts.find(params[:id])
+    @locations = current_account.locations
     
-    if @external_account.ebay?
-      @ebay_service = EbayService.new(external_account: @external_account)
-      @setup_status = @ebay_service.check_account_setup_status
+    if @external_account.update(external_account_update_params)
+      redirect_to account_external_account_path(current_account, @external_account), 
+                  notice: "External account updated successfully!"
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -235,6 +247,10 @@ class ExternalAccountsController < AccountsController
 
   def external_account_params
     params.require(:external_account).permit(:service_name, :domain)
+  end
+
+  def external_account_update_params
+    params.require(:external_account).permit(:inventory_location_id)
   end
 
   def fulfillment_policy_params
