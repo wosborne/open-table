@@ -85,6 +85,56 @@ class EbayService < BaseExternalService
     }
   end
 
+  def create_inventory_location(location_key, location)
+    return { "success" => true } unless location
+    
+    with_token_refresh do
+      Rails.logger.info "Creating eBay inventory location: #{location_key}"
+      
+      location_data = build_location_data(location)
+      Rails.logger.info "Location data: #{location_data.to_json}"
+      
+      response = RestClient.post(
+        "#{@api_base_url}/sell/inventory/v1/location/#{location_key}",
+        location_data.to_json,
+        {
+          "Authorization" => "Bearer #{@access_token}",
+          "Content-Type" => "application/json",
+          "Content-Language" => "en-GB",
+          "Accept" => "application/json"
+        }
+      )
+      
+      Rails.logger.info "Create location response: #{response.code} - #{response.body}"
+      
+      if [200, 201, 204].include?(response.code)
+        {
+          "success" => true,
+          "location_key" => location_key
+        }
+      else
+        JSON.parse(response.body)
+      end
+    end
+  rescue RestClient::ExceptionWithResponse => e
+    Rails.logger.error "eBay location creation error: #{e.response.body}"
+    error_response = JSON.parse(e.response.body) rescue {}
+    
+    # If location already exists, that's fine
+    if error_response.dig("errors", 0, "errorId") == 25700 # Location already exists
+      {
+        "success" => true,
+        "location_key" => location_key,
+        "message" => "Location already exists"
+      }
+    else
+      {
+        "success" => false,
+        "error" => error_response
+      }
+    end
+  end
+
   protected
 
   def token_expired?(error)
@@ -159,6 +209,46 @@ class EbayService < BaseExternalService
           quantity: 1
         }
       }
+    }
+  end
+
+  def build_location_data(location)
+    country_code = "GB"  # Default to GB
+    
+    # Map common country names to ISO codes
+    country_mapping = {
+      "United Kingdom" => "GB",
+      "UK" => "GB", 
+      "Great Britain" => "GB",
+      "England" => "GB",
+      "Scotland" => "GB",
+      "Wales" => "GB",
+      "Northern Ireland" => "GB"
+    }
+    
+    country_code = country_mapping[location.country] || location.country
+    
+    # Build address, excluding empty fields
+    address = {
+      addressLine1: location.address_line_1,
+      city: location.city,
+      postalCode: location.postcode,
+      country: country_code
+    }
+    
+    # Only add addressLine2 if it's present
+    address[:addressLine2] = location.address_line_2 if location.address_line_2.present?
+    
+    # Only add stateOrProvince if it's present (required for US, optional for others)
+    address[:stateOrProvince] = location.state if location.state.present?
+    
+    {
+      name: location.name,
+      location: {
+        address: address
+      },
+      locationTypes: ["WAREHOUSE"],
+      merchantLocationStatus: "ENABLED"
     }
   end
 end
