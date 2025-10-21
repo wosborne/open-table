@@ -7,7 +7,7 @@ class ProductsController < AccountsController
 
   def new
     @product = current_account.products.new
-    3.times { @product.product_options.build } if @product.product_options.empty?
+    load_ebay_categories
   end
 
   def create
@@ -30,15 +30,14 @@ class ProductsController < AccountsController
   end
 
   def edit
-    @product.generate_variants_from_options
-    (3 - @product.product_options.size).times { @product.product_options.build }
+    load_ebay_categories
   end
 
   def update
     if @product.update(product_params)
       redirect_to edit_account_product_path(current_account, @product), notice: "Product was successfully updated.", status: :see_other
     else
-      @product.generate_variants_from_options
+      load_ebay_categories
       render :edit, status: :unprocessable_entity
     end
   end
@@ -54,6 +53,47 @@ class ProductsController < AccountsController
                 notice: "#{affected_variants.count} variant SKUs were regenerated."
   end
 
+  def ebay_category_aspects
+    if params[:clear] == 'true'
+      @item_aspects = []
+      @variation_aspects = []
+    elsif params[:category_id].present?
+      ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
+      if ebay_account
+        begin
+          ebay_category = EbayCategory.new(ebay_account)
+          Rails.logger.info "Fetching aspects for category: #{params[:category_id]}"
+          aspects_data = ebay_category.format_item_specifics_for_form(params[:category_id])
+          @item_aspects = aspects_data[:item_aspects]
+          @variation_aspects = aspects_data[:variation_aspects]
+          @brand_models_map = aspects_data[:brand_models_map]
+          Rails.logger.info "Found #{@item_aspects.length} item aspects and #{@variation_aspects.length} variation aspects"
+        rescue => e
+          Rails.logger.error "Failed to load eBay aspects: #{e.message}"
+          @item_aspects = []
+          @variation_aspects = []
+          @brand_models_map = {}
+        end
+      else
+        @item_aspects = []
+        @variation_aspects = []
+        @brand_models_map = {}
+      end
+    else
+      @item_aspects = []
+      @variation_aspects = []
+      @brand_models_map = {}
+    end
+
+    respond_to do |format|
+      format.html { render partial: "products/form_options_dynamic", locals: { 
+        item_aspects: @item_aspects, 
+        variation_aspects: @variation_aspects,
+        brand_models_map: @brand_models_map
+      } }
+    end
+  end
+
   helper_method :current_product
   def current_product
     @current_product ||= current_account.products.find(params[:product_id] || params[:id])
@@ -62,19 +102,35 @@ class ProductsController < AccountsController
   private
 
   def product_params
-    params.require(:product).permit(
-      :name, :description, :brand,
-      product_options_attributes: [
-        :id, :name, :_destroy,
-        product_option_values_attributes: [ :id, :value, :_destroy ]
-      ],
-      variants_attributes: [ :id, :price, :sku, :_destroy,
-        variant_option_values_attributes: [ :id, :product_option_id, :product_option_value_id, :_destroy ]
-      ]
-    )
+    params.require(:product).permit(:name, :description, :brand, :ebay_category_id, :ebay_category_name, ebay_aspects: {})
   end
 
   def set_product
     @product = current_product
+  end
+
+  def load_ebay_categories
+    ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
+    return unless ebay_account
+
+    begin
+      ebay_category = EbayCategory.new(ebay_account)
+      mobile_categories = ebay_category.get_mobile_phone_categories
+      
+      if mobile_categories.is_a?(Array)
+        @ebay_categories = mobile_categories.map do |suggestion|
+          category_data = suggestion["category"]
+          {
+            category_id: category_data["categoryId"],
+            display_name: category_data["categoryName"]
+          }
+        end
+      else
+        @ebay_categories = []
+      end
+    rescue => e
+      Rails.logger.error "Failed to load eBay categories: #{e.message}"
+      @ebay_categories = []
+    end
   end
 end

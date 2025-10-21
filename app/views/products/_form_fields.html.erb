@@ -6,4 +6,27 @@
 <%= render "/components/form/input_wrapper",
   label: form.label(:description, class: "label"),
   input: form.text_area(:description, autofocus: true, class: "textarea"),
-  errors: form.object.errors.full_messages_for(:description) %> 
+  errors: form.object.errors.full_messages_for(:description) %>
+
+<div data-controller="ebay-category" data-ebay-category-account-slug-value="<%= current_account.slug %>">
+  <div class="field">
+    <%= form.label :ebay_category_id, "eBay Category (Optional)", class: "label" %>
+    <div class="control">
+      <div class="select is-fullwidth">
+        <%= form.select :ebay_category_id, 
+            options_for_select([["Select a category...", ""]] + (@ebay_categories || []).map { |cat| [cat[:display_name], cat[:category_id]] }, form.object.ebay_category_id), 
+            {}, 
+            { 
+              class: "input",
+              data: { 
+                action: "change->ebay-category#categoryChanged",
+                ebay_category_target: "categorySelect"
+              }
+            } %>
+      </div>
+    </div>
+  </div>
+
+  <%= render "products/form_options_dynamic", item_aspects: [], variation_aspects: [], brand_models_map: {} %>
+</div>
+</div> 

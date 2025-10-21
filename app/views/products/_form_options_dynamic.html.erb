@@ -1,0 +1,86 @@
+<%= turbo_frame_tag "product_options_frame", data: { ebay_category_target: "optionsFrame" } do %>
+  <!-- Skeleton loader - hidden by default -->
+  <div class="skeleton-loader is-hidden" data-ebay-category-target="skeleton">
+    <div class="field">
+      <div class="skeleton-line" style="width: 80px; height: 16px; margin-bottom: 8px;"></div>
+      <div class="skeleton-line" style="width: 100%; height: 40px;"></div>
+    </div>
+    <div class="field">
+      <div class="skeleton-line" style="width: 80px; height: 16px; margin-bottom: 8px;"></div>
+      <div class="skeleton-line" style="width: 100%; height: 40px;"></div>
+    </div>
+  </div>
+
+  <% if item_aspects.present? %>
+    <% if brand_models_map.present? %>
+      <div data-controller="cascading-select" data-cascading-select-model-options-value="<%= brand_models_map.to_json %>">
+    <% end %>
+    
+    <% item_aspects.each_with_index do |aspect, index| %>
+      <div class="field">
+        <%= label_tag "product[ebay_aspects][#{aspect[:name]}]", aspect[:name], class: "label" %>
+        <div class="control">
+          <% if aspect[:values].present? %>
+            <% if aspect[:name].downcase == "brand" && brand_models_map.present? %>
+              <!-- Brand select with cascading behavior -->
+              <div class="select is-fullwidth">
+                <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                    options_for_select([["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }), 
+                    { 
+                      class: "input", 
+                      data: { 
+                        action: "change->cascading-select#brandChanged",
+                        cascading_select_target: "brandSelect"
+                      }
+                    } %>
+              </div>
+            <% elsif aspect[:name].downcase == "model" && brand_models_map.present? %>
+              <!-- Model select that gets filtered by brand -->
+              <div class="select is-fullwidth">
+                <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                    options_for_select([["Select Brand first...", ""]]), 
+                    { 
+                      class: "input", 
+                      disabled: true,
+                      data: { 
+                        cascading_select_target: "modelSelect"
+                      }
+                    } %>
+              </div>
+            <% else %>
+              <!-- Regular select -->
+              <div class="select is-fullwidth">
+                <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                    options_for_select([["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }), 
+                    { class: "input" } %>
+              </div>
+            <% end %>
+          <% else %>
+            <%= text_field_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                "", 
+                placeholder: "Enter #{aspect[:name]}", 
+                class: "input" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    
+    <% if brand_models_map.present? %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<style>
+.skeleton-line {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
