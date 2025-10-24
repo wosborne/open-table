@@ -99,36 +99,6 @@
           </div>
         <% end %>
 
-        <% if @product.external_account_products.any? %>
-          <div class="card mt-4">
-            <div class="card-header">
-              <p class="card-header-title">External Accounts</p>
-            </div>
-            <div class="card-content">
-              <div class="content">
-                <% @product.external_account_products.each do |eap| %>
-                  <div class="level">
-                    <div class="level-left">
-                      <div class="level-item">
-                        <span class="icon-text">
-                          <span class="icon">
-                            <i class="fab fa-shopify"></i>
-                          </span>
-                          <span><%= eap.external_account.service_name.titleize %></span>
-                        </span>
-                      </div>
-                    </div>
-                    <div class="level-right">
-                      <div class="level-item">
-                        <span class="tag is-success">Connected</span>
-                      </div>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-          </div>
-        <% end %>
       </div>
     </div>
   </div>

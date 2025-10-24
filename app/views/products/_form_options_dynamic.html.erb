@@ -11,6 +11,15 @@
     </div>
   </div>
 
+  <!-- Hidden fields for variation aspects to create product options -->
+  <% if variation_aspects.present? %>
+    <% variation_aspects.each_with_index do |aspect, index| %>
+      <% next if aspect[:name].downcase == "model" %>
+      <%= hidden_field_tag "product[product_options_attributes][#{index}][name]", aspect[:name] %>
+      <%= hidden_field_tag "product[product_options_attributes][#{index}][position]", index + 1 %>
+    <% end %>
+  <% end %>
+
   <% if item_aspects.present? %>
     <% if brand_models_map.present? %>
       <div data-controller="cascading-select" data-cascading-select-model-options-value="<%= brand_models_map.to_json %>">
@@ -25,7 +34,7 @@
               <!-- Brand select with cascading behavior -->
               <div class="select is-fullwidth">
                 <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
-                    options_for_select([["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }), 
+                    options_for_select([["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }, @product&.ebay_aspects&.dig(aspect[:name])), 
                     { 
                       class: "input", 
                       data: { 
@@ -37,11 +46,18 @@
             <% elsif aspect[:name].downcase == "model" && brand_models_map.present? %>
               <!-- Model select that gets filtered by brand -->
               <div class="select is-fullwidth">
+                <% 
+                  saved_brand = @product&.ebay_aspects&.dig("Brand")
+                  saved_model = @product&.ebay_aspects&.dig(aspect[:name])
+                  available_models = saved_brand ? brand_models_map[saved_brand] || [] : []
+                  model_options = available_models.any? ? available_models.map { |m| [m, m] } : [["Select Brand first...", ""]]
+                  is_disabled = available_models.empty?
+                %>
                 <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
-                    options_for_select([["Select Brand first...", ""]]), 
+                    options_for_select([["Select #{aspect[:name]}...", ""]] + model_options, saved_model), 
                     { 
                       class: "input", 
-                      disabled: true,
+                      disabled: is_disabled,
                       data: { 
                         cascading_select_target: "modelSelect"
                       }
@@ -51,13 +67,13 @@
               <!-- Regular select -->
               <div class="select is-fullwidth">
                 <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
-                    options_for_select([["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }), 
+                    options_for_select([["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }, @product&.ebay_aspects&.dig(aspect[:name])), 
                     { class: "input" } %>
               </div>
             <% end %>
           <% else %>
             <%= text_field_tag "product[ebay_aspects][#{aspect[:name]}]", 
-                "", 
+                @product&.ebay_aspects&.dig(aspect[:name]), 
                 placeholder: "Enter #{aspect[:name]}", 
                 class: "input" %>
           <% end %>

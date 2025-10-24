@@ -10,12 +10,13 @@ class InventoryUnitsController < AccountsController
 
   def new
     @inventory_unit = current_account.inventory_units.new
-    @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
+    @products = current_account.products.includes(:variants)
   end
 
   def create
     @inventory_unit = current_account.inventory_units.new(inventory_unit_params)
-    @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
+    @products = current_account.products.includes(:variants)
+    
     if @inventory_unit.save
       redirect_to account_inventory_units_path(current_account), notice: "Inventory unit created."
     else
@@ -24,23 +25,19 @@ class InventoryUnitsController < AccountsController
   end
 
   def edit
-    @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
+    @products = current_account.products.includes(:variants)
     if @inventory_unit.variant
       @selected_product = @inventory_unit.variant.product
-      @selected_option_values = @inventory_unit.variant.variant_option_values.map(&:product_option_value_id)
-      @variant = @inventory_unit.variant
     end
   end
 
   def update
-    @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
+    @products = current_account.products.includes(:variants)
     if @inventory_unit.update(inventory_unit_params)
       redirect_to account_inventory_unit_path(current_account, @inventory_unit)
     else
       if @inventory_unit.variant
         @selected_product = @inventory_unit.variant.product
-        @selected_option_values = @inventory_unit.variant.variant_option_values.map(&:product_option_value_id)
-        @variant = @inventory_unit.variant
       end
       render :edit, status: :unprocessable_entity
     end
@@ -60,16 +57,13 @@ class InventoryUnitsController < AccountsController
 
   # Hotwire endpoint for dynamic variant selection
   def variant_selector
-    @products = current_account.products.includes(product_options: :product_option_values, variants: :variant_option_values)
+    @products = current_account.products.includes(:variants)
     @selected_product = current_account.products.find_by(id: params[:product_id])
-    @selected_option_values = (params[:option_value_ids] || []).map(&:to_i)
-    @variant = nil
-    if @selected_product && @selected_option_values.present?
-      @variant = @selected_product.variants.detect do |variant|
-        variant.variant_option_values.map(&:product_option_value_id).sort == @selected_option_values.sort
-      end
-    end
-    render partial: "product_option_selector", locals: { products: @products, selected_product: @selected_product, selected_option_values: @selected_option_values, variant: @variant }
+    
+    render partial: "product_option_selector", locals: { 
+      products: @products, 
+      selected_product: @selected_product
+    }
   end
 
 

@@ -19,6 +19,7 @@ export default class extends Controller {
   updateModelOptions() {
     const selectedBrand = this.brandSelectTarget.value
     const modelSelect = this.modelSelectTarget
+    const currentlySelectedValue = modelSelect.value // Preserve current selection
 
     // Clear existing options except the first one
     while (modelSelect.options.length > 1) {
@@ -31,6 +32,11 @@ export default class extends Controller {
         const option = new Option(model, model)
         modelSelect.add(option)
       })
+      
+      // Restore the previously selected value if it's still available
+      if (currentlySelectedValue && this.originalModelOptions[selectedBrand].includes(currentlySelectedValue)) {
+        modelSelect.value = currentlySelectedValue
+      }
       
       // Enable the model select
       modelSelect.disabled = false

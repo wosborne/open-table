@@ -1,0 +1,66 @@
+<div data-ebay-category-target="optionsFrame">
+  <!-- Skeleton loader -->
+  <div class="is-hidden" data-ebay-category-target="skeleton">
+    <div class="skeleton-block"></div>
+  </div>
+
+
+  <% if item_aspects.present? %>
+    <% if brand_models_map.present? %>
+      <div data-controller="cascading-select" data-cascading-select-model-options-value="<%= brand_models_map.to_json %>">
+    <% end %>
+    
+    <% item_aspects.each_with_index do |aspect, index| %>
+      <div class="field">
+        <%= label_tag "product[ebay_aspects][#{aspect[:name]}]", aspect[:name], class: "label" %>
+        <div class="control">
+          <% if aspect[:values].present? %>
+            <% if aspect[:name].downcase == "brand" && brand_models_map.present? %>
+              <!-- Brand select with cascading behavior -->
+              <div class="select is-fullwidth">
+                <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                    options_for_select(brand_select_options(aspect), aspect_value(aspect[:name])), 
+                    { 
+                      class: "input", 
+                      data: { 
+                        action: "change->cascading-select#brandChanged",
+                        cascading_select_target: "brandSelect"
+                      }
+                    } %>
+              </div>
+            <% elsif aspect[:name].downcase == "model" && brand_models_map.present? %>
+              <!-- Model select that gets filtered by brand -->
+              <div class="select is-fullwidth">
+                <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                    options_for_select(model_select_options(aspect), aspect_value(aspect[:name])), 
+                    { 
+                      class: "input", 
+                      disabled: model_field_disabled?,
+                      data: { 
+                        cascading_select_target: "modelSelect"
+                      }
+                    } %>
+              </div>
+            <% else %>
+              <!-- Regular select -->
+              <div class="select is-fullwidth">
+                <%= select_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                    options_for_select(regular_select_options(aspect), aspect_value(aspect[:name])), 
+                    { class: "input" } %>
+              </div>
+            <% end %>
+          <% else %>
+            <%= text_field_tag "product[ebay_aspects][#{aspect[:name]}]", 
+                aspect_value(aspect[:name]), 
+                placeholder: "Enter #{aspect[:name]}", 
+                class: "input" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    
+    <% if brand_models_map.present? %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

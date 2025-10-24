@@ -11,7 +11,7 @@
     </div>
   <% end %>
 
-  <%= render "product_option_selector", products: @products, selected_product: @selected_product, selected_option_values: @selected_option_values, variant: @variant %>
+  <%= render "product_option_selector", products: @products, selected_product: @selected_product %>
 
   <div class="field">
     <%= form.label :serial_number, "S/N or Unique ID", class: "label" %>

@@ -35,6 +35,9 @@ Rails.application.routes.draw do
       member do
         patch :regenerate_skus
       end
+      collection do
+        get :ebay_category_aspects
+      end
       resources :external_account_products
     end
 
@@ -43,7 +46,11 @@ Rails.application.routes.draw do
       member do
         delete :delete_image_attachment
       end
-      resources :external_account_inventory_units, only: [:create, :destroy]
+      resources :external_account_inventory_units, only: [:new, :create, :update, :destroy]
+    end
+
+    resources :variants do
+      get :product_options, on: :collection
     end
 
     resources :locations

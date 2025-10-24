@@ -6,10 +6,12 @@ class InventoryUnit < ApplicationRecord
   belongs_to :account
   belongs_to :variant
   belongs_to :location, optional: true
+  
   has_many_attached :images
   has_many :external_account_inventory_units, dependent: :destroy
   validates :serial_number, presence: true, uniqueness: true
   enum :status, %w[in_stock sold reserved]
+
 
   scope :in_stock, -> { where(status: :in_stock) }
 

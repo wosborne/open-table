@@ -21,12 +21,6 @@ class ProductsController < AccountsController
   end
 
   def show
-    # Check eBay requirements if eBay account exists
-    if current_account.ebay_account&.persisted?
-      @ebay_service = EbayService.new(external_account: current_account.ebay_account)
-      @ebay_requirements_met = @ebay_service.can_create_product?(@product)
-      @ebay_validation_errors = @ebay_service.validate_product_requirements(@product) unless @ebay_requirements_met
-    end
   end
 
   def edit
@@ -54,36 +48,10 @@ class ProductsController < AccountsController
   end
 
   def ebay_category_aspects
-    if params[:clear] == 'true'
-      @item_aspects = []
-      @variation_aspects = []
-    elsif params[:category_id].present?
-      ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
-      if ebay_account
-        begin
-          ebay_category = EbayCategory.new(ebay_account)
-          Rails.logger.info "Fetching aspects for category: #{params[:category_id]}"
-          aspects_data = ebay_category.format_item_specifics_for_form(params[:category_id])
-          @item_aspects = aspects_data[:item_aspects]
-          @variation_aspects = aspects_data[:variation_aspects]
-          @brand_models_map = aspects_data[:brand_models_map]
-          Rails.logger.info "Found #{@item_aspects.length} item aspects and #{@variation_aspects.length} variation aspects"
-        rescue => e
-          Rails.logger.error "Failed to load eBay aspects: #{e.message}"
-          @item_aspects = []
-          @variation_aspects = []
-          @brand_models_map = {}
-        end
-      else
-        @item_aspects = []
-        @variation_aspects = []
-        @brand_models_map = {}
-      end
-    else
-      @item_aspects = []
-      @variation_aspects = []
-      @brand_models_map = {}
-    end
+    temp_product = Product.new(ebay_category_id: params[:category_id], account: current_account)
+    @item_aspects = temp_product.item_aspects
+    @variation_aspects = temp_product.variation_aspects
+    @brand_models_map = temp_product.brand_models_map
 
     respond_to do |format|
       format.html { render partial: "products/form_options_dynamic", locals: { 
@@ -102,7 +70,7 @@ class ProductsController < AccountsController
   private
 
   def product_params
-    params.require(:product).permit(:name, :description, :brand, :ebay_category_id, :ebay_category_name, ebay_aspects: {})
+    params.require(:product).permit(:name, :description, :brand, :ebay_category_id, :ebay_category_name, ebay_aspects: {}, product_options_attributes: [:id, :name, :_destroy])
   end
 
   def set_product
