@@ -3,9 +3,12 @@ class ExternalAccountInventoryUnit < ApplicationRecord
   belongs_to :inventory_unit
 
   validates :external_account_id, uniqueness: { scope: :inventory_unit_id }
+  
+  before_update :handle_status_change
+  before_destroy :remove_from_ebay
 
-  def status
-    marketplace_data&.dig('status') || 'not_listed'
+  def published?
+    marketplace_data&.dig('published') || false
   end
 
   def listing_id
@@ -28,13 +31,8 @@ class ExternalAccountInventoryUnit < ApplicationRecord
   end
 
   def status_label
-    case status
-    when 'not_listed', nil then 'Not Listed'
-    when 'draft' then 'Draft'
-    when 'active' then 'Listed'
-    when 'sold' then 'Sold'
-    when 'ended' then 'Ended'
-    end
+    return 'Not Listed' unless marketplace_data.present?
+    published? ? 'Live on eBay' : 'In eBay Inventory'
   end
 
   def perform_action(action)
@@ -84,5 +82,37 @@ class ExternalAccountInventoryUnit < ApplicationRecord
   def update_marketplace_data(updates)
     self.marketplace_data = (marketplace_data || {}).merge(updates.stringify_keys)
     save
+  end
+
+  def remove_from_ebay
+    return unless external_account.service_name == 'ebay'
+    
+    begin
+      api_client = EbayApiClient.new(external_account)
+      sku = marketplace_data&.dig('sku') || inventory_unit.variant.sku
+      
+      # Delete inventory item (this also deletes associated offers)
+      delete_result = api_client.delete("/sell/inventory/v1/inventory_item/#{sku}")
+      
+      if delete_result[:success]
+        Rails.logger.info "Successfully removed eBay inventory item: #{sku}"
+      elsif ebay_item_not_found?(delete_result)
+        Rails.logger.info "eBay inventory item #{sku} already removed or not found - continuing with deletion"
+      else
+        Rails.logger.error "Failed to remove eBay inventory item #{sku}: #{delete_result[:error]}"
+        # Prevent the destruction - throw an error to halt the transaction
+        raise "Failed to remove item from eBay: #{delete_result[:error]}"
+      end
+    rescue => e
+      Rails.logger.error "Error removing eBay inventory item: #{e.message}"
+      # Re-raise to prevent deletion
+      raise e
+    end
+  end
+
+  def ebay_item_not_found?(result)
+    # Check if eBay returned a "not found" error, meaning item is already gone
+    result[:status_code] == 404 ||
+    result.dig(:detailed_errors)&.any? { |error| error[:error_id] == 25001 } # Item not found error
   end
 end

@@ -1,0 +1,122 @@
+<% content_for :title, "Add to eBay Inventory" %>
+
+<div class="container">
+  <div class="mb-5">
+    <%= link_to "← Back", account_inventory_unit_path(current_account, @inventory_unit), class: "button is-text" %>
+  </div>
+
+  <div class="columns">
+    <div class="column is-8">
+      <div class="box">
+        <h1 class="title is-3">Add to eBay Inventory</h1>
+        <p class="subtitle is-6">Review the details that will be sent to eBay</p>
+
+        <h2 class="title is-5">Listing Preview</h2>
+        
+        <div class="field">
+          <label class="label">Title</label>
+          <div class="content">
+            <%= @inventory_unit.send(:build_ebay_title) %>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Description</label>
+          <div class="content">
+            <pre class="has-background-light p-3"><%= @inventory_unit.send(:build_ebay_description) %></pre>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Price</label>
+          <div class="content">
+            £<%= @inventory_unit.variant.price %> GBP
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">SKU</label>
+          <div class="content">
+            <%= @inventory_unit.variant.sku %>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">eBay Category</label>
+          <div class="content">
+            <% if @inventory_unit.variant.product.ebay_category_id.present? %>
+              Category ID: <%= @inventory_unit.variant.product.ebay_category_id %>
+              <% if @inventory_unit.variant.product.ebay_category_name.present? %>
+                (<%= @inventory_unit.variant.product.ebay_category_name %>)
+              <% end %>
+            <% else %>
+              <span class="has-text-danger">No eBay category set for this product</span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Item Specifics (Aspects)</label>
+          <div class="content">
+            <% aspects = @inventory_unit.send(:build_ebay_aspects) %>
+            <% if aspects.any? %>
+              <% aspects.each do |name, values| %>
+                <p><strong><%= name %>:</strong> <%= Array(values).join(", ") %></p>
+              <% end %>
+            <% else %>
+              <span class="has-text-warning">No item specifics available</span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Condition</label>
+          <div class="content">
+            Used - Excellent
+          </div>
+        </div>
+
+        <hr>
+
+        <%= form_with url: account_inventory_unit_external_account_inventory_units_path(current_account, @inventory_unit),
+                      method: :post,
+                      local: true do |form| %>
+          <div class="field">
+            <div class="control">
+              <%= form.submit "Add to eBay Inventory", class: "button is-primary is-large" %>
+              <%= link_to "Cancel", account_inventory_unit_path(current_account, @inventory_unit), 
+                          class: "button is-light is-large" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="column is-4">
+      <div class="box">
+        <h2 class="title is-5">Item Information</h2>
+        
+        <div class="content">
+          <p><strong>Product:</strong> <%= @inventory_unit.variant.product.name %></p>
+          <p><strong>SKU:</strong> <%= @inventory_unit.variant.sku %></p>
+          <p><strong>Serial Number:</strong> <%= @inventory_unit.serial_number %></p>
+          
+          <% @inventory_unit.variant.variant_option_values.includes(:product_option, :product_option_value).each do |vov| %>
+            <p><strong><%= vov.product_option.name %>:</strong> <%= vov.product_option_value.value %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @inventory_unit.variant.product.ebay_category_id.blank? %>
+        <div class="box">
+          <h2 class="title is-6 has-text-danger">Missing eBay Category</h2>
+          <div class="content is-small">
+            <p>This product doesn't have an eBay category assigned. You'll need to edit the product and select an eBay category before listing.</p>
+            <%= link_to "Edit Product", edit_account_product_path(current_account, @inventory_unit.variant.product), 
+                        class: "button is-small is-warning" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

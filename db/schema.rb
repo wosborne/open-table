@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_12_132222) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_21_093157) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -229,6 +229,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_12_132222) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "brand"
+    t.string "ebay_category_id"
+    t.string "ebay_category_name"
+    t.jsonb "ebay_aspects"
     t.index ["account_id"], name: "index_products_on_account_id"
   end
 

@@ -49,8 +49,7 @@ class InventoryUnitsController < AccountsController
   end
 
   def delete_image_attachment
-    blob = ActiveStorage::Blob.find_signed(params[:signed_id])
-    attachment = @inventory_unit.images.find { |img| img.blob == blob }
+    attachment = @inventory_unit.images.find(params[:attachment_id])
     attachment&.purge
     redirect_back(fallback_location: account_inventory_unit_path(current_account, @inventory_unit))
   end

@@ -1,37 +1,70 @@
 class ExternalAccountInventoryUnitsController < InventoryUnitsController
-  before_action :set_external_account_inventory_unit, only: [:destroy]
+  before_action :set_external_account_inventory_unit, only: [:show, :update, :destroy]
+  before_action :set_ebay_account, only: [:new, :create]
+
+  def show
+    @inventory_unit = current_inventory_unit
+    @external_account_inventory_unit = current_inventory_unit.ebay_listing_for_account(current_account)
+    
+    unless @external_account_inventory_unit
+      redirect_to account_inventory_unit_path(current_account, current_inventory_unit), 
+                  alert: "No eBay listing found."
+    end
+  end
+
+  def new
+    @inventory_unit = current_inventory_unit
+    @external_account_inventory_unit = ExternalAccountInventoryUnit.new
+  end
 
   def create
-    ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
+    result = current_inventory_unit.add_to_ebay_inventory
     
-    unless ebay_account
-      @error = "No eBay account connected to this account."
-      return render_response
+    if result[:success]
+      ebay_listing = result[:ebay_listing]
+      redirect_to account_inventory_unit_external_account_inventory_unit_path(current_account, current_inventory_unit, ebay_listing), 
+                  notice: "Successfully added to eBay inventory!"
+    else
+      @error = result[:message]
+      @inventory_unit = current_inventory_unit
+      @external_account_inventory_unit = ExternalAccountInventoryUnit.new
+      render :new
     end
+  end
 
-    @external_account_inventory_unit = current_inventory_unit.external_account_inventory_units.build(
-      external_account: ebay_account,
-      marketplace_data: { status: 'draft' }
-    )
-
-    if @external_account_inventory_unit.save
+  def update
+    @inventory_unit = current_inventory_unit
+    result = current_inventory_unit.publish_ebay_offer
+    
+    if result[:success]
       render_response
     else
-      @error = "Failed to create eBay listing."
+      @error = result[:message]
       render_response
     end
   end
 
   def destroy
-    if @external_account_inventory_unit.destroy
-      render_response
-    else
-      @error = "Failed to delete eBay listing."
-      render_response
+    begin
+      @external_account_inventory_unit.destroy
+      redirect_to account_inventory_unit_path(current_account, current_inventory_unit), 
+                  notice: "eBay listing removed successfully!"
+    rescue => e
+      redirect_to account_inventory_unit_external_account_inventory_unit_path(current_account, current_inventory_unit, @external_account_inventory_unit),
+                  alert: "Failed to remove from eBay: #{e.message}"
     end
   end
 
   private
+
+  def set_ebay_account
+    @ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
+    
+    unless @ebay_account
+      redirect_to account_inventory_unit_path(current_account, current_inventory_unit), 
+                  alert: "No eBay account connected to this account."
+    end
+  end
 
   def set_external_account_inventory_unit
     @external_account_inventory_unit = current_inventory_unit.ebay_listing_for_account(current_account)

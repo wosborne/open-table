@@ -15,7 +15,7 @@
           <div class="select is-fullwidth">
             <% if existing_variants.any? %>
               <%= select_tag "inventory_unit[variant_id]", 
-                  options_from_collection_for_select(existing_variants, :id, ->(v) { "#{v.sku} - #{number_to_currency(v.price)}" }),
+                  options_from_collection_for_select(existing_variants, :id, ->(v) { "#{v.sku} - #{number_to_currency(v.price)}" }, @inventory_unit.variant_id),
                   { 
                     prompt: "Select variant", 
                     class: "input"

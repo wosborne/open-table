@@ -4,44 +4,94 @@
     <% ebay_listing = inventory_unit.ebay_listing_for_account(current_account) %>
     
     <% if ebay_listing %>
-      <div class="notification is-success is-light">
-        <div class="level mb-2">
-          <div class="level-left">
-            <div class="level-item">
-              <span class="tag is-success">
-                <span class="icon is-small">
-                  <i class="fas fa-check-circle"></i>
+      <% if !ebay_listing.published? %>
+        <div class="notification is-warning is-light">
+          <div class="level mb-2">
+            <div class="level-left">
+              <div class="level-item">
+                <span class="tag is-info">
+                  <span class="icon is-small">
+                    <i class="fas fa-warehouse"></i>
+                  </span>
+                  <span>In eBay Inventory</span>
                 </span>
-                <span>eBay Draft Created</span>
-              </span>
+              </div>
             </div>
+          </div>
+          
+          <p class="is-size-7 has-text-grey">
+            Added to inventory <%= time_ago_in_words(ebay_listing.created_at) %> ago
+          </p>
+          
+          <div class="buttons is-small mt-3">
+            <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
+                        class: "button is-small is-success",
+                        data: { turbo_method: :patch, turbo_frame: "ebay_marketplace" } do %>
+              <span class="icon is-small">
+                <i class="fas fa-play"></i>
+              </span>
+              <span>Publish Offer</span>
+            <% end %>
+            
+            <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
+                        class: "button is-small is-danger",
+                        data: { turbo_method: :delete, confirm: "Remove from eBay inventory? This will remove it from both eBay and your account." } do %>
+              <span class="icon is-small">
+                <i class="fas fa-trash"></i>
+              </span>
+              <span>Remove from eBay</span>
+            <% end %>
           </div>
         </div>
         
-        <p class="is-size-7 has-text-grey">
-          Draft created <%= time_ago_in_words(ebay_listing.created_at) %> ago
-        </p>
-        
-        <div class="buttons is-small mt-3">
-          <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
-                      class: "button is-small is-danger",
-                      data: { turbo_method: :delete, confirm: "Delete this eBay draft? This will remove it from both eBay and your account." } do %>
-            <span class="icon is-small">
-              <i class="fas fa-trash"></i>
-            </span>
-            <span>Delete Draft</span>
+      <% else %>
+        <div class="notification is-success is-light">
+          <div class="level mb-2">
+            <div class="level-left">
+              <div class="level-item">
+                <div class="tags has-addons">
+                  <span class="tag is-success">
+                    <span class="icon is-small">
+                      <i class="fas fa-check-circle"></i>
+                    </span>
+                    <span>Live on eBay</span>
+                  </span>
+                  <% if ebay_listing.price.present? %>
+                    <span class="tag is-light">
+                      $<%= number_with_precision(ebay_listing.price, precision: 2) %>
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <% if ebay_listing.listed_at.present? %>
+            <p class="is-size-7 has-text-grey mb-3">
+              Published <%= time_ago_in_words(ebay_listing.listed_at) %> ago
+            </p>
           <% end %>
+          
+          <div class="buttons is-small">
+            <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
+                        class: "button is-small is-danger",
+                        data: { turbo_method: :delete, confirm: "End this eBay listing?" } do %>
+              <span class="icon is-small">
+                <i class="fas fa-stop"></i>
+              </span>
+              <span>End Listing</span>
+            <% end %>
+          </div>
         </div>
-        
-      </div>
+      <% end %>
     <% else %>
-      <%= link_to account_inventory_unit_external_account_inventory_units_path(current_account, inventory_unit), 
+      <%= link_to new_account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit), 
                   class: "button is-info",
-                  data: { turbo_method: :post, confirm: "Create draft listing on eBay?" } do %>
+                  data: { turbo_frame: "_top" } do %>
         <span class="icon">
           <i class="fas fa-plus"></i>
         </span>
-        <span>Create eBay Draft</span>
+        <span>Add to eBay Inventory</span>
       <% end %>
     <% end %>
   </div>

@@ -1,0 +1,152 @@
+<% content_for :title, "eBay Listing Details" %>
+
+<div class="container">
+  <div class="mb-5">
+    <%= link_to "← Back to Inventory Unit", account_inventory_unit_path(current_account, @inventory_unit), class: "button is-text" %>
+  </div>
+
+  <div class="columns">
+    <div class="column is-8">
+      <div class="box">
+        <h1 class="title is-3">eBay Listing Details</h1>
+        
+        <div class="field">
+          <label class="label">Status</label>
+          <div class="content">
+            <% if @external_account_inventory_unit.published? %>
+              <span class="tag is-success is-large">
+                <span class="icon">
+                  <i class="fas fa-check-circle"></i>
+                </span>
+                <span>Live on eBay</span>
+              </span>
+            <% else %>
+              <span class="tag is-warning is-large">
+                <span class="icon">
+                  <i class="fas fa-warehouse"></i>
+                </span>
+                <span>In eBay Inventory (Unpublished)</span>
+              </span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">eBay Title</label>
+          <div class="content">
+            <%= @external_account_inventory_unit.marketplace_data&.dig('title') || @inventory_unit.send(:build_ebay_title) %>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">SKU</label>
+          <div class="content">
+            <%= @external_account_inventory_unit.marketplace_data&.dig('sku') || @inventory_unit.variant.sku %>
+          </div>
+        </div>
+
+        <% if @external_account_inventory_unit.marketplace_data&.dig('price').present? %>
+          <div class="field">
+            <label class="label">Price</label>
+            <div class="content">
+              £<%= @external_account_inventory_unit.marketplace_data['price'] %> GBP
+            </div>
+          </div>
+        <% end %>
+
+        <% if @external_account_inventory_unit.marketplace_data&.dig('offer_id').present? %>
+          <div class="field">
+            <label class="label">eBay Offer ID</label>
+            <div class="content">
+              <%= @external_account_inventory_unit.marketplace_data['offer_id'] %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @external_account_inventory_unit.marketplace_data&.dig('listing_id').present? %>
+          <div class="field">
+            <label class="label">eBay Listing ID</label>
+            <div class="content">
+              <%= @external_account_inventory_unit.marketplace_data['listing_id'] %>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="field">
+          <label class="label">Created</label>
+          <div class="content">
+            <%= time_ago_in_words(@external_account_inventory_unit.created_at) %> ago
+          </div>
+        </div>
+
+        <% if @external_account_inventory_unit.marketplace_data&.dig('listed_at').present? %>
+          <div class="field">
+            <label class="label">Published</label>
+            <div class="content">
+              <%= time_ago_in_words(Time.parse(@external_account_inventory_unit.marketplace_data['listed_at'])) %> ago
+            </div>
+          </div>
+        <% end %>
+
+        <hr>
+
+        <div class="buttons">
+          <% unless @external_account_inventory_unit.published? %>
+            <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit), 
+                        method: :patch,
+                        class: "button is-success" do %>
+              <span class="icon">
+                <i class="fas fa-play"></i>
+              </span>
+              <span>Publish to eBay</span>
+            <% end %>
+          <% end %>
+
+          <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit), 
+                      class: "button is-danger",
+                      data: { 
+                        turbo_method: :delete,
+                        confirm: "Remove this eBay listing? This will delete it from both eBay and your account." 
+                      } do %>
+            <span class="icon">
+              <i class="fas fa-trash"></i>
+            </span>
+            <span>Remove from eBay</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="column is-4">
+      <div class="box">
+        <h2 class="title is-5">Product Information</h2>
+        
+        <div class="content">
+          <p><strong>Product:</strong> <%= @inventory_unit.variant.product.name %></p>
+          <p><strong>Serial Number:</strong> <%= @inventory_unit.serial_number %></p>
+          <p><strong>Local Price:</strong> £<%= @inventory_unit.variant.price %></p>
+          
+          <% @inventory_unit.variant.variant_option_values.includes(:product_option, :product_option_value).each do |vov| %>
+            <p><strong><%= vov.product_option.name %>:</strong> <%= vov.product_option_value.value %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @inventory_unit.images.any? %>
+        <div class="box">
+          <h2 class="title is-6">Images</h2>
+          <% @inventory_unit.images.first(3).each do |image| %>
+            <div class="mb-3">
+              <figure class="image is-square">
+                <%= image_tag image, class: "is-fullwidth", style: "object-fit: cover;" %>
+              </figure>
+            </div>
+          <% end %>
+          <% if @inventory_unit.images.count > 3 %>
+            <p class="help">+ <%= @inventory_unit.images.count - 3 %> more images</p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

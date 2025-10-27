@@ -1,0 +1,13 @@
+<%= turbo_stream.replace "ebay_marketplace" do %>
+  <% if @error %>
+    <div class="box">
+      <h2 class="subtitle">eBay Marketplace</h2>
+      <div class="notification is-danger">
+        <strong>Error:</strong> <%= @error %>
+      </div>
+      <%= render 'inventory_units/ebay_marketplace', inventory_unit: @inventory_unit %>
+    </div>
+  <% else %>
+    <%= render 'inventory_units/ebay_marketplace', inventory_unit: @inventory_unit %>
+  <% end %>
+<% end %>
