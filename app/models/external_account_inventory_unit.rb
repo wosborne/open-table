@@ -4,7 +4,6 @@ class ExternalAccountInventoryUnit < ApplicationRecord
 
   validates :external_account_id, uniqueness: { scope: :inventory_unit_id }
   
-  before_update :handle_status_change
   before_destroy :remove_from_ebay
 
   def published?
@@ -113,6 +112,6 @@ class ExternalAccountInventoryUnit < ApplicationRecord
   def ebay_item_not_found?(result)
     # Check if eBay returned a "not found" error, meaning item is already gone
     result[:status_code] == 404 ||
-    result.dig(:detailed_errors)&.any? { |error| error[:error_id] == 25001 } # Item not found error
+    (result.dig(:detailed_errors)&.any? { |error| error[:error_id] == 25001 }) == true
   end
 end
