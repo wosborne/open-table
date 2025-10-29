@@ -1,3 +1,3 @@
 <h1 class="title">Order <%= @order.name %></h1>
 
-<%= render "components/model_table/model_table", klass: OrderLineItem, resources: @order.order_line_items %> 
+<%= render ModelTableComponent.new(resources: @order.order_line_items, current_account: current_account) %> 

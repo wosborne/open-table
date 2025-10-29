@@ -15,8 +15,6 @@ Rails.application.routes.draw do
 
   resources :accounts, only: %w[new create edit update]
 
-  get "/marketplace", to: "marketplace#index"
-
   post "/webhooks/shopify", to: "shopify_webhooks#receive"
   match "/webhooks/ebay/marketplace_account_deletion", to: "ebay_webhooks#marketplace_account_deletion", via: [:get, :post]
 
@@ -57,29 +55,30 @@ Rails.application.routes.draw do
 
     resources :orders, only: [ :index, :show, :edit ]
 
-    resources :tables do
-      resources :properties, only: %w[create update destroy] do
-        get :type_fields, on: :member
-        post :refresh_cells, on: :member
-      end
-
-      resources :records, only: %w[create update destroy] do
-        delete :delete_records, on: :collection
-      end
-
-      resources :views, only: %w[create show update destroy] do
-        resources :view_properties do
-          patch :set_positions, on: :collection
-          patch :set_visibility, on: :member
-        end
-
-        get :filter_field, on: :member
-        patch :set_record_attribute, on: :member
-      end
-
-      get :property_options, on: :member
-      patch :set_record_attribute, on: :member
-    end
+    # Custom tables routes disabled
+    # resources :tables do
+    #   resources :properties, only: %w[create update destroy] do
+    #     get :type_fields, on: :member
+    #     post :refresh_cells, on: :member
+    #   end
+    #
+    #   resources :records, only: %w[create update destroy] do
+    #     delete :delete_records, on: :collection
+    #   end
+    #
+    #   resources :views, only: %w[create show update destroy] do
+    #     resources :view_properties do
+    #       patch :set_positions, on: :collection
+    #       patch :set_visibility, on: :member
+    #     end
+    #
+    #     get :filter_field, on: :member
+    #     patch :set_record_attribute, on: :member
+    #   end
+    #
+    #   get :property_options, on: :member
+    #   patch :set_record_attribute, on: :member
+    # end
 
     resources :shopify
   end

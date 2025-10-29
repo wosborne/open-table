@@ -1,6 +1,6 @@
 class Product < ApplicationRecord
   belongs_to :account
-  TABLE_COLUMNS = attribute_names - [ "account_id", "ebay_category_id", "ebay_category_name" ] + [ "in_stock" ]
+  TABLE_COLUMNS = attribute_names - [ "id", "description", "account_id", "ebay_category_id", "ebay_category_name", "brand", "ebay_aspects" ] + [ "in_stock" ]
   has_many :product_options, dependent: :destroy
   has_many :product_option_values, through: :product_options
   has_many :variants, dependent: :destroy
@@ -8,9 +8,9 @@ class Product < ApplicationRecord
   has_many :inventory_units, through: :variants
 
   validates :name, presence: true, uniqueness: { scope: :account_id }
-  
+
   accepts_nested_attributes_for :product_options, allow_destroy: true, reject_if: :all_blank
-  
+
   # Allow eBay category assignment
   attr_accessor :ebay_category_data
   # after_save :update_external_accounts
@@ -38,6 +38,10 @@ class Product < ApplicationRecord
     ebay_aspects || {}
   end
 
+  def aspect(name)
+    ebay_aspects&.dig(name)
+  end
+
   private
 
   def ebay_aspects_data
@@ -45,7 +49,7 @@ class Product < ApplicationRecord
   end
 
   def fetch_ebay_aspects_data
-    ebay_account = account.external_accounts.find_by(service_name: 'ebay')
+    ebay_account = account.external_accounts.find_by(service_name: "ebay")
     return { item_aspects: [], variation_aspects: [], brand_models_map: {} } unless ebay_account
 
     begin

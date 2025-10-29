@@ -19,5 +19,5 @@
 </div>
 
 <%= turbo_frame_tag "inventory_units", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-  <%= render "components/model_table/model_table", klass: InventoryUnit, resources: @inventory_units %>
+  <%= render ModelTableComponent.new(resources: @inventory_units, current_account: current_account) %>
 <% end %>

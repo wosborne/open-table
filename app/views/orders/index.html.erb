@@ -1,3 +1,10 @@
 <h1 class="title">Orders</h1>
 
-<%= render "components/model_table/model_table", klass: Order, resources: @orders %> 
+<% if @orders.any? %>
+  <%= render ModelTableComponent.new(resources: @orders, current_account: current_account) %>
+<% else %>
+  <div class="has-text-centered has-text-grey-light p-6">
+    <p class="is-size-4">No orders found</p>
+    <p>Orders will appear here when they are synced from your connected marketplaces.</p>
+  </div>
+<% end %> 

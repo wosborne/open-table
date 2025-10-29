@@ -19,5 +19,5 @@
 </div>
 
 <%= turbo_frame_tag "locations", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-  <%= render "components/model_table/model_table", klass: Location, resources: @locations %>
+  <%= render ModelTableComponent.new(resources: @locations, current_account: current_account) %>
 <% end %>
