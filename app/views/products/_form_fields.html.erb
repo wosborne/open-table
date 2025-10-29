@@ -1,3 +1,15 @@
+<!-- Display general errors -->
+<% if form.object.errors.any? %>
+  <div class="notification is-danger">
+    <strong><%= pluralize(form.object.errors.count, "error") %> prohibited this product from being saved:</strong>
+    <ul>
+      <% form.object.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
 <%= render "/components/form/input_wrapper",
   label: form.label(:name, class: "label"),
   input: form.text_field(:name, autofocus: true, class: "input"),
@@ -25,11 +37,18 @@
             } %>
       </div>
     </div>
+    <% form.object.errors.full_messages_for(:ebay_category_id).each do |error| %>
+      <p class="help is-danger"><%= error %></p>
+    <% end %>
   </div>
 
-  <!-- Hidden fields for creating product options -->
+  <!-- Hidden fields for product options -->
   <% form.object.variation_aspects.each_with_index do |aspect, index| %>
     <% next if aspect[:name].downcase == "model" %>
+    <% existing_option = form.object.product_options.find { |po| po.name == aspect[:name] } %>
+    <% if existing_option %>
+      <%= hidden_field_tag "product[product_options_attributes][#{index}][id]", existing_option.id %>
+    <% end %>
     <%= hidden_field_tag "product[product_options_attributes][#{index}][name]", aspect[:name] %>
   <% end %>
 

@@ -16,6 +16,7 @@ class ProductsController < AccountsController
     if @product.save
       redirect_to edit_account_product_path(current_account, @product), notice: "Product was successfully created.", status: :see_other
     else
+      load_ebay_categories
       render :new, status: :unprocessable_entity
     end
   end
@@ -38,12 +39,12 @@ class ProductsController < AccountsController
 
   def regenerate_skus
     affected_variants = @product.variants_affected_by_option_changes
-    
+
     affected_variants.each do |variant_info|
       variant_info[:variant].regenerate_sku!
     end
-    
-    redirect_to edit_account_product_path(current_account, @product), 
+
+    redirect_to edit_account_product_path(current_account, @product),
                 notice: "#{affected_variants.count} variant SKUs were regenerated."
   end
 
@@ -54,8 +55,8 @@ class ProductsController < AccountsController
     @brand_models_map = temp_product.brand_models_map
 
     respond_to do |format|
-      format.html { render partial: "products/form_options_dynamic", locals: { 
-        item_aspects: @item_aspects, 
+      format.html { render partial: "products/form_options_dynamic", locals: {
+        item_aspects: @item_aspects,
         variation_aspects: @variation_aspects,
         brand_models_map: @brand_models_map
       } }
@@ -70,7 +71,7 @@ class ProductsController < AccountsController
   private
 
   def product_params
-    params.require(:product).permit(:name, :description, :brand, :ebay_category_id, :ebay_category_name, ebay_aspects: {}, product_options_attributes: [:id, :name, :_destroy])
+    params.require(:product).permit(:name, :description, :brand, :ebay_category_id, :ebay_category_name, ebay_aspects: {}, product_options_attributes: [ :id, :name, :_destroy ])
   end
 
   def set_product
@@ -78,13 +79,13 @@ class ProductsController < AccountsController
   end
 
   def load_ebay_categories
-    ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
+    ebay_account = current_account.external_accounts.find_by(service_name: "ebay")
     return unless ebay_account
 
     begin
       ebay_category = EbayCategory.new(ebay_account)
       mobile_categories = ebay_category.get_mobile_phone_categories
-      
+
       if mobile_categories.is_a?(Array)
         @ebay_categories = mobile_categories.map do |suggestion|
           category_data = suggestion["category"]
