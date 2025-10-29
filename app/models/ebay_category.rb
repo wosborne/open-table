@@ -36,28 +36,36 @@ class EbayCategory
   end
 
   def get_item_specifics(category_id)
-    result = @api_client.get("/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category", {
-      marketplace_id: "EBAY_GB",
-      category_id: category_id
-    })
+    cache_key = "ebay_item_specifics_#{category_id}"
     
-    if result[:success]
-      result[:data]
-    else
-      { error: result[:error] }
+    Rails.cache.fetch(cache_key, expires_in: 24.hours) do
+      result = @api_client.get("/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category", {
+        marketplace_id: "EBAY_GB",
+        category_id: category_id
+      })
+      
+      if result[:success]
+        result[:data]
+      else
+        { error: result[:error] }
+      end
     end
   end
 
   def search_categories(query)
-    result = @api_client.get("/commerce/taxonomy/v1/category_tree/0/get_category_suggestions", {
-      marketplace_id: "EBAY_GB", 
-      q: query
-    })
+    cache_key = "ebay_search_categories_#{query.downcase.gsub(/\s+/, '_')}"
     
-    if result[:success]
-      result[:data]
-    else
-      { error: result[:error] }
+    Rails.cache.fetch(cache_key, expires_in: 24.hours) do
+      result = @api_client.get("/commerce/taxonomy/v1/category_tree/0/get_category_suggestions", {
+        marketplace_id: "EBAY_GB", 
+        q: query
+      })
+      
+      if result[:success]
+        result[:data]
+      else
+        { error: result[:error] }
+      end
     end
   end
 
@@ -82,21 +90,25 @@ class EbayCategory
   end
 
   def get_mobile_phone_categories
-    search_result = search_categories("mobile phone")
+    cache_key = "ebay_mobile_phone_categories_#{@external_account.id}"
     
-    if search_result[:error]
-      return { error: search_result[:error] }
-    end
+    Rails.cache.fetch(cache_key, expires_in: 24.hours) do
+      search_result = search_categories("mobile phone")
+      
+      if search_result[:error]
+        return { error: search_result[:error] }
+      end
 
-    categories = search_result["categorySuggestions"] || []
-    
-    mobile_categories = categories.select do |suggestion|
-      category_data = suggestion["category"]
-      name = category_data["categoryName"] || suggestion["categoryTreeNodeAncestors"]&.last&.dig("categoryName") || ""
-      name.downcase.include?("phone") || name.downcase.include?("smartphone") || name.downcase.include?("cell")
+      categories = search_result["categorySuggestions"] || []
+      
+      mobile_categories = categories.select do |suggestion|
+        category_data = suggestion["category"]
+        name = category_data["categoryName"] || suggestion["categoryTreeNodeAncestors"]&.last&.dig("categoryName") || ""
+        name.downcase.include?("phone") || name.downcase.include?("smartphone") || name.downcase.include?("cell")
+      end
+      
+      mobile_categories
     end
-    
-    mobile_categories
   end
 
   def format_item_specifics_for_form(category_id)
@@ -131,13 +143,10 @@ class EbayCategory
       
       # Override: Model should always be item-level (one model per product)
       if aspect_data[:name].downcase == "model"
-        Rails.logger.info "Aspect '#{aspect_data[:name]}' - forcing to item-level (override eBay's variation setting)"
         item_aspects << aspect_data
       elsif enabled_for_variations
-        Rails.logger.info "Aspect '#{aspect_data[:name]}' - variation-level"
         variation_aspects << aspect_data
       else
-        Rails.logger.info "Aspect '#{aspect_data[:name]}' - item-level"
         item_aspects << aspect_data
       end
     end

@@ -33,9 +33,6 @@ class EbayApiClient
       url = "#{@api_base_url}#{endpoint}"
       headers = standard_headers
       
-      Rails.logger.info "eBay API #{method.upcase}: #{url}"
-      Rails.logger.info "eBay API Payload: #{payload.to_json}" if payload
-      
       response = case method
       when :put
         RestClient.put(url, payload&.to_json, headers)
@@ -47,8 +44,6 @@ class EbayApiClient
       when :delete
         RestClient.delete(url, headers)
       end
-
-      Rails.logger.info "eBay API Response: #{response.code} - #{response.body}"
       handle_success_response(response)
     end
   rescue RestClient::ExceptionWithResponse => e
