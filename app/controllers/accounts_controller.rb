@@ -12,7 +12,7 @@ class AccountsController < ApplicationController
 
     if @account.save
       current_user.account_users.create(account: @account)
-      redirect_to account_tables_path(account_slug: @account.slug), notice: "Account created successfully."
+      redirect_to account_products_path(account_slug: @account.slug), notice: "Account created successfully."
     else
       render :new
     end
@@ -26,7 +26,7 @@ class AccountsController < ApplicationController
     @account = current_account
 
     if @account.update(account_params)
-      redirect_to account_tables_path(account_slug: @account.slug), notice: "Account updated successfully."
+      redirect_to account_products_path(account_slug: @account.slug), notice: "Account updated successfully."
     else
       render :edit
     end
@@ -47,9 +47,9 @@ class AccountsController < ApplicationController
     if current_user && !current_account
       redirect_to new_account_path
     elsif current_user && current_account && !params[:account_slug]
-      redirect_to account_tables_path(current_account)
+      redirect_to account_products_path(current_account)
     elsif current_user && current_account && params[:account_slug] != current_account.slug
-      redirect_to account_tables_path(current_account)
+      redirect_to account_products_path(current_account)
     end
   end
 

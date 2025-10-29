@@ -28,7 +28,7 @@
           <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
               <% if current_user %>
-                <div class="dropdown-item"><%= link_to "Dashboard", account_tables_path(current_user.accounts.first), class: "button is-dark is-fullwidth" %></div>
+                <div class="dropdown-item"><%= link_to "Dashboard", account_products_path(current_user.accounts.first), class: "button is-dark is-fullwidth" %></div>
               <% else %>
                 <div class="dropdown-item"><%= link_to "Sign up", new_user_registration_path, class: "button is-dark is-fullwidth" %></div>
                 <div class="dropdown-item"><%= link_to "Log in", new_user_session_path, class: "button is-link is-fullwidth" %></div>
@@ -43,7 +43,7 @@
           <div class="navbar-item">
             <div class="buttons">
               <% if current_user %>
-                <%= link_to "Dashboard", account_tables_path(current_user.accounts.first), class: "button is-dark" %>
+                <%= link_to "Dashboard", account_products_path(current_user.accounts.first), class: "button is-dark" %>
               <% else %>
                 <%= link_to "Sign up", new_user_registration_path, class: "button is-dark" %>
                 <%= link_to "Log in", new_user_session_path, class: "button is-link" %>

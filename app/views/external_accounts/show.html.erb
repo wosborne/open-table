@@ -24,6 +24,13 @@
     <div class="content">
       <h3 class="title is-5 mb-4">Account Information</h3>
       <p><strong>Service:</strong> <%= @external_account.service_name.humanize %></p>
+      <% if @external_account.shopify? && @external_account.domain.present? %>
+        <p><strong>Account:</strong> <%= @external_account.domain %></p>
+      <% elsif @external_account.ebay? && @external_account.ebay_display_name.present? %>
+        <p><strong>Account:</strong> <%= @external_account.ebay_display_name %></p>
+      <% elsif @external_account.ebay? && @external_account.ebay_username.present? %>
+        <p><strong>Account:</strong> <%= @external_account.ebay_username %></p>
+      <% end %>
       <p><strong>Connected:</strong> <%= time_ago_in_words(@external_account.created_at) %> ago</p>
       <% if @external_account.inventory_location %>
         <p><strong>Inventory Location:</strong> <%= @external_account.inventory_location.name %></p>
@@ -47,7 +54,6 @@
       <%= link_to "Edit Account", 
             edit_account_external_account_path(current_account, @external_account), 
             class: "button is-primary" %>
-            
       <% if @external_account.ebay? %>
         <%= link_to "Manage Business Policies", "#", class: "button is-light" %>
       <% end %>
