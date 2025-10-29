@@ -20,5 +20,5 @@
 </div>
 
 <%= turbo_frame_tag "products", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-  <%= render ModelTableComponent.new(resources: @products, extra_columns: %w[Brand Model Color], current_account: current_account) %>
+  <%= render ModelTableComponent.new(resources: @products, extra_columns: @extra_columns, current_account: current_account, model_class: Product) %>
 <% end %>

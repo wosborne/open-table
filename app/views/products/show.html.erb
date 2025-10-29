@@ -30,15 +30,77 @@
           </div>
           <div class="card-content">
             <div class="content">
-              <% if @product.description.present? %>
-                <p><strong>Description:</strong></p>
-                <p><%= @product.description %></p>
-              <% else %>
-                <p class="has-text-grey-light">No description provided</p>
-              <% end %>
+              <div class="field">
+                <label class="label">Name</label>
+                <p><%= @product.name %></p>
+              </div>
+
+              <div class="field">
+                <label class="label">Description</label>
+                <% if @product.description.present? %>
+                  <p><%= @product.description %></p>
+                <% else %>
+                  <p class="has-text-grey-light">No description provided</p>
+                <% end %>
+              </div>
+
+              <div class="field">
+                <label class="label">In Stock</label>
+                <p><%= @product.in_stock %> units</p>
+              </div>
+
+              <div class="field">
+                <label class="label">Created</label>
+                <p><%= @product.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+              </div>
+
+              <div class="field">
+                <label class="label">Last Updated</label>
+                <p><%= @product.updated_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+              </div>
             </div>
           </div>
         </div>
+
+        <% if @product.ebay_aspects&.any? %>
+          <div class="card mt-4">
+            <div class="card-header">
+              <p class="card-header-title">eBay Aspects</p>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <% @product.ebay_aspects.each do |aspect_name, aspect_value| %>
+                  <div class="field">
+                    <label class="label"><%= aspect_name %></label>
+                    <p><%= aspect_value %></p>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @product.ebay_category_id.present? %>
+          <div class="card mt-4">
+            <div class="card-header">
+              <p class="card-header-title">eBay Category</p>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <div class="field">
+                  <label class="label">Category ID</label>
+                  <p><%= @product.ebay_category_id %></p>
+                </div>
+                <% if @product.ebay_category_name.present? %>
+                  <div class="field">
+                    <label class="label">Category Name</label>
+                    <p><%= @product.ebay_category_name %></p>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
 
         <% if @product.product_options.any? %>
           <div class="card mt-4">

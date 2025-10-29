@@ -23,22 +23,29 @@
 <div data-controller="ebay-category" data-ebay-category-account-slug-value="<%= current_account.slug %>">
   <div class="field">
     <%= form.label :ebay_category_id, "eBay Category (Optional)", class: "label" %>
-    <div class="control">
-      <div class="select is-fullwidth">
-        <%= form.select :ebay_category_id, 
-            options_for_select([["Select a category...", ""]] + (@ebay_categories || []).map { |cat| [cat[:display_name], cat[:category_id]] }, form.object.ebay_category_id), 
-            {}, 
-            { 
-              class: "input",
-              data: { 
-                action: "change->ebay-category#categoryChanged",
-                ebay_category_target: "categorySelect"
-              }
-            } %>
+    <% if @ebay_categories.empty? %>
+      <div class="notification is-light">
+        <p class="mb-3">To use eBay categories and aspects, you need to connect an eBay account first.</p>
+        <%= link_to "Connect eBay Account", edit_account_path(current_account.id), class: "button is-primary", data: { turbo_frame: "_top" } %>
       </div>
-    </div>
-    <% form.object.errors.full_messages_for(:ebay_category_id).each do |error| %>
-      <p class="help is-danger"><%= error %></p>
+    <% else %>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <%= form.select :ebay_category_id, 
+              options_for_select([["Select a category...", ""]] + @ebay_categories.map { |cat| [cat[:display_name], cat[:category_id]] }, form.object.ebay_category_id), 
+              {}, 
+              { 
+                class: "input",
+                data: { 
+                  action: "change->ebay-category#categoryChanged",
+                  ebay_category_target: "categorySelect"
+                }
+              } %>
+        </div>
+      </div>
+      <% form.object.errors.full_messages_for(:ebay_category_id).each do |error| %>
+        <p class="help is-danger"><%= error %></p>
+      <% end %>
     <% end %>
   </div>
 

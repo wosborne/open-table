@@ -3,6 +3,7 @@ class ProductsController < AccountsController
 
   def index
     @products = current_account.products
+    @extra_columns = gather_ebay_aspect_columns
   end
 
   def new
@@ -70,6 +71,20 @@ class ProductsController < AccountsController
 
   private
 
+  def gather_ebay_aspect_columns
+    sql = <<~SQL
+      SELECT DISTINCT jsonb_object_keys(ebay_aspects) as aspect_key
+      FROM products 
+      WHERE account_id = ? AND ebay_aspects IS NOT NULL AND ebay_aspects != '{}'
+      ORDER BY aspect_key
+    SQL
+    
+    result = ActiveRecord::Base.connection.execute(
+      ActiveRecord::Base.sanitize_sql([sql, current_account.id])
+    )
+    result.map { |row| row['aspect_key'] }
+  end
+
   def product_params
     params.require(:product).permit(:name, :description, :brand, :ebay_category_id, :ebay_category_name, ebay_aspects: {}, product_options_attributes: [ :id, :name, :_destroy ])
   end
@@ -80,7 +95,10 @@ class ProductsController < AccountsController
 
   def load_ebay_categories
     ebay_account = current_account.external_accounts.find_by(service_name: "ebay")
-    return unless ebay_account
+    if ebay_account.nil?
+      @ebay_categories = []
+      return
+    end
 
     begin
       ebay_category = EbayCategory.new(ebay_account)

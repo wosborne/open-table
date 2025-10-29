@@ -1,10 +1,10 @@
 <div data-controller="table clickable" class="is-flex is-flex-direction-column is-flex-grow-1">
-  <div class="table-container" data-controller="record-attribute" style="height: 100%;">
-    <table class="table is-hoverable is-narrow mb-2">
+  <div class="table-container" data-controller="record-attribute" style="height: 100%; overflow-x: auto;">
+    <table class="table is-hoverable is-narrow mb-2" style="min-width: 100%;">
       <thead>
         <tr data-controller="column-position">
           <% all_columns.each do |column| %>
-            <th><%= column.to_s.humanize.titleize %></th>
+            <th style="white-space: nowrap;"><%= column.to_s.humanize.titleize %></th>
           <% end %>
         </tr>
       </thead>
@@ -13,7 +13,7 @@
         <% resources.each do |resource| %>
           <tr class="is-clickable" data-url="<%= resource_url(resource) %>">
             <% all_columns.each do |column| %>
-              <td>
+              <td style="white-space: nowrap;">
                 <%= column_value(resource, column) %>
               </td>
             <% end %>
