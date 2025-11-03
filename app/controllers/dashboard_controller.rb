@@ -1,6 +1,9 @@
 class DashboardController < AccountsController
   def index
     @onboarding_status = calculate_onboarding_status
+    @has_products = current_account.products.any?
+    @has_variants = current_account.variants.any?
+    @has_inventory_units = current_account.inventory_units.any?
   end
 
   private

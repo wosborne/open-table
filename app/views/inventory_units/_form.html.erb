@@ -41,6 +41,7 @@
 
   <div class="field" data-controller="file-input">
     <%= form.label :images, class: "label" %>
+    <p class="is-size-7 has-text-grey mb-2"><strong>Images are required for eBay listings.</strong></p>
     <div class="control">
       <div class="file has-name is-fullwidth">
         <label class="file-label">
@@ -61,7 +62,7 @@
     </div>
     <p class="help">
       <%= @inventory_unit.persisted? ? "Select additional images to add to existing ones." : "You can select multiple images." %> 
-      Supported formats: JPG, PNG, GIF
+      Supported formats: JPG, PNG, GIF.
     </p>
     
   </div>

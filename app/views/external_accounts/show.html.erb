@@ -2,7 +2,7 @@
 
 <div class="container">
   <div class="mb-5">
-    <%= link_to "← Back", :back, class: "button is-text" %>
+    <%= link_to "← Back", account_path(current_account), class: "button is-text" %>
   </div>
 
   <div class="box">
@@ -34,16 +34,6 @@
       <p><strong>Connected:</strong> <%= time_ago_in_words(@external_account.created_at) %> ago</p>
     </div>
 
-    <% if @external_account.ebay? %>
-      <% synced_locations = current_account.locations.where.not(ebay_merchant_location_key: nil) %>
-      <% if synced_locations.empty? %>
-        <div class="notification is-warning">
-          <p><strong>Inventory location required:</strong> You need to create an inventory location to manage eBay inventories. 
-             <%= link_to "Create location", new_account_location_path(current_account), class: "has-text-link has-text-weight-semibold" %> 
-             to get started.</p>
-        </div>
-      <% end %>
-    <% end %>
 
     <!-- eBay Business Policies Section -->
     <% if @external_account.ebay? %>

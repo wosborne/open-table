@@ -78,14 +78,27 @@
 
         <hr>
 
+        <% has_images = @inventory_unit.images.any? %>
+        
+        <% unless has_images %>
+          <div class="notification is-warning">
+            <h4 class="title is-6">⚠️ Images Required for eBay</h4>
+            <p>eBay requires at least one image for inventory listings. Please add images to this inventory unit before adding it to eBay.</p>
+            <%= link_to "Add Images", edit_account_inventory_unit_path(current_account, @inventory_unit), 
+                        class: "button is-warning is-small mt-2" %>
+          </div>
+        <% end %>
+
         <%= form_with url: account_inventory_unit_external_account_inventory_units_path(current_account, @inventory_unit),
                       method: :post,
                       local: true do |form| %>
           <div class="field">
             <div class="control">
-              <%= form.submit "Add to eBay Inventory", class: "button is-primary is-large" %>
+              <%= form.submit "Add to eBay Inventory", 
+                              class: "button is-primary#{ ' is-static' unless has_images }",
+                              disabled: !has_images %>
               <%= link_to "Cancel", account_inventory_unit_path(current_account, @inventory_unit), 
-                          class: "button is-light is-large" %>
+                          class: "button is-light" %>
             </div>
           </div>
         <% end %>
@@ -113,7 +126,7 @@
           <div class="content is-small">
             <p>This product doesn't have an eBay category assigned. You'll need to edit the product and select an eBay category before listing.</p>
             <%= link_to "Edit Product", edit_account_product_path(current_account, @inventory_unit.variant.product), 
-                        class: "button is-small is-warning" %>
+                        class: "button is-warning" %>
           </div>
         </div>
       <% end %>

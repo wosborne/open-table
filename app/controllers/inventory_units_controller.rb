@@ -18,7 +18,7 @@ class InventoryUnitsController < AccountsController
     @products = current_account.products.includes(:variants)
     
     if @inventory_unit.save
-      redirect_to account_inventory_units_path(current_account), notice: "Inventory unit created."
+      redirect_to account_inventory_unit_path(current_account, @inventory_unit), notice: "Inventory unit created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -58,6 +58,7 @@ class InventoryUnitsController < AccountsController
   def variant_selector
     @products = current_account.products.includes(:variants)
     @selected_product = current_account.products.find_by(id: params[:product_id])
+    @inventory_unit = current_account.inventory_units.new
     
     render partial: "product_option_selector", locals: { 
       products: @products, 

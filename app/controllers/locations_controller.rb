@@ -16,7 +16,12 @@ class LocationsController < AccountsController
     @location = current_account.locations.new(location_params)
 
     if @location.save
-      redirect_to account_location_path(current_account, @location), notice: 'Location was successfully created.'
+      ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
+      if ebay_account
+        redirect_to account_external_account_path(current_account, ebay_account), notice: 'Location was successfully created and synced to eBay.'
+      else
+        redirect_to account_location_path(current_account, @location), notice: 'Location was successfully created.'
+      end
     else
       render :new, status: :unprocessable_entity
     end
