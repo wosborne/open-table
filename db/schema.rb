@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_21_093157) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_30_182215) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_093157) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "ebay_policies", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "policy_type", null: false
+    t.string "ebay_id", null: false
+    t.string "name", null: false
+    t.boolean "default", default: false
+    t.json "policy_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "policy_type", "default"], name: "index_ebay_policies_on_account_id_and_policy_type_and_default"
+    t.index ["account_id", "policy_type"], name: "index_ebay_policies_on_account_id_and_policy_type"
+    t.index ["account_id"], name: "index_ebay_policies_on_account_id"
+    t.index ["ebay_id"], name: "index_ebay_policies_on_ebay_id", unique: true
   end
 
   create_table "external_account_inventory_units", force: :cascade do |t|
@@ -172,6 +187,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_093157) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ebay_merchant_location_key"
     t.index ["account_id"], name: "index_locations_on_account_id"
   end
 
@@ -352,6 +368,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_093157) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ebay_policies", "accounts"
   add_foreign_key "external_account_inventory_units", "external_accounts"
   add_foreign_key "external_account_inventory_units", "inventory_units"
   add_foreign_key "external_account_products", "external_accounts"
