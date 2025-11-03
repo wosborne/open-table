@@ -12,7 +12,7 @@ class AccountsController < ApplicationController
 
     if @account.save
       current_user.account_users.create(account: @account)
-      redirect_to account_products_path(account_slug: @account.slug), notice: "Account created successfully."
+      redirect_to account_dashboard_path(@account), notice: "Account created successfully."
     else
       render :new
     end
