@@ -36,18 +36,15 @@ class ExternalAccount < ApplicationRecord
   def create_ebay_inventory_location
     return unless inventory_location
 
-    Rails.logger.info "Creating eBay inventory location 'default' for external account #{id}"
+    Rails.logger.info "Syncing inventory location '#{inventory_location.name}' to eBay for external account #{id}"
     
-    ebay_service = EbayService.new(external_account: self)
-    result = ebay_service.create_inventory_location("default", inventory_location)
-    
-    if result["success"]
-      Rails.logger.info "Successfully created eBay inventory location 'default'"
+    if inventory_location.sync_to_ebay!(self)
+      Rails.logger.info "Successfully synced inventory location '#{inventory_location.name}' to eBay"
     else
-      Rails.logger.error "Failed to create eBay inventory location: #{result}"
+      Rails.logger.error "Failed to sync inventory location '#{inventory_location.name}' to eBay"
     end
   rescue => e
-    Rails.logger.error "Error creating eBay inventory location: #{e.message}"
+    Rails.logger.error "Error syncing inventory location to eBay: #{e.message}"
   end
 
   def destroy_external_account_products

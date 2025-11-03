@@ -26,7 +26,64 @@ class EbayApiClient
     make_request(:delete, endpoint)
   end
 
+  def get_inventory_locations
+    get("/sell/inventory/v1/location")
+  end
+
+  def create_inventory_location(merchant_location_key, location_data)
+    post("/sell/inventory/v1/location/#{merchant_location_key}", location_data)
+  end
+
+  def post_xml(endpoint, xml_payload)
+    make_xml_request(:post, endpoint, xml_payload)
+  end
+
   private
+
+  def make_xml_request(method, endpoint, xml_payload)
+    attempt_count = 0
+    
+    begin
+      # Trading API uses different base URL
+      trading_api_base = "https://api.ebay.com"
+      url = "#{trading_api_base}#{endpoint}"
+      
+      headers = {
+        "X-EBAY-API-COMPATIBILITY-LEVEL" => "1193",
+        "X-EBAY-API-CALL-NAME" => "GeteBayDetails",
+        "X-EBAY-API-SITEID" => "3", # eBay GB
+        "X-EBAY-API-IAF-TOKEN" => @access_token, # OAuth token for Trading API
+        "Content-Type" => "text/xml; charset=utf-8"
+      }
+      
+      response = RestClient.post(url, xml_payload, headers)
+      result = handle_xml_response(response)
+      
+      # Check if the XML response indicates token expiration and retry if needed
+      if !result[:success] && result[:error]&.include?("Expired IAF token") && attempt_count == 0 && can_refresh_token?
+        Rails.logger.info "XML API token expired, attempting refresh"
+        attempt_count += 1
+        
+        if refresh_access_token
+          Rails.logger.info "XML API token refreshed successfully, retrying request"
+          # Update headers with new token and make request again
+          headers["X-EBAY-API-IAF-TOKEN"] = @access_token
+          response = RestClient.post(url, xml_payload, headers)
+          result = handle_xml_response(response)
+        else
+          Rails.logger.error "XML API token refresh failed"
+        end
+      end
+      
+      result
+    rescue RestClient::ExceptionWithResponse => e
+      Rails.logger.error "eBay Trading API Error: #{e.response.code} - #{e.response.body}"
+      handle_xml_error_response(e.response)
+    rescue => e
+      Rails.logger.error "eBay Trading API Network Error: #{e.message}"
+      handle_network_error(e)
+    end
+  end
 
   def make_request(method, endpoint, payload = nil, params = {})
     with_token_refresh do
@@ -100,6 +157,91 @@ class EbayApiClient
     }
   end
 
+  def handle_xml_response(response)
+    require 'nokogiri'
+    
+    case response.code
+    when 200
+      Rails.logger.info "XML Response body: #{response.body}"
+      doc = Nokogiri::XML(response.body)
+      
+      # Check for eBay API errors in XML response  
+      ack = doc.at_xpath('//xmlns:Ack', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      Rails.logger.info "XML Response Ack: #{ack}"
+      
+      if ack == 'Success' || ack == 'Warning'
+        {
+          success: true,
+          status_code: response.code,
+          data: parse_xml_to_hash(doc)
+        }
+      else
+        error_messages = doc.xpath('//xmlns:Errors', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').map do |error|
+          {
+            error_code: error.at_xpath('xmlns:ErrorCode', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
+            short_message: error.at_xpath('xmlns:ShortMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
+            long_message: error.at_xpath('xmlns:LongMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
+            severity_code: error.at_xpath('xmlns:SeverityCode', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+          }
+        end
+        
+        Rails.logger.error "XML Response errors: #{error_messages.inspect}"
+        
+        {
+          success: false,
+          status_code: response.code,
+          error: error_messages.first&.dig(:short_message) || "XML API Error",
+          detailed_errors: error_messages
+        }
+      end
+    else
+      {
+        success: false,
+        status_code: response.code,
+        error: "Unexpected XML response: #{response.code}",
+        raw_response: response.body
+      }
+    end
+  end
+
+  def handle_xml_error_response(response)
+    {
+      success: false,
+      status_code: response.code,
+      error: "XML API Error: #{response.code}",
+      raw_response: response.body,
+      detailed_errors: []
+    }
+  end
+
+  def parse_xml_to_hash(doc)
+    # Convert XML to a hash structure that matches what we expect
+    result = {}
+    
+    # Parse ShippingCarrierDetails with namespace
+    shipping_carriers = doc.xpath('//xmlns:ShippingCarrierDetails', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').map do |carrier|
+      {
+        'ShippingCarrier' => carrier.at_xpath('xmlns:ShippingCarrier', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
+        'Description' => carrier.at_xpath('xmlns:Description', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      }
+    end
+    result['ShippingCarrierDetails'] = shipping_carriers if shipping_carriers.any?
+    
+    Rails.logger.info "Parsed shipping carriers: #{shipping_carriers.inspect}"
+    
+    # Parse ShippingServiceDetails with namespace
+    shipping_services = doc.xpath('//xmlns:ShippingServiceDetails', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').map do |service|
+      {
+        'ShippingService' => service.at_xpath('xmlns:ShippingService', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
+        'Description' => service.at_xpath('xmlns:Description', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
+        'ShippingCarrier' => service.at_xpath('xmlns:ShippingCarrier', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      }
+    end
+    result['ShippingServiceDetails'] = shipping_services if shipping_services.any?
+    
+    result
+  end
+
   def parse_ebay_errors(error_data)
     return [] unless error_data.dig("errors").is_a?(Array)
     
@@ -167,9 +309,17 @@ class EbayApiClient
     return false unless error.is_a?(RestClient::ExceptionWithResponse)
     return true if error.response.code == 401
     
-    # Check error body for token expiration indicators
+    # Check error body for token expiration indicators (JSON APIs)
     error_body = JSON.parse(error.response.body) rescue {}
     error_messages = error_body.dig("errors")&.map { |e| e["message"] }&.join(" ") || ""
+    
+    # Check for XML API token errors
+    if error.response.body.include?("<?xml")
+      xml_body = error.response.body
+      return true if xml_body.include?("Expired IAF token") || 
+                     xml_body.include?("Authorisation token is hard expired") ||
+                     xml_body.include?("Invalid IAF token")
+    end
     
     error_messages.downcase.include?("token") || 
     error_messages.downcase.include?("unauthorized") ||

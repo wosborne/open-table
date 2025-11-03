@@ -225,8 +225,11 @@ class InventoryUnit < ApplicationRecord
   end
 
   def build_ebay_offer_data(ebay_account)
-    policy_client = EbayPolicy.new(ebay_account)
+    policy_client = EbayPolicyClient.new(ebay_account)
     policy_ids = policy_client.get_all_default_policy_ids
+    
+    # Get the merchant location key from the inventory unit's location or external account's location
+    merchant_location_key = get_merchant_location_key(ebay_account)
     
     {
       sku: variant.sku,
@@ -240,13 +243,29 @@ class InventoryUnit < ApplicationRecord
       },
       listingDuration: "GTC",
       categoryId: variant.product.ebay_category_id.to_s,
-      merchantLocationKey: "default",
+      merchantLocationKey: merchant_location_key,
       listingPolicies: {
         fulfillmentPolicyId: policy_ids[:fulfillment_policy_id],
         paymentPolicyId: policy_ids[:payment_policy_id],
         returnPolicyId: policy_ids[:return_policy_id]
       }
     }
+  end
+
+  def get_merchant_location_key(ebay_account)
+    # First try to use the inventory unit's specific location
+    if location&.synced_to_ebay?
+      return location.ebay_merchant_location_key
+    end
+    
+    # Fall back to the external account's inventory location
+    if ebay_account.inventory_location&.synced_to_ebay?
+      return ebay_account.inventory_location.ebay_merchant_location_key
+    end
+    
+    # Last resort: use "default" but this will likely cause eBay API errors
+    Rails.logger.warn "No synced eBay location found for inventory unit #{id}, using 'default'"
+    "default"
   end
 
   def build_ebay_title
