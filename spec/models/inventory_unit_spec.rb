@@ -80,7 +80,7 @@ RSpec.describe InventoryUnit, type: :model do
 
       context "when account has eBay connection" do
         let(:api_client) { instance_double(EbayApiClient) }
-        let(:policy_client) { instance_double(EbayPolicy) }
+        let(:policy_client) { instance_double(EbayPolicyClient) }
         let(:inventory_response) { { success: true, data: {} } }
         let(:offer_response) { { success: true, data: { 'offerId' => 'offer123' } } }
         let(:policy_ids) do
@@ -100,8 +100,8 @@ RSpec.describe InventoryUnit, type: :model do
           allow(api_client).to receive(:post).and_return(offer_response)
           allow(api_client).to receive(:get).and_return({ success: true, data: [] })
           
-          # Mock EbayPolicy
-          allow(EbayPolicy).to receive(:new).with(ebay_account).and_return(policy_client)
+          # Mock EbayPolicyClient
+          allow(EbayPolicyClient).to receive(:new).with(ebay_account).and_return(policy_client)
           allow(policy_client).to receive(:get_all_default_policy_ids).and_return(policy_ids)
         end
 
@@ -420,7 +420,7 @@ RSpec.describe InventoryUnit, type: :model do
       end
 
       describe "#build_ebay_offer_data" do
-        let(:policy_client) { instance_double(EbayPolicy) }
+        let(:policy_client) { instance_double(EbayPolicyClient) }
         let(:policy_ids) do
           {
             fulfillment_policy_id: "fulfillment_123",
@@ -430,7 +430,7 @@ RSpec.describe InventoryUnit, type: :model do
         end
 
         before do
-          allow(EbayPolicy).to receive(:new).with(ebay_account).and_return(policy_client)
+          allow(EbayPolicyClient).to receive(:new).with(ebay_account).and_return(policy_client)
           allow(policy_client).to receive(:get_all_default_policy_ids).and_return(policy_ids)
         end
 

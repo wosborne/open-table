@@ -16,6 +16,8 @@ class Account < ApplicationRecord
   has_one :shopify_account, -> { where(service_name: "shopify") }, class_name: "ExternalAccount"
   has_one :ebay_account, -> { where(service_name: "ebay") }, class_name: "ExternalAccount"
 
+  has_many :ebay_policies, dependent: :destroy
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 

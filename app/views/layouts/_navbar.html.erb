@@ -11,7 +11,7 @@
         <div class="navbar-link" data-action="click->dropdown#toggle">Account</div>
         <div class="navbar-dropdown is-boxed is-active">
           <% if current_account %>
-            <%= link_to "Edit account", edit_account_path(current_account), class: "navbar-item" %>
+            <%= link_to "Account Settings", account_path(current_account), class: "navbar-item" %>
           <% end %>
           <%= link_to "Edit profile", edit_user_registration_path, class: "navbar-item" %>
           <%= button_to "Log out", destroy_user_session_path, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "navbar-item", style: "width: 100%;" %>
