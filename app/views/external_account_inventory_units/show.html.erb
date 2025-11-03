@@ -29,6 +29,12 @@
               </span>
             <% end %>
           </div>
+          <% unless @external_account_inventory_unit.published? %>
+            <p class="help mt-2">
+              <strong>Note:</strong> Unpublished offers do not appear on the eBay platform and are not visible to buyers. 
+              Click "Publish to eBay" to make this listing live.
+            </p>
+          <% end %>
         </div>
 
         <div class="field">
