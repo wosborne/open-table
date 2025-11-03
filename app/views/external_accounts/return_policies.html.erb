@@ -1,0 +1,42 @@
+<turbo-frame id="return-policies-frame">
+  <div class="content mt-5">
+    <h4 class="title is-5">Return Policies</h4>
+    <% if @return_policies.any? %>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Return Period</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @return_policies.each do |policy| %>
+            <tr>
+              <td><%= policy['name'] %></td>
+              <td>
+                <% if policy['returnPeriod'] %>
+                  <%= policy['returnPeriod']['value'] %> <%= policy['returnPeriod']['unit']&.downcase %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+              <td>From eBay</td>
+              <td>
+                <a href="https://www.ebay.co.uk/bp/return/edit/<%= policy['returnPolicyId'] %>" target="_blank" class="button is-small is-light">
+                  Edit on eBay
+                </a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="has-text-grey">No return policies created yet.</p>
+    <% end %>
+    <a href="https://www.ebay.co.uk/bp/manage" target="_blank" class="button is-info">
+      Create Return Policy on eBay
+    </a>
+  </div>
+</turbo-frame>

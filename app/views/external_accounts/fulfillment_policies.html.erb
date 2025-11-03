@@ -1,0 +1,42 @@
+<turbo-frame id="fulfillment-policies-frame">
+  <div class="content mt-5">
+    <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
+    <% if @fulfillment_policies.any? %>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Shipping Service</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @fulfillment_policies.each do |policy| %>
+            <tr>
+              <td><%= policy['name'] %></td>
+              <td>
+                <% if policy['shippingOptions']&.any? && policy['shippingOptions'].first['shippingServices']&.any? %>
+                  <%= policy['shippingOptions'].first['shippingServices'].first['shippingServiceCode'] %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+              <td>From eBay</td>
+              <td>
+                <a href="https://www.ebay.co.uk/bp/ship/edit/<%= policy['fulfillmentPolicyId'] %>" target="_blank" class="button is-small is-light">
+                  Edit on eBay
+                </a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="has-text-grey">No fulfillment policies created yet.</p>
+    <% end %>
+    <a href="https://www.ebay.co.uk/bp/manage" target="_blank" class="button is-info">
+      Create Fulfillment Policy on eBay
+    </a>
+  </div>
+</turbo-frame>

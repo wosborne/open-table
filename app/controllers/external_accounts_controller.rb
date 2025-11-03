@@ -62,6 +62,85 @@ class ExternalAccountsController < AccountsController
     @external_account = current_account.external_accounts.find(params[:id])
   end
 
+  def fulfillment_policies
+    @external_account = current_account.external_accounts.find(params[:id])
+    
+    begin
+      ebay_client = EbayPolicyClient.new(@external_account)
+      @fulfillment_policies = ebay_client.get_fulfillment_policies
+    rescue => e
+      Rails.logger.error "Failed to fetch eBay fulfillment policies: #{e.message}"
+      @fulfillment_policies = []
+    end
+    
+    render turbo_frame: "fulfillment-policies-frame"
+  end
+
+  def payment_policies
+    @external_account = current_account.external_accounts.find(params[:id])
+    
+    begin
+      ebay_client = EbayPolicyClient.new(@external_account)
+      @payment_policies = ebay_client.get_payment_policies
+    rescue => e
+      Rails.logger.error "Failed to fetch eBay payment policies: #{e.message}"
+      @payment_policies = []
+    end
+    
+    render turbo_frame: "payment-policies-frame"
+  end
+
+  def return_policies
+    @external_account = current_account.external_accounts.find(params[:id])
+    
+    begin
+      ebay_client = EbayPolicyClient.new(@external_account)
+      @return_policies = ebay_client.get_return_policies
+    rescue => e
+      Rails.logger.error "Failed to fetch eBay return policies: #{e.message}"
+      @return_policies = []
+    end
+    
+    render turbo_frame: "return-policies-frame"
+  end
+
+  def inventory_locations
+    @external_account = current_account.external_accounts.find(params[:id])
+    
+    begin
+      # Get local locations that are synced to eBay
+      local_synced_locations = current_account.locations.where.not(ebay_merchant_location_key: nil)
+      
+      if local_synced_locations.any?
+        # Fetch eBay data for our synced locations
+        ebay_client = EbayApiClient.new(@external_account)
+        response = ebay_client.get_inventory_locations
+        
+        if response[:success]
+          all_ebay_locations = response[:data]['locations'] || []
+          
+          # Filter to only show eBay locations that match our local ones
+          local_keys = local_synced_locations.pluck(:ebay_merchant_location_key)
+          @inventory_locations = all_ebay_locations.select do |ebay_location|
+            local_keys.include?(ebay_location['merchantLocationKey'])
+          end
+          
+          Rails.logger.info "Filtered eBay inventory locations: #{@inventory_locations.inspect}"
+        else
+          Rails.logger.error "Failed to fetch eBay inventory locations: #{response[:error]}"
+          @inventory_locations = []
+        end
+      else
+        @inventory_locations = []
+      end
+    rescue => e
+      Rails.logger.error "Failed to fetch eBay inventory locations: #{e.message}"
+      @inventory_locations = []
+    end
+    
+    render turbo_frame: "inventory-locations-frame"
+  end
+
   def edit
     @external_account = current_account.external_accounts.find(params[:id])
     @locations = current_account.locations

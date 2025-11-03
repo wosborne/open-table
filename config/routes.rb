@@ -13,19 +13,26 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "root#index"
 
-  resources :accounts, only: %w[new create edit update]
+  resources :accounts, only: %w[new create edit update show]
 
   post "/webhooks/shopify", to: "shopify_webhooks#receive"
   match "/webhooks/ebay/marketplace_account_deletion", to: "ebay_webhooks#marketplace_account_deletion", via: [:get, :post]
 
 
   scope "/:account_slug", as: :account do
+    get "dashboard", to: "dashboard#index"
+    post "ebay/opt_into_business_policies", to: "ebay#opt_into_business_policies"
+    
     resources :external_accounts, only: %w[new create destroy show edit update] do
       member do
         post :opt_into_business_policies
         post :create_fulfillment_policy
         post :create_custom_fulfillment_policy
         post :create_inventory_location
+        get :fulfillment_policies
+        get :payment_policies
+        get :return_policies
+        get :inventory_locations
       end
     end
 
