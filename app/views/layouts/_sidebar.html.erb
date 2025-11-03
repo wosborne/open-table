@@ -2,6 +2,9 @@
   <h2 class="title is-4"><%= current_account.name %></h2>
   <ul class="menu-list">
     <li>
+      <%= link_to "Dashboard", account_dashboard_path(current_account) %>
+    </li>
+    <li>
       <%= link_to "Products", account_products_path(current_account) %>
     </li>
     <li>
@@ -11,10 +14,14 @@
       <%= link_to "Inventory Units", account_inventory_units_path(current_account) %>
     </li>
     <li>
-      <%= link_to "Locations", account_locations_path(current_account) %>
-    </li>
-    <li>
       <%= link_to "Orders", account_orders_path(current_account) %>
+    </li>
+  </ul>
+
+  <p class="menu-label">Settings</p>
+  <ul class="menu-list">
+    <li>
+      <%= link_to "Account Settings", account_path(current_account) %>
     </li>
   </ul>
 

@@ -32,31 +32,68 @@
         <p><strong>Account:</strong> <%= @external_account.ebay_username %></p>
       <% end %>
       <p><strong>Connected:</strong> <%= time_ago_in_words(@external_account.created_at) %> ago</p>
-      <% if @external_account.inventory_location %>
-        <p><strong>Inventory Location:</strong> <%= @external_account.inventory_location.name %></p>
-      <% else %>
-        <% if @external_account.ebay? %>
-          <p><strong>Inventory Location:</strong> <em>Not set</em></p>
-        <% end %>
-      <% end %>
     </div>
 
-    <% if @external_account.ebay? && @external_account.inventory_location.blank? %>
-      <div class="notification is-warning">
-        <p><strong>Inventory location required:</strong> You need to select an inventory location to manage eBay inventories. 
-           <%= link_to "Edit account settings", edit_account_external_account_path(current_account, @external_account), class: "has-text-link has-text-weight-semibold" %> 
-           to configure this.</p>
+    <% if @external_account.ebay? %>
+      <% synced_locations = current_account.locations.where.not(ebay_merchant_location_key: nil) %>
+      <% if synced_locations.empty? %>
+        <div class="notification is-warning">
+          <p><strong>Inventory location required:</strong> You need to create an inventory location to manage eBay inventories. 
+             <%= link_to "Create location", new_account_location_path(current_account), class: "has-text-link has-text-weight-semibold" %> 
+             to get started.</p>
+        </div>
+      <% end %>
+    <% end %>
+
+    <!-- eBay Business Policies Section -->
+    <% if @external_account.ebay? %>
+      <div class="mt-5">
+        <h3 class="title is-4">eBay Business Policies</h3>
+        
+        <!-- Fulfillment Policies -->
+        <turbo-frame id="fulfillment-policies-frame" 
+                     src="<%= fulfillment_policies_account_external_account_path(current_account, @external_account) %>">
+          <div class="content mt-5">
+            <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
+            <div class="skeleton-block"></div>
+          </div>
+        </turbo-frame>
+
+        <!-- Payment Policies -->
+        <turbo-frame id="payment-policies-frame" 
+                     src="<%= payment_policies_account_external_account_path(current_account, @external_account) %>">
+          <div class="content mt-5">
+            <h4 class="title is-5">Payment Policies</h4>
+            <div class="skeleton-block"></div>
+          </div>
+        </turbo-frame>
+
+        <!-- Return Policies -->
+        <turbo-frame id="return-policies-frame" 
+                     src="<%= return_policies_account_external_account_path(current_account, @external_account) %>">
+          <div class="content mt-5">
+            <h4 class="title is-5">Return Policies</h4>
+            <div class="skeleton-block"></div>
+          </div>
+        </turbo-frame>
+
+        <!-- Inventory Locations -->
+        <turbo-frame id="inventory-locations-frame" 
+                     src="<%= inventory_locations_account_external_account_path(current_account, @external_account) %>">
+          <div class="content mt-5">
+            <h4 class="title is-5">Inventory Locations</h4>
+            <div class="skeleton-block"></div>
+          </div>
+        </turbo-frame>
       </div>
     <% end %>
+
 
     <!-- Actions -->
     <div class="buttons mt-5">
       <%= link_to "Edit Account", 
             edit_account_external_account_path(current_account, @external_account), 
             class: "button is-primary" %>
-      <% if @external_account.ebay? %>
-        <%= link_to "Manage Business Policies", "#", class: "button is-light" %>
-      <% end %>
       
       <%= link_to "Disconnect Account", 
             account_external_account_path(current_account, @external_account), 

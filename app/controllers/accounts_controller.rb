@@ -1,7 +1,7 @@
 class AccountsController < ApplicationController
   layout :set_layout
 
-  before_action :find_account, except: [ :new, :create, :edit, :update ]
+  before_action :find_account, except: [ :new, :create, :edit, :update, :show ]
 
   def new
     @account = Account.new
@@ -32,6 +32,10 @@ class AccountsController < ApplicationController
     end
   end
 
+  def show
+    @account = current_account
+  end
+
   helper_method :current_account
   def current_account
     @current_account ||= current_user.accounts.find_by(slug: params[:account_slug]) || current_user.accounts.first
@@ -54,6 +58,11 @@ class AccountsController < ApplicationController
   end
 
   def set_layout
-    self.class == AccountsController ? "accounts" : "dashboard"
+    case self.class.name
+    when "AccountsController", "ExternalAccountsController", "LocationsController"
+      "accounts"
+    else
+      "dashboard"
+    end
   end
 end
