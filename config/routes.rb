@@ -17,6 +17,7 @@ Rails.application.routes.draw do
 
   post "/webhooks/shopify", to: "shopify_webhooks#receive"
   match "/webhooks/ebay/marketplace_account_deletion", to: "ebay_webhooks#marketplace_account_deletion", via: [:get, :post]
+  post "/webhooks/ebay/notifications", to: "ebay_webhooks#notifications", as: :ebay_webhooks
 
 
   scope "/:account_slug", as: :account do
@@ -67,6 +68,10 @@ Rails.application.routes.draw do
     resources :locations
 
     resources :orders, only: [ :index, :show, :edit ]
+
+    resources :ebay_notifications, only: [:index, :destroy] do
+      delete :clear_all, on: :collection
+    end
 
     # Custom tables routes disabled
     # resources :tables do

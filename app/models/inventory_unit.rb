@@ -1,5 +1,4 @@
 class InventoryUnit < ApplicationRecord
-  include Ebayable
   
   TABLE_COLUMNS = attribute_names - [ "account_id" ]
 

@@ -46,26 +46,14 @@ class EbayAuthentication
       domain: "ebay.com" # eBay doesn't have per-shop domains like Shopify
     )
 
-    # Fetch and store eBay user information
+
+    # Subscribe to order notifications
     begin
-      ebay_service = EbayService.new(external_account: external_account)
-      user_info = ebay_service.get_user_info
-      
-      if user_info.present?
-        Rails.logger.info "Fetched eBay user info: #{user_info.keys.join(', ')}"
-        external_account.update!(
-          ebay_user_id: user_info[:user_id],
-          ebay_username: user_info[:username],
-          ebay_display_name: user_info[:display_name] || [user_info[:first_name], user_info[:last_name]].compact.join(' '),
-          ebay_email: user_info[:email]
-        )
-        Rails.logger.info "Stored eBay user info for account: #{user_info[:username] || user_info[:display_name] || user_info[:user_id]}"
-      else
-        Rails.logger.warn "No eBay user info returned from API"
-      end
-    rescue => user_info_error
-      Rails.logger.warn "Could not fetch eBay user info during authentication: #{user_info_error.message}"
-      # Don't fail the authentication if user info fetch fails
+      notification_service = EbayNotificationService.new(external_account)
+      notification_service.subscribe_to_order_notifications
+    rescue => notification_error
+      Rails.logger.warn "Could not subscribe to eBay notifications during authentication: #{notification_error.message}"
+      # Don't fail the authentication if notification subscription fails
     end
 
     external_account

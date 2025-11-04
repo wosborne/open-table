@@ -1,6 +1,6 @@
 class EbayApiClient
   include EbayApiErrorHandling
-  
+
   attr_reader :external_account, :api_base_url, :access_token
 
   def initialize(external_account)
@@ -147,7 +147,7 @@ class EbayApiClient
     attempt_count = 0
 
     begin
-      # Trading API uses same environment as REST API  
+      # Trading API uses same environment as REST API
       trading_api_base = @api_base_url
       url = "#{trading_api_base}#{endpoint}"
 
@@ -485,7 +485,7 @@ class EbayApiClient
     services.select { |service|
       service_code = service["ShippingService"]
       carrier = service["ShippingCarrier"]
-      
+
       service_code&.include?("UK_") &&
       !service_code&.include?("International") &&
       carrier.present?
@@ -497,5 +497,4 @@ class EbayApiClient
       }
     end.compact
   end
-
 end

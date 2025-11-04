@@ -157,7 +157,6 @@ class ExternalAccountsController < AccountsController
 
 
 
-
   def destroy
     @external_account.destroy
     redirect_to edit_account_path(current_account), notice: "External account disconnected successfully!"

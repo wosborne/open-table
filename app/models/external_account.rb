@@ -14,6 +14,7 @@ class ExternalAccount < ApplicationRecord
            class_name: "EbayPaymentPolicy", dependent: :destroy
   has_many :return_policies, -> { where(type: "EbayReturnPolicy") },
            class_name: "EbayReturnPolicy", dependent: :destroy
+  has_many :ebay_notifications, dependent: :destroy
 
   validates :service_name, presence: true, uniqueness: { scope: :account_id }
   validates :service_name, inclusion: { in: SERVICE_NAMES }
