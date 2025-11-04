@@ -96,11 +96,10 @@ production:
     password: <%= ENV["PHONE_FLIPR_DATABASE_PASSWORD"] %>
     url: <%= ENV["DATABASE_URL"] %>
   cache:
-    url: <%= ENV["CACHE_DATABASE_URL"] %>
+    <<: *primary_production
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: phone_flipr_production_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
