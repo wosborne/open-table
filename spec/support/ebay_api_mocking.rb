@@ -179,4 +179,92 @@ module EbayApiMocking
       .with("/sell/account/v1/return_policy", anything)
       .and_return(response)
   end
+
+  def mock_fulfillment_policies_response
+    {
+      success: true,
+      status_code: 200,
+      data: {
+        "fulfillmentPolicies" => [
+          {
+            "fulfillmentPolicyId" => "123456789",
+            "name" => "Standard Fulfillment",
+            "marketplaceId" => "EBAY_GB"
+          },
+          {
+            "fulfillmentPolicyId" => "987654321",
+            "name" => "Express Fulfillment",
+            "marketplaceId" => "EBAY_GB"
+          }
+        ]
+      }
+    }
+  end
+
+  def mock_payment_policies_response
+    {
+      success: true,
+      status_code: 200,
+      data: {
+        "paymentPolicies" => [
+          {
+            "paymentPolicyId" => "111111111",
+            "name" => "PayPal Payment",
+            "marketplaceId" => "EBAY_GB"
+          },
+          {
+            "paymentPolicyId" => "222222222",
+            "name" => "Card Payment",
+            "marketplaceId" => "EBAY_GB"
+          }
+        ]
+      }
+    }
+  end
+
+  def mock_return_policies_response
+    {
+      success: true,
+      status_code: 200,
+      data: {
+        "returnPolicies" => [
+          {
+            "returnPolicyId" => "333333333",
+            "name" => "30 Day Returns",
+            "marketplaceId" => "EBAY_GB"
+          },
+          {
+            "returnPolicyId" => "444444444",
+            "name" => "No Returns",
+            "marketplaceId" => "EBAY_GB"
+          }
+        ]
+      }
+    }
+  end
+
+  def stub_ebay_policy_fetching
+    allow_any_instance_of(EbayApiClient).to receive(:get_fulfillment_policies)
+      .and_return(mock_fulfillment_policies_response)
+    allow_any_instance_of(EbayApiClient).to receive(:get_payment_policies)
+      .and_return(mock_payment_policies_response)
+    allow_any_instance_of(EbayApiClient).to receive(:get_return_policies)
+      .and_return(mock_return_policies_response)
+  end
+
+  def mock_empty_policies_response
+    {
+      success: true,
+      status_code: 200,
+      data: {}
+    }
+  end
+
+  def mock_policy_api_error
+    {
+      success: false,
+      status_code: 400,
+      error: "Failed to fetch policies"
+    }
+  end
 end

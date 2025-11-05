@@ -38,7 +38,7 @@ class EbayApiClient
     # Try to fetch from eBay API first
     xml_payload = build_get_ebay_details_xml("ShippingServiceDetails")
     response = post_xml("/ws/api.dll", xml_payload)
-    
+
     if response[:success]
       extract_shipping_services(response[:data])
     else
@@ -55,9 +55,9 @@ class EbayApiClient
 
   def create_return_policy(policy_data)
     Rails.logger.info "Creating return policy with data: #{policy_data.to_json}"
-    
+
     response = post("/sell/account/v1/return_policy", policy_data)
-    
+
     if response[:success]
       # Convert the response format to match what the controller expects
       mock_response = OpenStruct.new(
@@ -82,9 +82,9 @@ class EbayApiClient
 
   def create_payment_policy(policy_data)
     Rails.logger.info "Creating payment policy with data: #{policy_data.to_json}"
-    
+
     response = post("/sell/account/v1/payment_policy", policy_data)
-    
+
     if response[:success]
       # Convert the response format to match what the controller expects
       mock_response = OpenStruct.new(
@@ -107,11 +107,23 @@ class EbayApiClient
     nil
   end
 
+  def get_fulfillment_policies
+    get("/sell/account/v1/fulfillment_policy", { marketplace_id: "EBAY_GB" })
+  end
+
+  def get_payment_policies
+    get("/sell/account/v1/payment_policy", { marketplace_id: "EBAY_GB" })
+  end
+
+  def get_return_policies
+    get("/sell/account/v1/return_policy", { marketplace_id: "EBAY_GB" })
+  end
+
   def create_fulfillment_policy(policy_data)
     Rails.logger.info "Creating fulfillment policy with data: #{policy_data.to_json}"
-    
+
     response = post("/sell/account/v1/fulfillment_policy", policy_data)
-    
+
     if response[:success]
       # Convert the response format to match what the controller expects
       mock_response = OpenStruct.new(
@@ -138,12 +150,12 @@ class EbayApiClient
 
   def make_xml_request(method, endpoint, xml_payload)
     attempt_count = 0
-    
+
     begin
       # Trading API uses different base URL
       trading_api_base = "https://api.ebay.com"
       url = "#{trading_api_base}#{endpoint}"
-      
+
       headers = {
         "X-EBAY-API-COMPATIBILITY-LEVEL" => "1193",
         "X-EBAY-API-CALL-NAME" => "GeteBayDetails",
@@ -151,15 +163,15 @@ class EbayApiClient
         "X-EBAY-API-IAF-TOKEN" => @access_token, # OAuth token for Trading API
         "Content-Type" => "text/xml; charset=utf-8"
       }
-      
+
       response = RestClient.post(url, xml_payload, headers)
       result = handle_xml_response(response)
-      
+
       # Check if the XML response indicates token expiration and retry if needed
       if !result[:success] && (result[:error]&.include?("Expired IAF token") || result[:error]&.include?("Authorisation token is invalid")) && attempt_count == 0 && can_refresh_token?
         Rails.logger.info "XML API token expired, attempting refresh"
         attempt_count += 1
-        
+
         if refresh_access_token
           Rails.logger.info "XML API token refreshed successfully, retrying request"
           # Update headers with new token and rebuild XML payload with new token
@@ -172,7 +184,7 @@ class EbayApiClient
           Rails.logger.error "XML API token refresh failed"
         end
       end
-      
+
       result
     rescue RestClient::ExceptionWithResponse => e
       Rails.logger.error "eBay Trading API Error: #{e.response.code} - #{e.response.body}"
@@ -187,7 +199,7 @@ class EbayApiClient
     with_token_refresh do
       url = "#{@api_base_url}#{endpoint}"
       headers = standard_headers
-      
+
       response = case method
       when :put
         RestClient.put(url, payload&.to_json, headers)
@@ -236,7 +248,7 @@ class EbayApiClient
 
   def handle_error_response(response)
     error_data = JSON.parse(response.body) rescue {}
-    
+
     {
       success: false,
       status_code: response.code,
@@ -256,35 +268,35 @@ class EbayApiClient
   end
 
   def handle_xml_response(response)
-    require 'nokogiri'
-    
+    require "nokogiri"
+
     case response.code
     when 200
       Rails.logger.info "XML Response body: #{response.body}"
       doc = Nokogiri::XML(response.body)
-      
-      # Check for eBay API errors in XML response  
-      ack = doc.at_xpath('//xmlns:Ack', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+
+      # Check for eBay API errors in XML response
+      ack = doc.at_xpath("//xmlns:Ack", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
       Rails.logger.info "XML Response Ack: #{ack}"
-      
-      if ack == 'Success' || ack == 'Warning'
+
+      if ack == "Success" || ack == "Warning"
         {
           success: true,
           status_code: response.code,
           data: parse_xml_to_hash(doc)
         }
       else
-        error_messages = doc.xpath('//xmlns:Errors', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').map do |error|
+        error_messages = doc.xpath("//xmlns:Errors", "xmlns" => "urn:ebay:apis:eBLBaseComponents").map do |error|
           {
-            error_code: error.at_xpath('xmlns:ErrorCode', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
-            short_message: error.at_xpath('xmlns:ShortMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
-            long_message: error.at_xpath('xmlns:LongMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
-            severity_code: error.at_xpath('xmlns:SeverityCode', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+            error_code: error.at_xpath("xmlns:ErrorCode", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text,
+            short_message: error.at_xpath("xmlns:ShortMessage", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text,
+            long_message: error.at_xpath("xmlns:LongMessage", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text,
+            severity_code: error.at_xpath("xmlns:SeverityCode", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
           }
         end
-        
+
         Rails.logger.error "XML Response errors: #{error_messages.inspect}"
-        
+
         {
           success: false,
           status_code: response.code,
@@ -315,34 +327,34 @@ class EbayApiClient
   def parse_xml_to_hash(doc)
     # Convert XML to a hash structure that matches what we expect
     result = {}
-    
+
     # Parse ShippingCarrierDetails with namespace
-    shipping_carriers = doc.xpath('//xmlns:ShippingCarrierDetails', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').map do |carrier|
+    shipping_carriers = doc.xpath("//xmlns:ShippingCarrierDetails", "xmlns" => "urn:ebay:apis:eBLBaseComponents").map do |carrier|
       {
-        'ShippingCarrier' => carrier.at_xpath('xmlns:ShippingCarrier', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
-        'Description' => carrier.at_xpath('xmlns:Description', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+        "ShippingCarrier" => carrier.at_xpath("xmlns:ShippingCarrier", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text,
+        "Description" => carrier.at_xpath("xmlns:Description", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
       }
     end
-    result['ShippingCarrierDetails'] = shipping_carriers if shipping_carriers.any?
-    
+    result["ShippingCarrierDetails"] = shipping_carriers if shipping_carriers.any?
+
     Rails.logger.info "Parsed shipping carriers: #{shipping_carriers.inspect}"
-    
+
     # Parse ShippingServiceDetails with namespace
-    shipping_services = doc.xpath('//xmlns:ShippingServiceDetails', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').map do |service|
+    shipping_services = doc.xpath("//xmlns:ShippingServiceDetails", "xmlns" => "urn:ebay:apis:eBLBaseComponents").map do |service|
       {
-        'ShippingService' => service.at_xpath('xmlns:ShippingService', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
-        'Description' => service.at_xpath('xmlns:Description', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text,
-        'ShippingCarrier' => service.at_xpath('xmlns:ShippingCarrier', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+        "ShippingService" => service.at_xpath("xmlns:ShippingService", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text,
+        "Description" => service.at_xpath("xmlns:Description", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text,
+        "ShippingCarrier" => service.at_xpath("xmlns:ShippingCarrier", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
       }
     end
-    result['ShippingServiceDetails'] = shipping_services if shipping_services.any?
-    
+    result["ShippingServiceDetails"] = shipping_services if shipping_services.any?
+
     result
   end
 
   def parse_ebay_errors(error_data)
     return [] unless error_data.dig("errors").is_a?(Array)
-    
+
     error_data["errors"].map do |error|
       {
         error_id: error["errorId"],
@@ -382,14 +394,14 @@ class EbayApiClient
 
   def with_token_refresh(&block)
     attempt_count = 0
-    
+
     begin
       yield
     rescue RestClient::ExceptionWithResponse => e
       if token_expired?(e) && attempt_count == 0 && can_refresh_token?
         Rails.logger.info "eBay token expired, attempting refresh"
         attempt_count += 1
-        
+
         if refresh_access_token
           Rails.logger.info "eBay token refreshed successfully, retrying request"
           retry
@@ -406,20 +418,20 @@ class EbayApiClient
   def token_expired?(error)
     return false unless error.is_a?(RestClient::ExceptionWithResponse)
     return true if error.response.code == 401
-    
+
     # Check error body for token expiration indicators (JSON APIs)
     error_body = JSON.parse(error.response.body) rescue {}
     error_messages = error_body.dig("errors")&.map { |e| e["message"] }&.join(" ") || ""
-    
+
     # Check for XML API token errors
     if error.response.body.include?("<?xml")
       xml_body = error.response.body
-      return true if xml_body.include?("Expired IAF token") || 
+      return true if xml_body.include?("Expired IAF token") ||
                      xml_body.include?("Authorisation token is hard expired") ||
                      xml_body.include?("Invalid IAF token")
     end
-    
-    error_messages.downcase.include?("token") || 
+
+    error_messages.downcase.include?("token") ||
     error_messages.downcase.include?("unauthorized") ||
     error_messages.downcase.include?("expired")
   end
@@ -443,17 +455,17 @@ class EbayApiClient
           "Content-Type" => "application/x-www-form-urlencoded"
         }
       )
-      
+
       token_response = JSON.parse(response.body)
-      
-      if token_response && token_response['access_token']
+
+      if token_response && token_response["access_token"]
         # Update the external account with new token
         @external_account.update!(
-          api_token: token_response['access_token'],
-          refresh_token: token_response['refresh_token'] || @external_account.refresh_token
+          api_token: token_response["access_token"],
+          refresh_token: token_response["refresh_token"] || @external_account.refresh_token
         )
-        @access_token = token_response['access_token']
-        
+        @access_token = token_response["access_token"]
+
         Rails.logger.info "eBay access token refreshed successfully"
         true
       else
@@ -480,16 +492,16 @@ class EbayApiClient
   end
 
   def extract_shipping_services(data)
-    services = data['ShippingServiceDetails'] || []
+    services = data["ShippingServiceDetails"] || []
     # Only return domestic UK services
-    services.select { |service| 
-      service['ShippingService']&.include?('UK_') && 
-      !service['ShippingService']&.include?('International')
+    services.select { |service|
+      service["ShippingService"]&.include?("UK_") &&
+      !service["ShippingService"]&.include?("International")
     }.map do |service|
       {
-        value: service['ShippingService'],
-        label: service['Description'] || service['ShippingService'],
-        carrier: service['ShippingCarrier']
+        value: service["ShippingService"],
+        label: service["Description"] || service["ShippingService"],
+        carrier: service["ShippingCarrier"]
       }
     end.compact
   end
@@ -497,56 +509,55 @@ class EbayApiClient
   def get_fallback_uk_shipping_services
     [
       {
-        value: 'UK_RoyalMailFirstClassStandard',
-        label: 'Royal Mail 1st Class Standard',
-        carrier: 'Royal Mail'
+        value: "UK_RoyalMailFirstClassStandard",
+        label: "Royal Mail 1st Class Standard",
+        carrier: "Royal Mail"
       },
       {
-        value: 'UK_RoyalMailSecondClassStandard',
-        label: 'Royal Mail 2nd Class Standard',
-        carrier: 'Royal Mail'
+        value: "UK_RoyalMailSecondClassStandard",
+        label: "Royal Mail 2nd Class Standard",
+        carrier: "Royal Mail"
       },
       {
-        value: 'UK_RoyalMailSpecialDeliveryNextDay',
-        label: 'Royal Mail Special Delivery Next Day',
-        carrier: 'Royal Mail'
+        value: "UK_RoyalMailSpecialDeliveryNextDay",
+        label: "Royal Mail Special Delivery Next Day",
+        carrier: "Royal Mail"
       },
       {
-        value: 'UK_RoyalMailTracked24',
-        label: 'Royal Mail Tracked 24',
-        carrier: 'Royal Mail'
+        value: "UK_RoyalMailTracked24",
+        label: "Royal Mail Tracked 24",
+        carrier: "Royal Mail"
       },
       {
-        value: 'UK_RoyalMailTracked48',
-        label: 'Royal Mail Tracked 48',
-        carrier: 'Royal Mail'
+        value: "UK_RoyalMailTracked48",
+        label: "Royal Mail Tracked 48",
+        carrier: "Royal Mail"
       },
       {
-        value: 'UK_DPDLocalNextDay',
-        label: 'DPD Next Day',
-        carrier: 'DPD'
+        value: "UK_DPDLocalNextDay",
+        label: "DPD Next Day",
+        carrier: "DPD"
       },
       {
-        value: 'UK_DPDLocal12Service',
-        label: 'DPD 12:00 Service',
-        carrier: 'DPD'
+        value: "UK_DPDLocal12Service",
+        label: "DPD 12:00 Service",
+        carrier: "DPD"
       },
       {
-        value: 'UK_HermesStandardService',
-        label: 'Evri Standard Service',
-        carrier: 'Evri'
+        value: "UK_HermesStandardService",
+        label: "Evri Standard Service",
+        carrier: "Evri"
       },
       {
-        value: 'UK_UPSExpressNextDay',
-        label: 'UPS Express Next Day',
-        carrier: 'UPS'
+        value: "UK_UPSExpressNextDay",
+        label: "UPS Express Next Day",
+        carrier: "UPS"
       },
       {
-        value: 'UK_UPSStandardService',
-        label: 'UPS Standard Service',
-        carrier: 'UPS'
+        value: "UK_UPSStandardService",
+        label: "UPS Standard Service",
+        carrier: "UPS"
       }
     ]
   end
-
 end

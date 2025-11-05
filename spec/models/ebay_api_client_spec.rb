@@ -374,6 +374,72 @@ RSpec.describe EbayApiClient, type: :model do
     end
   end
 
+  describe '#get_fulfillment_policies' do
+    context 'when API call succeeds' do
+      before do
+        allow(client).to receive(:get)
+          .with("/sell/account/v1/fulfillment_policy", { marketplace_id: "EBAY_GB" })
+          .and_return(mock_fulfillment_policies_response)
+      end
+
+      it 'makes GET request to correct endpoint' do
+        expect(client).to receive(:get).with("/sell/account/v1/fulfillment_policy", { marketplace_id: "EBAY_GB" })
+        client.get_fulfillment_policies
+      end
+
+      it 'returns response with fulfillment policies' do
+        response = client.get_fulfillment_policies
+        expect(response[:success]).to be true
+        expect(response[:data]['fulfillmentPolicies']).to be_an(Array)
+        expect(response[:data]['fulfillmentPolicies'].size).to eq(2)
+      end
+    end
+  end
+
+  describe '#get_payment_policies' do
+    context 'when API call succeeds' do
+      before do
+        allow(client).to receive(:get)
+          .with("/sell/account/v1/payment_policy", { marketplace_id: "EBAY_GB" })
+          .and_return(mock_payment_policies_response)
+      end
+
+      it 'makes GET request to correct endpoint' do
+        expect(client).to receive(:get).with("/sell/account/v1/payment_policy", { marketplace_id: "EBAY_GB" })
+        client.get_payment_policies
+      end
+
+      it 'returns response with payment policies' do
+        response = client.get_payment_policies
+        expect(response[:success]).to be true
+        expect(response[:data]['paymentPolicies']).to be_an(Array)
+        expect(response[:data]['paymentPolicies'].size).to eq(2)
+      end
+    end
+  end
+
+  describe '#get_return_policies' do
+    context 'when API call succeeds' do
+      before do
+        allow(client).to receive(:get)
+          .with("/sell/account/v1/return_policy", { marketplace_id: "EBAY_GB" })
+          .and_return(mock_return_policies_response)
+      end
+
+      it 'makes GET request to correct endpoint' do
+        expect(client).to receive(:get).with("/sell/account/v1/return_policy", { marketplace_id: "EBAY_GB" })
+        client.get_return_policies
+      end
+
+      it 'returns response with return policies' do
+        response = client.get_return_policies
+        expect(response[:success]).to be true
+        expect(response[:data]['returnPolicies']).to be_an(Array)
+        expect(response[:data]['returnPolicies'].size).to eq(2)
+      end
+    end
+  end
+
   describe 'integration with base HTTP methods' do
     it 'uses POST method for policy creation' do
       expect(client).to respond_to(:post)
