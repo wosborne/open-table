@@ -1,6 +1,8 @@
 class Location < ApplicationRecord
   TABLE_COLUMNS = attribute_names - [ "account_id" ]
 
+  attr_accessor :skip_ebay_sync
+
   belongs_to :account
   has_many :inventory_units, dependent: :nullify
 
@@ -10,7 +12,7 @@ class Location < ApplicationRecord
   validates :postcode, presence: true
   validates :country, presence: true
 
-  before_create :sync_to_ebay_on_create
+  before_create :sync_to_ebay_on_create, unless: :skip_ebay_sync
 
   def full_address
     lines = [address_line_1, address_line_2, city, state, postcode, country].compact
