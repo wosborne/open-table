@@ -34,6 +34,21 @@ class EbayApiClient
     post("/sell/inventory/v1/location/#{merchant_location_key}", location_data)
   end
 
+  def get_shipping_services
+    # Try to fetch from eBay API first
+    xml_payload = build_get_ebay_details_xml("ShippingServiceDetails")
+    response = post_xml("/ws/api.dll", xml_payload)
+    
+    if response[:success]
+      extract_shipping_services(response[:data])
+    else
+      Rails.logger.error "Failed to fetch shipping services from eBay API: #{response[:error]}"
+      Rails.logger.info "Using fallback UK shipping services"
+      # Fallback to hardcoded UK domestic shipping services
+      get_fallback_uk_shipping_services
+    end
+  end
+
   def post_xml(endpoint, xml_payload)
     make_xml_request(:post, endpoint, xml_payload)
   end
@@ -60,14 +75,16 @@ class EbayApiClient
       result = handle_xml_response(response)
       
       # Check if the XML response indicates token expiration and retry if needed
-      if !result[:success] && result[:error]&.include?("Expired IAF token") && attempt_count == 0 && can_refresh_token?
+      if !result[:success] && (result[:error]&.include?("Expired IAF token") || result[:error]&.include?("Authorisation token is invalid")) && attempt_count == 0 && can_refresh_token?
         Rails.logger.info "XML API token expired, attempting refresh"
         attempt_count += 1
         
         if refresh_access_token
           Rails.logger.info "XML API token refreshed successfully, retrying request"
-          # Update headers with new token and make request again
+          # Update headers with new token and rebuild XML payload with new token
           headers["X-EBAY-API-IAF-TOKEN"] = @access_token
+          # Rebuild XML payload with updated token
+          xml_payload = xml_payload.gsub(/<eBayAuthToken>.*?<\/eBayAuthToken>/, "<eBayAuthToken>#{@access_token}</eBayAuthToken>")
           response = RestClient.post(url, xml_payload, headers)
           result = handle_xml_response(response)
         else
@@ -367,4 +384,115 @@ class EbayApiClient
       false
     end
   end
+
+  def build_get_ebay_details_xml(detail_name)
+    <<~XML
+      <?xml version="1.0" encoding="utf-8"?>
+      <GeteBayDetailsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+        <RequesterCredentials>
+          <eBayAuthToken>#{@access_token}</eBayAuthToken>
+        </RequesterCredentials>
+        <DetailName>#{detail_name}</DetailName>
+        <WarningLevel>High</WarningLevel>
+      </GeteBayDetailsRequest>
+    XML
+  end
+
+  def extract_shipping_services(data)
+    services = data['ShippingServiceDetails'] || []
+    # Only return domestic UK services
+    services.select { |service| 
+      service['ShippingService']&.include?('UK_') && 
+      !service['ShippingService']&.include?('International')
+    }.map do |service|
+      {
+        value: service['ShippingService'],
+        label: service['Description'] || service['ShippingService'],
+        carrier: service['ShippingCarrier']
+      }
+    end.compact
+  end
+
+  def get_fallback_uk_shipping_services
+    [
+      {
+        value: 'UK_RoyalMailFirstClassStandard',
+        label: 'Royal Mail 1st Class Standard',
+        carrier: 'Royal Mail'
+      },
+      {
+        value: 'UK_RoyalMailSecondClassStandard',
+        label: 'Royal Mail 2nd Class Standard',
+        carrier: 'Royal Mail'
+      },
+      {
+        value: 'UK_RoyalMailSpecialDeliveryNextDay',
+        label: 'Royal Mail Special Delivery Next Day',
+        carrier: 'Royal Mail'
+      },
+      {
+        value: 'UK_RoyalMailTracked24',
+        label: 'Royal Mail Tracked 24',
+        carrier: 'Royal Mail'
+      },
+      {
+        value: 'UK_RoyalMailTracked48',
+        label: 'Royal Mail Tracked 48',
+        carrier: 'Royal Mail'
+      },
+      {
+        value: 'UK_DPDLocalNextDay',
+        label: 'DPD Next Day',
+        carrier: 'DPD'
+      },
+      {
+        value: 'UK_DPDLocal12Service',
+        label: 'DPD 12:00 Service',
+        carrier: 'DPD'
+      },
+      {
+        value: 'UK_HermesStandardService',
+        label: 'Evri Standard Service',
+        carrier: 'Evri'
+      },
+      {
+        value: 'UK_UPSExpressNextDay',
+        label: 'UPS Express Next Day',
+        carrier: 'UPS'
+      },
+      {
+        value: 'UK_UPSStandardService',
+        label: 'UPS Standard Service',
+        carrier: 'UPS'
+      }
+    ]
+  end
+
+  def create_fulfillment_policy(policy_data)
+    Rails.logger.info "Creating fulfillment policy with data: #{policy_data.to_json}"
+    
+    response = post("/sell/account/v1/fulfillment_policy", policy_data)
+    
+    if response[:success]
+      # Convert the response format to match what the controller expects
+      mock_response = OpenStruct.new(
+        code: response[:status_code],
+        body: response[:data].to_json
+      )
+      Rails.logger.info "Create fulfillment policy response: #{mock_response.code} - #{mock_response.body}"
+      mock_response
+    else
+      # Convert error response format
+      error_response = OpenStruct.new(
+        code: response[:status_code] || 500,
+        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
+      )
+      Rails.logger.error "eBay fulfillment policy creation error: #{error_response.code} - #{error_response.body}"
+      error_response
+    end
+  rescue => e
+    Rails.logger.error "Unexpected error creating fulfillment policy: #{e.message}"
+    nil
+  end
+
 end

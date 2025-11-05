@@ -5,6 +5,15 @@ class ExternalAccount < ApplicationRecord
 
   has_many :external_account_products
   has_many :external_account_inventory_units, dependent: :destroy
+  has_many :ebay_business_policies, dependent: :destroy
+  
+  # Specific policy type associations
+  has_many :fulfillment_policies, -> { where(policy_type: 'fulfillment') }, 
+           class_name: 'EbayBusinessPolicy', dependent: :destroy
+  has_many :payment_policies, -> { where(policy_type: 'payment') }, 
+           class_name: 'EbayBusinessPolicy', dependent: :destroy
+  has_many :return_policies, -> { where(policy_type: 'return') }, 
+           class_name: 'EbayBusinessPolicy', dependent: :destroy
 
   validates :service_name, presence: true, uniqueness: { scope: :account_id }
   validates :service_name, inclusion: { in: SERVICE_NAMES }

@@ -1,0 +1,88 @@
+<div class="container">
+  <nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+      <li><%= link_to "Dashboard", account_dashboard_path(current_account) %></li>
+      <li><%= link_to "External Accounts", account_external_account_path(current_account, @external_account) %></li>
+      <li class="is-active"><a href="#" aria-current="page">New Fulfillment Policy</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="title">Create New Fulfillment Policy</h1>
+  <h2 class="subtitle">eBay Account: <%= @external_account.ebay_display_name || @external_account.ebay_username %></h2>
+
+  <%= form_with model: [@external_account, @fulfillment_policy], 
+                url: account_external_account_fulfillment_policies_path(current_account, @external_account),
+                local: true,
+                class: "box" do |f| %>
+    
+    <% if @fulfillment_policy.errors.any? %>
+      <div class="notification is-danger">
+        <h4>Please fix the following errors:</h4>
+        <ul>
+          <% @fulfillment_policy.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= f.hidden_field :marketplace_id, value: "EBAY_GB" %>
+    <%= f.hidden_field :currency, value: "GBP" %>
+
+    <div class="field">
+      <%= f.label :name, class: "label" %>
+      <div class="control">
+        <%= f.text_field :name, class: "input", placeholder: "Policy Name" %>
+      </div>
+      <p class="help">Enter a unique name for this fulfillment policy</p>
+    </div>
+
+    <div class="field">
+      <%= f.label :handling_time, class: "label" %>
+      <div class="control">
+        <%= f.number_field :handling_time, class: "input", min: 1, max: 30, value: 1 %>
+      </div>
+      <p class="help">Maximum number of business days to prepare the item for shipment</p>
+    </div>
+
+    <h3 class="title is-5">Shipping</h3>
+    
+    <div class="field">
+      <%= f.label :service_code, "Shipping Service", class: "label" %>
+      <div class="control">
+        <turbo-frame id="service-select" src="<%= shipping_services_account_external_account_fulfillment_policies_path(current_account, @external_account) %>">
+          <div class="select is-fullwidth">
+            <select name="fulfillment_policy[service_code]">
+              <option>Loading services...</option>
+            </select>
+          </div>
+        </turbo-frame>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="control">
+        <label class="checkbox">
+          <%= f.check_box :free_shipping, { checked: false }, "1", "0" %>
+          Free shipping
+        </label>
+      </div>
+    </div>
+
+    <div class="field" id="cost_field">
+      <%= f.label :cost, "Shipping Cost (£)", class: "label" %>
+      <div class="control">
+        <%= f.number_field :cost, class: "input", step: 0.01, min: 0 %>
+      </div>
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <%= f.submit "Create Fulfillment Policy", class: "button is-primary" %>
+      </div>
+      <div class="control">
+        <%= link_to "Cancel", account_external_account_path(current_account, @external_account), class: "button" %>
+      </div>
+    </div>
+  <% end %>
+</div>

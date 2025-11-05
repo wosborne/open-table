@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_30_182215) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_05_121529) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,6 +60,52 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_30_182215) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "ebay_business_policies", force: :cascade do |t|
+    t.bigint "external_account_id", null: false
+    t.string "policy_type", null: false
+    t.string "ebay_policy_id"
+    t.string "name"
+    t.string "marketplace_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ebay_policy_id"], name: "index_ebay_business_policies_on_ebay_policy_id", unique: true
+    t.index ["external_account_id", "policy_type"], name: "idx_on_external_account_id_policy_type_4eaa9fd4b2"
+    t.index ["external_account_id"], name: "index_ebay_business_policies_on_external_account_id"
+  end
+
+  create_table "ebay_notifications", force: :cascade do |t|
+    t.string "notification_type", null: false
+    t.text "raw_xml"
+    t.jsonb "parsed_data"
+    t.string "ebay_item_id"
+    t.string "ebay_transaction_id"
+    t.string "status", default: "received"
+    t.text "error_message"
+    t.string "request_method"
+    t.string "content_type"
+    t.jsonb "headers"
+    t.bigint "external_account_id", null: false
+    t.bigint "inventory_unit_id"
+    t.bigint "order_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "raw_json"
+    t.string "topic_id"
+    t.string "schema_version"
+    t.string "event_id"
+    t.boolean "signature_verified", default: false
+    t.index ["created_at"], name: "index_ebay_notifications_on_created_at"
+    t.index ["ebay_item_id"], name: "index_ebay_notifications_on_ebay_item_id"
+    t.index ["event_id"], name: "index_ebay_notifications_on_event_id"
+    t.index ["external_account_id"], name: "index_ebay_notifications_on_external_account_id"
+    t.index ["inventory_unit_id"], name: "index_ebay_notifications_on_inventory_unit_id"
+    t.index ["notification_type"], name: "index_ebay_notifications_on_notification_type"
+    t.index ["order_id"], name: "index_ebay_notifications_on_order_id"
+    t.index ["signature_verified"], name: "index_ebay_notifications_on_signature_verified"
+    t.index ["status"], name: "index_ebay_notifications_on_status"
+    t.index ["topic_id"], name: "index_ebay_notifications_on_topic_id"
+  end
+
   create_table "external_account_inventory_units", force: :cascade do |t|
     t.bigint "external_account_id", null: false
     t.bigint "inventory_unit_id", null: false
@@ -101,6 +147,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_30_182215) do
     t.string "ebay_display_name"
     t.string "ebay_email"
     t.bigint "inventory_location_id"
+    t.string "webhook_verification_token"
+    t.string "notification_destination_id"
+    t.string "notification_config_id"
     t.index ["account_id"], name: "index_external_accounts_on_account_id"
     t.index ["inventory_location_id"], name: "index_external_accounts_on_inventory_location_id"
   end
@@ -353,6 +402,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_30_182215) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ebay_business_policies", "external_accounts"
+  add_foreign_key "ebay_notifications", "external_accounts"
+  add_foreign_key "ebay_notifications", "inventory_units"
+  add_foreign_key "ebay_notifications", "orders"
   add_foreign_key "external_account_inventory_units", "external_accounts"
   add_foreign_key "external_account_inventory_units", "inventory_units"
   add_foreign_key "external_account_products", "external_accounts"

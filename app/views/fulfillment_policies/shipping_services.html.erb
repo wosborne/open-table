@@ -1,0 +1,14 @@
+<turbo-frame id="service-select">
+  <div class="select is-fullwidth">
+    <select name="fulfillment_policy[service_code]" <%= 'disabled' if @services.empty? %>>
+      <% if @services.empty? %>
+        <option>No services available</option>
+      <% else %>
+        <option value="">Select shipping service...</option>
+        <% @services.each do |service| %>
+          <option value="<%= service[:value] %>"><%= service[:label] %> (<%= service[:carrier] %>)</option>
+        <% end %>
+      <% end %>
+    </select>
+  </div>
+</turbo-frame>

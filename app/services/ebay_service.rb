@@ -135,6 +135,32 @@ class EbayService < BaseExternalService
     end
   end
 
+  def create_fulfillment_policy(policy_data)
+    Rails.logger.info "Creating fulfillment policy with data: #{policy_data.to_json}"
+    
+    begin
+      response = RestClient.post(
+        "#{@api_base_url}/sell/account/v1/fulfillment_policy",
+        policy_data.to_json,
+        {
+          "Authorization" => "Bearer #{@access_token}",
+          "Content-Type" => "application/json",
+          "Content-Language" => "en-GB",
+          "Accept" => "application/json"
+        }
+      )
+      
+      Rails.logger.info "Create fulfillment policy response: #{response.code} - #{response.body}"
+      response
+    rescue RestClient::ExceptionWithResponse => e
+      Rails.logger.error "eBay fulfillment policy creation error: #{e.response&.code} - #{e.response&.body}"
+      e.response
+    rescue => e
+      Rails.logger.error "Unexpected error creating fulfillment policy: #{e.message}"
+      nil
+    end
+  end
+
   protected
 
   def token_expired?(error)

@@ -35,8 +35,9 @@
     <% else %>
       <p class="has-text-grey">No fulfillment policies created yet.</p>
     <% end %>
-    <a href="https://www.ebay.co.uk/bp/manage" target="_blank" class="button is-info">
-      Create Fulfillment Policy on eBay
-    </a>
+    <%= link_to "Create Fulfillment Policy", 
+          new_account_external_account_fulfillment_policy_path(current_account, @external_account), 
+          class: "button is-primary", 
+          data: { turbo_frame: "_top" } %>
   </div>
 </turbo-frame>
