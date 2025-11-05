@@ -53,6 +53,60 @@ class EbayApiClient
     make_xml_request(:post, endpoint, xml_payload)
   end
 
+  def create_return_policy(policy_data)
+    Rails.logger.info "Creating return policy with data: #{policy_data.to_json}"
+    
+    response = post("/sell/account/v1/return_policy", policy_data)
+    
+    if response[:success]
+      # Convert the response format to match what the controller expects
+      mock_response = OpenStruct.new(
+        code: response[:status_code],
+        body: response[:data].to_json
+      )
+      Rails.logger.info "Create return policy response: #{mock_response.code} - #{mock_response.body}"
+      mock_response
+    else
+      # Convert error response format
+      error_response = OpenStruct.new(
+        code: response[:status_code] || 500,
+        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
+      )
+      Rails.logger.error "eBay return policy creation error: #{error_response.code} - #{error_response.body}"
+      error_response
+    end
+  rescue => e
+    Rails.logger.error "Unexpected error creating return policy: #{e.message}"
+    nil
+  end
+
+  def create_payment_policy(policy_data)
+    Rails.logger.info "Creating payment policy with data: #{policy_data.to_json}"
+    
+    response = post("/sell/account/v1/payment_policy", policy_data)
+    
+    if response[:success]
+      # Convert the response format to match what the controller expects
+      mock_response = OpenStruct.new(
+        code: response[:status_code],
+        body: response[:data].to_json
+      )
+      Rails.logger.info "Create payment policy response: #{mock_response.code} - #{mock_response.body}"
+      mock_response
+    else
+      # Convert error response format
+      error_response = OpenStruct.new(
+        code: response[:status_code] || 500,
+        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
+      )
+      Rails.logger.error "eBay payment policy creation error: #{error_response.code} - #{error_response.body}"
+      error_response
+    end
+  rescue => e
+    Rails.logger.error "Unexpected error creating payment policy: #{e.message}"
+    nil
+  end
+
   private
 
   def make_xml_request(method, endpoint, xml_payload)

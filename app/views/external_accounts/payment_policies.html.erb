@@ -35,8 +35,9 @@
     <% else %>
       <p class="has-text-grey">No payment policies created yet.</p>
     <% end %>
-    <a href="https://www.ebay.co.uk/bp/manage" target="_blank" class="button is-info">
-      Create Payment Policy on eBay
-    </a>
+    <%= link_to "Create Payment Policy", 
+          new_account_external_account_payment_policy_path(current_account, @external_account), 
+          class: "button is-primary",
+          data: { turbo_frame: "_top" } %>
   </div>
 </turbo-frame>

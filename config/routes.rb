@@ -40,6 +40,10 @@ Rails.application.routes.draw do
           get :shipping_services
         end
       end
+      
+      resources :return_policies, only: [:new, :create]
+      
+      resources :payment_policies, only: [:new, :create]
     end
 
     resources :products do

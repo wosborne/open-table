@@ -35,8 +35,9 @@
     <% else %>
       <p class="has-text-grey">No return policies created yet.</p>
     <% end %>
-    <a href="https://www.ebay.co.uk/bp/manage" target="_blank" class="button is-info">
-      Create Return Policy on eBay
-    </a>
+    <%= link_to "Create Return Policy", 
+          new_account_external_account_return_policy_path(current_account, @external_account), 
+          class: "button is-info",
+          data: { turbo_frame: "_top" } %>
   </div>
 </turbo-frame>
