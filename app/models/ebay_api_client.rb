@@ -107,6 +107,33 @@ class EbayApiClient
     nil
   end
 
+  def create_fulfillment_policy(policy_data)
+    Rails.logger.info "Creating fulfillment policy with data: #{policy_data.to_json}"
+    
+    response = post("/sell/account/v1/fulfillment_policy", policy_data)
+    
+    if response[:success]
+      # Convert the response format to match what the controller expects
+      mock_response = OpenStruct.new(
+        code: response[:status_code],
+        body: response[:data].to_json
+      )
+      Rails.logger.info "Create fulfillment policy response: #{mock_response.code} - #{mock_response.body}"
+      mock_response
+    else
+      # Convert error response format
+      error_response = OpenStruct.new(
+        code: response[:status_code] || 500,
+        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
+      )
+      Rails.logger.error "eBay fulfillment policy creation error: #{error_response.code} - #{error_response.body}"
+      error_response
+    end
+  rescue => e
+    Rails.logger.error "Unexpected error creating fulfillment policy: #{e.message}"
+    nil
+  end
+
   private
 
   def make_xml_request(method, endpoint, xml_payload)
@@ -520,33 +547,6 @@ class EbayApiClient
         carrier: 'UPS'
       }
     ]
-  end
-
-  def create_fulfillment_policy(policy_data)
-    Rails.logger.info "Creating fulfillment policy with data: #{policy_data.to_json}"
-    
-    response = post("/sell/account/v1/fulfillment_policy", policy_data)
-    
-    if response[:success]
-      # Convert the response format to match what the controller expects
-      mock_response = OpenStruct.new(
-        code: response[:status_code],
-        body: response[:data].to_json
-      )
-      Rails.logger.info "Create fulfillment policy response: #{mock_response.code} - #{mock_response.body}"
-      mock_response
-    else
-      # Convert error response format
-      error_response = OpenStruct.new(
-        code: response[:status_code] || 500,
-        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
-      )
-      Rails.logger.error "eBay fulfillment policy creation error: #{error_response.code} - #{error_response.body}"
-      error_response
-    end
-  rescue => e
-    Rails.logger.error "Unexpected error creating fulfillment policy: #{e.message}"
-    nil
   end
 
 end
