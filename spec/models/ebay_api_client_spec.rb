@@ -159,8 +159,8 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
-
         expect(response.success?).to be false
+
         expect(response.error['errors']).to be_present
       end
 
@@ -200,13 +200,13 @@ RSpec.describe EbayApiClient, type: :model do
         client.create_return_policy(policy_data)
       end
 
-      it 'returns OpenStruct response with correct format' do
+      it 'returns EbayApiResponse with correct format' do
         response = client.create_return_policy(policy_data)
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(201)
-
         expect(response.success?).to be true
+
         expect(response.data['returnPolicyId']).to eq('11223344')
         expect(response.data['name']).to eq('Test Return Policy')
       end
@@ -223,8 +223,8 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
-
         expect(response.success?).to be false
+
         expect(response.error['errors']).to be_present
       end
 
@@ -260,6 +260,7 @@ RSpec.describe EbayApiClient, type: :model do
       it 'converts hash error to JSON' do
         response = client.create_fulfillment_policy(policy_data)
 
+        expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
         expect(response.success?).to be false
         expect(response.error['message']).to eq('Validation failed')
@@ -280,6 +281,7 @@ RSpec.describe EbayApiClient, type: :model do
       it 'wraps string error in hash' do
         response = client.create_fulfillment_policy(policy_data)
 
+        expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(500)
         expect(response.success?).to be false
         expect(response.error).to eq('Internal server error')
@@ -299,9 +301,10 @@ RSpec.describe EbayApiClient, type: :model do
 
       it 'handles missing status code' do
         response = client.create_fulfillment_policy(policy_data)
+        expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to be_nil
         expect(response.success?).to be false
-        expect(response.error).to eq("Unknown error")
+        expect(response.error).to eq('Unknown error')
       end
     end
   end
@@ -344,6 +347,8 @@ RSpec.describe EbayApiClient, type: :model do
 
       it 'handles UTF-8 characters correctly' do
         response = client.create_fulfillment_policy(policy_data)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(201)
         expect(response.success?).to be true
         expect(response.data['name']).to eq("Policy with émojis 🚀 and spéçial chars")
       end
@@ -434,13 +439,13 @@ RSpec.describe EbayApiClient, type: :model do
         client.update_fulfillment_policy(policy_id, policy_data)
       end
 
-      it 'returns OpenStruct response with correct format' do
+      it 'returns EbayApiResponse with correct format' do
         response = client.update_fulfillment_policy(policy_id, policy_data)
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(200)
-
         expect(response.success?).to be true
+
         expect(response.data['fulfillmentPolicyId']).to eq('12345678')
         expect(response.data['name']).to eq('Updated Fulfillment Policy')
       end
@@ -457,8 +462,8 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
-
         expect(response.success?).to be false
+
         expect(response.error['errors']).to be_present
       end
 
@@ -495,13 +500,13 @@ RSpec.describe EbayApiClient, type: :model do
         client.update_payment_policy(policy_id, policy_data)
       end
 
-      it 'returns OpenStruct response with correct format' do
+      it 'returns EbayApiResponse with correct format' do
         response = client.update_payment_policy(policy_id, policy_data)
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(200)
-
         expect(response.success?).to be true
+
         expect(response.data['paymentPolicyId']).to eq('87654321')
         expect(response.data['name']).to eq('Updated Payment Policy')
       end
@@ -518,8 +523,8 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
-
         expect(response.success?).to be false
+
         expect(response.error['errors']).to be_present
       end
 
@@ -556,13 +561,13 @@ RSpec.describe EbayApiClient, type: :model do
         client.update_return_policy(policy_id, policy_data)
       end
 
-      it 'returns OpenStruct response with correct format' do
+      it 'returns EbayApiResponse with correct format' do
         response = client.update_return_policy(policy_id, policy_data)
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(200)
-
         expect(response.success?).to be true
+
         expect(response.data['returnPolicyId']).to eq('11223344')
         expect(response.data['name']).to eq('Updated Return Policy')
       end
@@ -579,8 +584,8 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
-
         expect(response.success?).to be false
+
         expect(response.error['errors']).to be_present
       end
 
