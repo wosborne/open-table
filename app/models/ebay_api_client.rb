@@ -35,17 +35,16 @@ class EbayApiClient
   end
 
   def get_shipping_services
-    # Try to fetch from eBay API first
-    xml_payload = build_get_ebay_details_xml("ShippingServiceDetails")
-    response = post_xml("/ws/api.dll", xml_payload)
+    Rails.cache.fetch("ebay_shipping_services", expires_in: 24.hours) do
+      xml_payload = build_get_ebay_details_xml("ShippingServiceDetails")
+      response = post_xml("/ws/api.dll", xml_payload)
 
-    if response[:success]
-      extract_shipping_services(response[:data])
-    else
-      Rails.logger.error "Failed to fetch shipping services from eBay API: #{response[:error]}"
-      Rails.logger.info "Using fallback UK shipping services"
-      # Fallback to hardcoded UK domestic shipping services
-      get_fallback_uk_shipping_services
+      if response[:success]
+        extract_shipping_services(response[:data])
+      else
+        Rails.logger.error "Failed to fetch shipping services from eBay API: #{response[:error]}"
+        []
+      end
     end
   end
 
