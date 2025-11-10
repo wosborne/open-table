@@ -1,11 +1,13 @@
 module EbayApiMocking
   def mock_ebay_api_responses
-    allow_any_instance_of(EbayApiClient).to receive(:make_request).and_call_original
+    allow_any_instance_of(EbayApiClient).to receive(:make_request).and_return(
+      EbayApiResponse.new(success: true, status_code: 200, data: {})
+    )
     allow_any_instance_of(EbayApiClient).to receive(:refresh_access_token).and_return(true)
   end
 
   def mock_successful_fulfillment_policy_creation
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 201,
       data: {
@@ -38,11 +40,11 @@ module EbayApiMocking
           }
         ]
       }
-    }
+    )
   end
 
   def mock_successful_payment_policy_creation
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 201,
       data: {
@@ -66,11 +68,11 @@ module EbayApiMocking
         ],
         "immediatePay" => true
       }
-    }
+    )
   end
 
   def mock_successful_return_policy_creation
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 201,
       data: {
@@ -91,11 +93,47 @@ module EbayApiMocking
         "returnShippingCostPayer" => "BUYER",
         "returnMethod" => "REPLACEMENT"
       }
-    }
+    )
+  end
+
+  def mock_successful_fulfillment_policy_update
+    EbayApiResponse.new(
+      success: true,
+      status_code: 200,
+      data: {
+        "fulfillmentPolicyId" => "12345678",
+        "name" => "Updated Fulfillment Policy",
+        "marketplaceId" => "EBAY_GB"
+      }
+    )
+  end
+
+  def mock_successful_payment_policy_update
+    EbayApiResponse.new(
+      success: true,
+      status_code: 200,
+      data: {
+        "paymentPolicyId" => "87654321",
+        "name" => "Updated Payment Policy",
+        "marketplaceId" => "EBAY_GB"
+      }
+    )
+  end
+
+  def mock_successful_return_policy_update
+    EbayApiResponse.new(
+      success: true,
+      status_code: 200,
+      data: {
+        "returnPolicyId" => "11223344",
+        "name" => "Updated Return Policy",
+        "marketplaceId" => "EBAY_GB"
+      }
+    )
   end
 
   def mock_api_error_response(error_code = 25001, message = "Required field missing")
-    {
+    EbayApiResponse.new(
       success: false,
       status_code: 400,
       error: {
@@ -128,7 +166,7 @@ module EbayApiMocking
           severity: "high"
         }
       ]
-    }
+    )
   end
 
   def mock_network_error_response
@@ -180,8 +218,29 @@ module EbayApiMocking
       .and_return(response)
   end
 
+  def stub_ebay_fulfillment_policy_update(policy_id, response = nil)
+    response ||= mock_successful_fulfillment_policy_update
+    allow_any_instance_of(EbayApiClient).to receive(:put)
+      .with("/sell/account/v1/fulfillment_policy/#{policy_id}", anything)
+      .and_return(response)
+  end
+
+  def stub_ebay_payment_policy_update(policy_id, response = nil)
+    response ||= mock_successful_payment_policy_update  
+    allow_any_instance_of(EbayApiClient).to receive(:put)
+      .with("/sell/account/v1/payment_policy/#{policy_id}", anything)
+      .and_return(response)
+  end
+
+  def stub_ebay_return_policy_update(policy_id, response = nil)
+    response ||= mock_successful_return_policy_update
+    allow_any_instance_of(EbayApiClient).to receive(:put)
+      .with("/sell/account/v1/return_policy/#{policy_id}", anything)
+      .and_return(response)
+  end
+
   def mock_fulfillment_policies_response
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 200,
       data: {
@@ -198,11 +257,11 @@ module EbayApiMocking
           }
         ]
       }
-    }
+    )
   end
 
   def mock_payment_policies_response
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 200,
       data: {
@@ -219,11 +278,11 @@ module EbayApiMocking
           }
         ]
       }
-    }
+    )
   end
 
   def mock_return_policies_response
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 200,
       data: {
@@ -240,7 +299,7 @@ module EbayApiMocking
           }
         ]
       }
-    }
+    )
   end
 
   def stub_ebay_policy_fetching

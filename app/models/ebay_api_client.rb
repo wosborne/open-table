@@ -1,4 +1,6 @@
 class EbayApiClient
+  include EbayApiErrorHandling
+  
   attr_reader :external_account, :api_base_url, :access_token
 
   def initialize(external_account)
@@ -53,61 +55,39 @@ class EbayApiClient
   end
 
   def create_return_policy(policy_data)
-    Rails.logger.info "Creating return policy with data: #{policy_data.to_json}"
-
-    response = post("/sell/account/v1/return_policy", policy_data)
-
-    if response[:success]
-      # Convert the response format to match what the controller expects
-      mock_response = OpenStruct.new(
-        code: response[:status_code],
-        body: response[:data].to_json
-      )
-      Rails.logger.info "Create return policy response: #{mock_response.code} - #{mock_response.body}"
-      mock_response
-    else
-      # Convert error response format
-      error_response = OpenStruct.new(
-        code: response[:status_code] || 500,
-        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
-      )
-      Rails.logger.error "eBay return policy creation error: #{error_response.code} - #{error_response.body}"
-      error_response
-    end
+    post("/sell/account/v1/return_policy", policy_data)
   rescue => e
     Rails.logger.error "Unexpected error creating return policy: #{e.message}"
     nil
   end
 
+  def update_return_policy(policy_id, policy_data)
+    put("/sell/account/v1/return_policy/#{policy_id}", policy_data)
+  rescue => e
+    Rails.logger.error "Unexpected error updating return policy: #{e.message}"
+    nil
+  end
+
   def create_payment_policy(policy_data)
-    Rails.logger.info "Creating payment policy with data: #{policy_data.to_json}"
-
-    response = post("/sell/account/v1/payment_policy", policy_data)
-
-    if response[:success]
-      # Convert the response format to match what the controller expects
-      mock_response = OpenStruct.new(
-        code: response[:status_code],
-        body: response[:data].to_json
-      )
-      Rails.logger.info "Create payment policy response: #{mock_response.code} - #{mock_response.body}"
-      mock_response
-    else
-      # Convert error response format
-      error_response = OpenStruct.new(
-        code: response[:status_code] || 500,
-        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
-      )
-      Rails.logger.error "eBay payment policy creation error: #{error_response.code} - #{error_response.body}"
-      error_response
-    end
+    post("/sell/account/v1/payment_policy", policy_data)
   rescue => e
     Rails.logger.error "Unexpected error creating payment policy: #{e.message}"
     nil
   end
 
+  def update_payment_policy(policy_id, policy_data)
+    put("/sell/account/v1/payment_policy/#{policy_id}", policy_data)
+  rescue => e
+    Rails.logger.error "Unexpected error updating payment policy: #{e.message}"
+    nil
+  end
+
   def get_fulfillment_policies
     get("/sell/account/v1/fulfillment_policy", { marketplace_id: "EBAY_GB" })
+  end
+
+  def get_fulfillment_policy(policy_id)
+    get("/sell/account/v1/fulfillment_policy/#{policy_id}")
   end
 
   def get_payment_policies
@@ -119,29 +99,16 @@ class EbayApiClient
   end
 
   def create_fulfillment_policy(policy_data)
-    Rails.logger.info "Creating fulfillment policy with data: #{policy_data.to_json}"
-
-    response = post("/sell/account/v1/fulfillment_policy", policy_data)
-
-    if response[:success]
-      # Convert the response format to match what the controller expects
-      mock_response = OpenStruct.new(
-        code: response[:status_code],
-        body: response[:data].to_json
-      )
-      Rails.logger.info "Create fulfillment policy response: #{mock_response.code} - #{mock_response.body}"
-      mock_response
-    else
-      # Convert error response format
-      error_response = OpenStruct.new(
-        code: response[:status_code] || 500,
-        body: response[:error].is_a?(Hash) ? response[:error].to_json : { error: response[:error] }.to_json
-      )
-      Rails.logger.error "eBay fulfillment policy creation error: #{error_response.code} - #{error_response.body}"
-      error_response
-    end
+    post("/sell/account/v1/fulfillment_policy", policy_data)
   rescue => e
     Rails.logger.error "Unexpected error creating fulfillment policy: #{e.message}"
+    nil
+  end
+
+  def update_fulfillment_policy(policy_id, policy_data)
+    put("/sell/account/v1/fulfillment_policy/#{policy_id}", policy_data)
+  rescue => e
+    Rails.logger.error "Unexpected error updating fulfillment policy: #{e.message}"
     nil
   end
 
@@ -151,8 +118,8 @@ class EbayApiClient
     attempt_count = 0
 
     begin
-      # Trading API uses different base URL
-      trading_api_base = "https://api.ebay.com"
+      # Trading API uses same environment as REST API  
+      trading_api_base = @api_base_url
       url = "#{trading_api_base}#{endpoint}"
 
       headers = {
@@ -173,10 +140,8 @@ class EbayApiClient
 
         if refresh_access_token
           Rails.logger.info "XML API token refreshed successfully, retrying request"
-          # Update headers with new token and rebuild XML payload with new token
+          # Update headers with new token
           headers["X-EBAY-API-IAF-TOKEN"] = @access_token
-          # Rebuild XML payload with updated token
-          xml_payload = xml_payload.gsub(/<eBayAuthToken>.*?<\/eBayAuthToken>/, "<eBayAuthToken>#{@access_token}</eBayAuthToken>")
           response = RestClient.post(url, xml_payload, headers)
           result = handle_xml_response(response)
         else
@@ -224,46 +189,44 @@ class EbayApiClient
     case response.code
     when 200, 201
       parsed_body = JSON.parse(response.body)
-      {
+      EbayApiResponse.new(
         success: true,
         status_code: response.code,
         data: parsed_body
-      }
+      )
     when 204
-      {
+      EbayApiResponse.new(
         success: true,
         status_code: response.code,
         data: nil
-      }
+      )
     else
-      {
+      EbayApiResponse.new(
         success: false,
         status_code: response.code,
-        error: "Unexpected success response: #{response.code}",
-        raw_response: response.body
-      }
+        error: "Unexpected success response: #{response.code}"
+      )
     end
   end
 
   def handle_error_response(response)
     error_data = JSON.parse(response.body) rescue {}
 
-    {
+    EbayApiResponse.new(
       success: false,
       status_code: response.code,
       error: error_data,
       detailed_errors: parse_ebay_errors(error_data)
-    }
+    )
   end
 
   def handle_network_error(error)
-    {
+    EbayApiResponse.new(
       success: false,
       status_code: nil,
       error: error.message,
-      error_type: "network_error",
       detailed_errors: []
-    }
+    )
   end
 
   def handle_xml_response(response)
@@ -481,9 +444,6 @@ class EbayApiClient
     <<~XML
       <?xml version="1.0" encoding="utf-8"?>
       <GeteBayDetailsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-        <RequesterCredentials>
-          <eBayAuthToken>#{@access_token}</eBayAuthToken>
-        </RequesterCredentials>
         <DetailName>#{detail_name}</DetailName>
         <WarningLevel>High</WarningLevel>
       </GeteBayDetailsRequest>
@@ -505,58 +465,4 @@ class EbayApiClient
     end.compact
   end
 
-  def get_fallback_uk_shipping_services
-    [
-      {
-        value: "UK_RoyalMailFirstClassStandard",
-        label: "Royal Mail 1st Class Standard",
-        carrier: "Royal Mail"
-      },
-      {
-        value: "UK_RoyalMailSecondClassStandard",
-        label: "Royal Mail 2nd Class Standard",
-        carrier: "Royal Mail"
-      },
-      {
-        value: "UK_RoyalMailSpecialDeliveryNextDay",
-        label: "Royal Mail Special Delivery Next Day",
-        carrier: "Royal Mail"
-      },
-      {
-        value: "UK_RoyalMailTracked24",
-        label: "Royal Mail Tracked 24",
-        carrier: "Royal Mail"
-      },
-      {
-        value: "UK_RoyalMailTracked48",
-        label: "Royal Mail Tracked 48",
-        carrier: "Royal Mail"
-      },
-      {
-        value: "UK_DPDLocalNextDay",
-        label: "DPD Next Day",
-        carrier: "DPD"
-      },
-      {
-        value: "UK_DPDLocal12Service",
-        label: "DPD 12:00 Service",
-        carrier: "DPD"
-      },
-      {
-        value: "UK_HermesStandardService",
-        label: "Evri Standard Service",
-        carrier: "Evri"
-      },
-      {
-        value: "UK_UPSExpressNextDay",
-        label: "UPS Express Next Day",
-        carrier: "UPS"
-      },
-      {
-        value: "UK_UPSStandardService",
-        label: "UPS Standard Service",
-        carrier: "UPS"
-      }
-    ]
-  end
 end

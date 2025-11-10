@@ -66,22 +66,17 @@ RSpec.describe EbayApiClient, type: :model do
         client.create_fulfillment_policy(policy_data)
       end
 
-      it 'returns OpenStruct response with correct format' do
+      it 'returns EbayApiResponse with correct format' do
         response = client.create_fulfillment_policy(policy_data)
 
-        expect(response).to be_a(OpenStruct)
-        expect(response.code).to eq(201)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(201)
+        expect(response.success?).to be true
 
-        body_data = JSON.parse(response.body)
-        expect(body_data['fulfillmentPolicyId']).to eq('12345678')
-        expect(body_data['name']).to eq('Test Fulfillment Policy')
+        expect(response.data['fulfillmentPolicyId']).to eq('12345678')
+        expect(response.data['name']).to eq('Test Fulfillment Policy')
       end
 
-      it 'logs successful creation' do
-        expect(Rails.logger).to receive(:info).with(match(/Creating fulfillment policy/))
-        expect(Rails.logger).to receive(:info).with(match(/Create fulfillment policy response: 201/))
-        client.create_fulfillment_policy(policy_data)
-      end
     end
 
     context 'when API call fails' do
@@ -92,17 +87,13 @@ RSpec.describe EbayApiClient, type: :model do
       it 'returns error response in correct format' do
         response = client.create_fulfillment_policy(policy_data)
 
-        expect(response).to be_a(OpenStruct)
-        expect(response.code).to eq(400)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(400)
+        expect(response.success?).to be false
 
-        body_data = JSON.parse(response.body)
-        expect(body_data['errors']).to be_present
+        expect(response.error['errors']).to be_present
       end
 
-      it 'logs error details' do
-        expect(Rails.logger).to receive(:error).with(match(/eBay fulfillment policy creation error/))
-        client.create_fulfillment_policy(policy_data)
-      end
     end
 
     context 'when network error occurs' do
@@ -145,22 +136,17 @@ RSpec.describe EbayApiClient, type: :model do
         client.create_payment_policy(policy_data)
       end
 
-      it 'returns OpenStruct response with correct format' do
+      it 'returns EbayApiResponse with correct format' do
         response = client.create_payment_policy(policy_data)
 
-        expect(response).to be_a(OpenStruct)
-        expect(response.code).to eq(201)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(201)
+        expect(response.success?).to be true
 
-        body_data = JSON.parse(response.body)
-        expect(body_data['paymentPolicyId']).to eq('87654321')
-        expect(body_data['name']).to eq('Test Payment Policy')
+        expect(response.data['paymentPolicyId']).to eq('87654321')
+        expect(response.data['name']).to eq('Test Payment Policy')
       end
 
-      it 'logs successful creation' do
-        expect(Rails.logger).to receive(:info).with(match(/Creating payment policy/))
-        expect(Rails.logger).to receive(:info).with(match(/Create payment policy response: 201/))
-        client.create_payment_policy(policy_data)
-      end
     end
 
     context 'when API call fails' do
@@ -171,17 +157,13 @@ RSpec.describe EbayApiClient, type: :model do
       it 'returns error response in correct format' do
         response = client.create_payment_policy(policy_data)
 
-        expect(response).to be_a(OpenStruct)
-        expect(response.code).to eq(400)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(400)
 
-        body_data = JSON.parse(response.body)
-        expect(body_data['errors']).to be_present
+        expect(response.success?).to be false
+        expect(response.error['errors']).to be_present
       end
 
-      it 'logs error details' do
-        expect(Rails.logger).to receive(:error).with(match(/eBay payment policy creation error/))
-        client.create_payment_policy(policy_data)
-      end
     end
 
     context 'when exception occurs' do
@@ -221,19 +203,14 @@ RSpec.describe EbayApiClient, type: :model do
       it 'returns OpenStruct response with correct format' do
         response = client.create_return_policy(policy_data)
 
-        expect(response).to be_a(OpenStruct)
-        expect(response.code).to eq(201)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(201)
 
-        body_data = JSON.parse(response.body)
-        expect(body_data['returnPolicyId']).to eq('11223344')
-        expect(body_data['name']).to eq('Test Return Policy')
+        expect(response.success?).to be true
+        expect(response.data['returnPolicyId']).to eq('11223344')
+        expect(response.data['name']).to eq('Test Return Policy')
       end
 
-      it 'logs successful creation' do
-        expect(Rails.logger).to receive(:info).with(match(/Creating return policy/))
-        expect(Rails.logger).to receive(:info).with(match(/Create return policy response: 201/))
-        client.create_return_policy(policy_data)
-      end
     end
 
     context 'when API call fails' do
@@ -244,17 +221,13 @@ RSpec.describe EbayApiClient, type: :model do
       it 'returns error response in correct format' do
         response = client.create_return_policy(policy_data)
 
-        expect(response).to be_a(OpenStruct)
-        expect(response.code).to eq(400)
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(400)
 
-        body_data = JSON.parse(response.body)
-        expect(body_data['errors']).to be_present
+        expect(response.success?).to be false
+        expect(response.error['errors']).to be_present
       end
 
-      it 'logs error details' do
-        expect(Rails.logger).to receive(:error).with(match(/eBay return policy creation error/))
-        client.create_return_policy(policy_data)
-      end
     end
 
     context 'when exception occurs' do
@@ -275,11 +248,11 @@ RSpec.describe EbayApiClient, type: :model do
 
     context 'when error response has hash error' do
       let(:hash_error_response) do
-        {
+        EbayApiResponse.new(
           success: false,
           status_code: 400,
           error: { "message" => "Validation failed" }
-        }
+        )
       end
 
       before { stub_ebay_fulfillment_policy_creation(hash_error_response) }
@@ -287,19 +260,19 @@ RSpec.describe EbayApiClient, type: :model do
       it 'converts hash error to JSON' do
         response = client.create_fulfillment_policy(policy_data)
 
-        expect(response.code).to eq(400)
-        body_data = JSON.parse(response.body)
-        expect(body_data['message']).to eq('Validation failed')
+        expect(response.status_code).to eq(400)
+        expect(response.success?).to be false
+        expect(response.error['message']).to eq('Validation failed')
       end
     end
 
     context 'when error response has string error' do
       let(:string_error_response) do
-        {
+        EbayApiResponse.new(
           success: false,
           status_code: 500,
           error: "Internal server error"
-        }
+        )
       end
 
       before { stub_ebay_fulfillment_policy_creation(string_error_response) }
@@ -307,25 +280,28 @@ RSpec.describe EbayApiClient, type: :model do
       it 'wraps string error in hash' do
         response = client.create_fulfillment_policy(policy_data)
 
-        expect(response.code).to eq(500)
-        body_data = JSON.parse(response.body)
-        expect(body_data['error']).to eq('Internal server error')
+        expect(response.status_code).to eq(500)
+        expect(response.success?).to be false
+        expect(response.error).to eq('Internal server error')
       end
     end
 
     context 'when status code is missing' do
       let(:no_status_response) do
-        {
+        EbayApiResponse.new(
           success: false,
+          status_code: nil,
           error: "Unknown error"
-        }
+        )
       end
 
       before { stub_ebay_fulfillment_policy_creation(no_status_response) }
 
-      it 'defaults to 500 status code' do
+      it 'handles missing status code' do
         response = client.create_fulfillment_policy(policy_data)
-        expect(response.code).to eq(500)
+        expect(response.status_code).to be_nil
+        expect(response.success?).to be false
+        expect(response.error).to eq("Unknown error")
       end
     end
   end
@@ -344,7 +320,7 @@ RSpec.describe EbayApiClient, type: :model do
 
       it 'handles token refresh in underlying make_request method' do
         response = client.create_fulfillment_policy(policy_data)
-        expect(response).to be_a(OpenStruct)
+        expect(response).to be_a(EbayApiResponse)
       end
     end
   end
@@ -354,22 +330,22 @@ RSpec.describe EbayApiClient, type: :model do
 
     context 'when response contains special characters' do
       let(:special_char_response) do
-        {
+        EbayApiResponse.new(
           success: true,
           status_code: 201,
           data: {
             "fulfillmentPolicyId" => "12345678",
             "name" => "Policy with émojis 🚀 and spéçial chars"
           }
-        }
+        )
       end
 
       before { stub_ebay_fulfillment_policy_creation(special_char_response) }
 
       it 'handles UTF-8 characters correctly' do
         response = client.create_fulfillment_policy(policy_data)
-        body_data = JSON.parse(response.body)
-        expect(body_data['name']).to eq("Policy with émojis 🚀 and spéçial chars")
+        expect(response.success?).to be true
+        expect(response.data['name']).to eq("Policy with émojis 🚀 and spéçial chars")
       end
     end
   end
@@ -389,9 +365,9 @@ RSpec.describe EbayApiClient, type: :model do
 
       it 'returns response with fulfillment policies' do
         response = client.get_fulfillment_policies
-        expect(response[:success]).to be true
-        expect(response[:data]['fulfillmentPolicies']).to be_an(Array)
-        expect(response[:data]['fulfillmentPolicies'].size).to eq(2)
+        expect(response.success?).to be true
+        expect(response.data['fulfillmentPolicies']).to be_an(Array)
+        expect(response.data['fulfillmentPolicies'].size).to eq(2)
       end
     end
   end
@@ -411,9 +387,9 @@ RSpec.describe EbayApiClient, type: :model do
 
       it 'returns response with payment policies' do
         response = client.get_payment_policies
-        expect(response[:success]).to be true
-        expect(response[:data]['paymentPolicies']).to be_an(Array)
-        expect(response[:data]['paymentPolicies'].size).to eq(2)
+        expect(response.success?).to be true
+        expect(response.data['paymentPolicies']).to be_an(Array)
+        expect(response.data['paymentPolicies'].size).to eq(2)
       end
     end
   end
@@ -433,9 +409,192 @@ RSpec.describe EbayApiClient, type: :model do
 
       it 'returns response with return policies' do
         response = client.get_return_policies
-        expect(response[:success]).to be true
-        expect(response[:data]['returnPolicies']).to be_an(Array)
-        expect(response[:data]['returnPolicies'].size).to eq(2)
+        expect(response.success?).to be true
+        expect(response.data['returnPolicies']).to be_an(Array)
+        expect(response.data['returnPolicies'].size).to eq(2)
+      end
+    end
+  end
+
+  describe '#update_fulfillment_policy' do
+    let(:policy_id) { '12345678' }
+    let(:policy_data) do
+      {
+        name: "Updated Fulfillment Policy",
+        marketplaceId: "EBAY_GB",
+        handlingTime: { value: 2, unit: "DAY" }
+      }
+    end
+
+    context 'when API call succeeds' do
+      before { stub_ebay_fulfillment_policy_update(policy_id) }
+
+      it 'makes PUT request to correct endpoint' do
+        expect(client).to receive(:put).with("/sell/account/v1/fulfillment_policy/#{policy_id}", policy_data)
+        client.update_fulfillment_policy(policy_id, policy_data)
+      end
+
+      it 'returns OpenStruct response with correct format' do
+        response = client.update_fulfillment_policy(policy_id, policy_data)
+
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(200)
+
+        expect(response.success?).to be true
+        expect(response.data['fulfillmentPolicyId']).to eq('12345678')
+        expect(response.data['name']).to eq('Updated Fulfillment Policy')
+      end
+
+    end
+
+    context 'when API call fails' do
+      let(:error_response) { mock_api_error_response(25001, "Policy not found") }
+
+      before { stub_ebay_fulfillment_policy_update(policy_id, error_response) }
+
+      it 'returns error response in correct format' do
+        response = client.update_fulfillment_policy(policy_id, policy_data)
+
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(400)
+
+        expect(response.success?).to be false
+        expect(response.error['errors']).to be_present
+      end
+
+    end
+
+    context 'when exception occurs' do
+      before do
+        allow(client).to receive(:put).and_raise(StandardError, "Network timeout")
+      end
+
+      it 'handles exception gracefully' do
+        expect(Rails.logger).to receive(:error).with(match(/Unexpected error updating fulfillment policy/))
+        response = client.update_fulfillment_policy(policy_id, policy_data)
+        expect(response).to be_nil
+      end
+    end
+  end
+
+  describe '#update_payment_policy' do
+    let(:policy_id) { '87654321' }
+    let(:policy_data) do
+      {
+        name: "Updated Payment Policy",
+        marketplaceId: "EBAY_GB",
+        immediatePay: false
+      }
+    end
+
+    context 'when API call succeeds' do
+      before { stub_ebay_payment_policy_update(policy_id) }
+
+      it 'makes PUT request to correct endpoint' do
+        expect(client).to receive(:put).with("/sell/account/v1/payment_policy/#{policy_id}", policy_data)
+        client.update_payment_policy(policy_id, policy_data)
+      end
+
+      it 'returns OpenStruct response with correct format' do
+        response = client.update_payment_policy(policy_id, policy_data)
+
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(200)
+
+        expect(response.success?).to be true
+        expect(response.data['paymentPolicyId']).to eq('87654321')
+        expect(response.data['name']).to eq('Updated Payment Policy')
+      end
+
+    end
+
+    context 'when API call fails' do
+      let(:error_response) { mock_api_error_response(25002, "Invalid payment method") }
+
+      before { stub_ebay_payment_policy_update(policy_id, error_response) }
+
+      it 'returns error response in correct format' do
+        response = client.update_payment_policy(policy_id, policy_data)
+
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(400)
+
+        expect(response.success?).to be false
+        expect(response.error['errors']).to be_present
+      end
+
+    end
+
+    context 'when exception occurs' do
+      before do
+        allow(client).to receive(:put).and_raise(StandardError, "Connection failed")
+      end
+
+      it 'handles exception gracefully' do
+        expect(Rails.logger).to receive(:error).with(match(/Unexpected error updating payment policy/))
+        response = client.update_payment_policy(policy_id, policy_data)
+        expect(response).to be_nil
+      end
+    end
+  end
+
+  describe '#update_return_policy' do
+    let(:policy_id) { '11223344' }
+    let(:policy_data) do
+      {
+        name: "Updated Return Policy",
+        marketplaceId: "EBAY_GB",
+        returnsAccepted: false
+      }
+    end
+
+    context 'when API call succeeds' do
+      before { stub_ebay_return_policy_update(policy_id) }
+
+      it 'makes PUT request to correct endpoint' do
+        expect(client).to receive(:put).with("/sell/account/v1/return_policy/#{policy_id}", policy_data)
+        client.update_return_policy(policy_id, policy_data)
+      end
+
+      it 'returns OpenStruct response with correct format' do
+        response = client.update_return_policy(policy_id, policy_data)
+
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(200)
+
+        expect(response.success?).to be true
+        expect(response.data['returnPolicyId']).to eq('11223344')
+        expect(response.data['name']).to eq('Updated Return Policy')
+      end
+
+    end
+
+    context 'when API call fails' do
+      let(:error_response) { mock_api_error_response(25003, "Invalid return period") }
+
+      before { stub_ebay_return_policy_update(policy_id, error_response) }
+
+      it 'returns error response in correct format' do
+        response = client.update_return_policy(policy_id, policy_data)
+
+        expect(response).to be_a(EbayApiResponse)
+        expect(response.status_code).to eq(400)
+
+        expect(response.success?).to be false
+        expect(response.error['errors']).to be_present
+      end
+
+    end
+
+    context 'when exception occurs' do
+      before do
+        allow(client).to receive(:put).and_raise(StandardError, "Timeout error")
+      end
+
+      it 'handles exception gracefully' do
+        expect(Rails.logger).to receive(:error).with(match(/Unexpected error updating return policy/))
+        response = client.update_return_policy(policy_id, policy_data)
+        expect(response).to be_nil
       end
     end
   end
