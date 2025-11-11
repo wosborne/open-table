@@ -37,7 +37,7 @@ Rails.application.routes.draw do
         end
       end
       
-      resources :return_policies, only: [:new, :create, :edit, :update]
+      resources :return_policies, only: [:new, :create, :edit, :update, :show, :destroy]
       
       resources :payment_policies, only: [:new, :create, :edit, :update, :show, :destroy]
     end

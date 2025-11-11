@@ -17,23 +17,44 @@ class PolicyTableComponent < ApplicationComponent
   end
 
   def detail_column_header
-    policy_type == 'fulfillment' ? 'Shipping Service' : 'Payment Method'
+    case policy_type
+    when 'fulfillment'
+      'Shipping Service'
+    when 'payment'
+      'Payment Method'
+    when 'return'
+      'Return Period'
+    end
   end
 
   def policy_id_key
-    policy_type == 'fulfillment' ? 'fulfillmentPolicyId' : 'paymentPolicyId'
+    case policy_type
+    when 'fulfillment'
+      'fulfillmentPolicyId'
+    when 'payment'
+      'paymentPolicyId'
+    when 'return'
+      'returnPolicyId'
+    end
   end
 
   def detail_value(policy)
-    if policy_type == 'fulfillment'
+    case policy_type
+    when 'fulfillment'
       if policy['shippingOptions']&.any? && policy['shippingOptions'].first['shippingServices']&.any?
         policy['shippingOptions'].first['shippingServices'].first['shippingServiceCode']
       else
         '-'
       end
-    else
+    when 'payment'
       if policy['paymentMethods']&.any?
         policy['paymentMethods'].first['paymentMethodType']
+      else
+        '-'
+      end
+    when 'return'
+      if policy['returnPeriod']
+        "#{policy['returnPeriod']['value']} #{policy['returnPeriod']['unit']&.downcase}"
       else
         '-'
       end
@@ -45,23 +66,28 @@ class PolicyTableComponent < ApplicationComponent
   end
 
   def show_path(local_policy)
-    if policy_type == 'fulfillment'
+    case policy_type
+    when 'fulfillment'
       account_external_account_fulfillment_policy_path(current_account, external_account, local_policy)
-    else
+    when 'payment'
       account_external_account_payment_policy_path(current_account, external_account, local_policy)
+    when 'return'
+      account_external_account_return_policy_path(current_account, external_account, local_policy)
     end
   end
-
 
   def create_button_text
     "Create #{policy_type.humanize} Policy"
   end
 
   def create_button_path
-    if policy_type == 'fulfillment'
+    case policy_type
+    when 'fulfillment'
       new_account_external_account_fulfillment_policy_path(current_account, external_account)
-    else
+    when 'payment'
       new_account_external_account_payment_policy_path(current_account, external_account)
+    when 'return'
+      new_account_external_account_return_policy_path(current_account, external_account)
     end
   end
 

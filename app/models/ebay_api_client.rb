@@ -134,6 +134,13 @@ class EbayApiClient
     nil
   end
 
+  def delete_return_policy(policy_id)
+    delete("/sell/account/v1/return_policy/#{policy_id}")
+  rescue => e
+    Rails.logger.error "Unexpected error deleting return policy: #{e.message}"
+    nil
+  end
+
   private
 
   def make_xml_request(method, endpoint, xml_payload)

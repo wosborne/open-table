@@ -1,0 +1,140 @@
+<div class="container">
+  <nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+      <li><%= link_to "Dashboard", account_dashboard_path(current_account) %></li>
+      <li><%= link_to "External Accounts", account_external_account_path(current_account, current_external_account) %></li>
+      <li class="is-active"><a href="#" aria-current="page">Return Policy</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="title"><%= @return_policy.name %></h1>
+  <h2 class="subtitle">eBay Account: <%= current_external_account.ebay_display_name || current_external_account.ebay_username %></h2>
+
+  <div class="box">
+    <div class="field">
+      <label class="label">Policy Name</label>
+      <div class="content">
+        <%= @return_policy.name %>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Category Default</label>
+      <div class="content">
+        <%= @return_policy.category_default? ? "Yes" : "No" %>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Returns Accepted</label>
+      <div class="content">
+        <%= @return_policy.returns_accepted? ? "Yes" : "No" %>
+      </div>
+    </div>
+
+    <% if @return_policy.returns_accepted? %>
+      <h3 class="title is-5">Return Details</h3>
+      
+      <% if @return_policy.return_period %>
+        <div class="field">
+          <label class="label">Return Period</label>
+          <div class="content">
+            <%= @return_policy.return_period %> <%= @return_policy.return_period_unit&.downcase || "days" %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @return_policy.refund_method %>
+        <div class="field">
+          <label class="label">Refund Method</label>
+          <div class="content">
+            <%= @return_policy.refund_method.humanize %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @return_policy.return_shipping_cost_payer %>
+        <div class="field">
+          <label class="label">Return Shipping Cost Payer</label>
+          <div class="content">
+            <%= @return_policy.return_shipping_cost_payer.humanize %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @return_policy.return_method %>
+        <div class="field">
+          <label class="label">Return Method</label>
+          <div class="content">
+            <%= @return_policy.return_method.humanize %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @return_policy.restocking_fee_percentage %>
+        <div class="field">
+          <label class="label">Restocking Fee</label>
+          <div class="content">
+            <%= @return_policy.restocking_fee_percentage %>%
+          </div>
+        </div>
+      <% end %>
+
+      <div class="field">
+        <label class="label">Extended Holiday Returns</label>
+        <div class="content">
+          <%= @return_policy.extended_holiday_returns? ? "Yes" : "No" %>
+        </div>
+      </div>
+
+      <% if @return_policy.return_instructions.present? %>
+        <div class="field">
+          <label class="label">Return Instructions</label>
+          <div class="content">
+            <%= @return_policy.return_instructions %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% ebay_attrs = @return_policy.ebay_attributes %>
+    <% if ebay_attrs.present? && ebay_attrs["categoryTypes"].present? %>
+      <div class="field">
+        <label class="label">Category Types</label>
+        <div class="content">
+          <% ebay_attrs["categoryTypes"].each do |category| %>
+            <%= category["name"] %><%= " (default)" if category["default"] %><br>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="field is-grouped">
+      <% if @return_policy.persisted? %>
+        <div class="control">
+          <%= link_to "Edit", edit_account_external_account_return_policy_path(current_account, current_external_account, @return_policy), class: "button is-primary", data: { turbo_frame: "_top" } %>
+        </div>
+        <div class="control">
+          <%= link_to "Delete", account_external_account_return_policy_path(current_account, current_external_account, @return_policy), 
+                      class: "button is-danger", 
+                      data: { 
+                        turbo_method: :delete,
+                        turbo_frame: "_top",
+                        turbo_confirm: "Are you sure you want to delete this return policy? This will also delete it from eBay and cannot be undone." 
+                      } %>
+        </div>
+      <% else %>
+        <% if @return_policy.ebay_policy_id.present? %>
+          <div class="control">
+            <a href="https://www.ebay.co.uk/bp/ret/edit/<%= @return_policy.ebay_policy_id %>" target="_blank" class="button is-primary">
+              Edit on eBay
+            </a>
+          </div>
+        <% end %>
+      <% end %>
+      <div class="control">
+        <%= link_to "Back", account_external_account_path(current_account, current_external_account), class: "button", data: { turbo_frame: "_top" } %>
+      </div>
+    </div>
+  </div>
+</div>
