@@ -1,38 +1,8 @@
-<turbo-frame id="fulfillment-policies-frame">
-  <div class="content mt-5">
-    <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
-    <% if @fulfillment_policies.any? %>
-      <table class="table is-fullwidth is-hoverable" data-controller="clickable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Shipping Service</th>
-            <th>Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @fulfillment_policies.each do |policy| %>
-            <% local_policy = @local_fulfillment_policies.find_by(ebay_policy_id: policy['fulfillmentPolicyId']) %>
-            <tr <%= "data-url=\"#{account_external_account_fulfillment_policy_path(current_account, @external_account, local_policy)}\"".html_safe if local_policy %> style="cursor: pointer;">
-              <td><%= policy['name'] %></td>
-              <td>
-                <% if policy['shippingOptions']&.any? && policy['shippingOptions'].first['shippingServices']&.any? %>
-                  <%= policy['shippingOptions'].first['shippingServices'].first['shippingServiceCode'] %>
-                <% else %>
-                  -
-                <% end %>
-              </td>
-              <td>From eBay</td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="has-text-grey">No fulfillment policies created yet.</p>
-    <% end %>
-    <%= link_to "Create Fulfillment Policy", 
-          new_account_external_account_fulfillment_policy_path(current_account, @external_account), 
-          class: "button is-primary", 
-          data: { turbo_frame: "_top" } %>
-  </div>
-</turbo-frame>
+<%= render PolicyTableComponent.new(
+      policy_type: 'fulfillment',
+      title: 'Fulfillment Policies (Shipping)',
+      policies: @fulfillment_policies,
+      local_policies: @local_fulfillment_policies,
+      external_account: @external_account,
+      current_account: current_account
+    ) %>

@@ -2,6 +2,7 @@ class ExternalAccountsController < AccountsController
   skip_before_action :authenticate_user!, only: [ :shopify_callback, :ebay_callback ]
   skip_before_action :find_account, only: [ :shopify_callback, :ebay_callback ]
   skip_before_action :verify_authenticity_token, only: [ :ebay_callback ]
+  before_action :set_external_account, except: [ :new, :create, :shopify_callback, :ebay_callback ]
 
   def new
     @external_account = ExternalAccount.new
@@ -59,12 +60,9 @@ class ExternalAccountsController < AccountsController
 
 
   def show
-    @external_account = current_account.external_accounts.find(params[:id])
   end
 
   def fulfillment_policies
-    @external_account = current_account.external_accounts.find(params[:id])
-    
     begin
       ebay_client = EbayPolicyClient.new(@external_account)
       @fulfillment_policies = ebay_client.get_fulfillment_policies
@@ -72,15 +70,13 @@ class ExternalAccountsController < AccountsController
       Rails.logger.error "Failed to fetch eBay fulfillment policies: #{e.message}"
       @fulfillment_policies = []
     end
-    
+
     @local_fulfillment_policies = @external_account.ebay_business_policies.fulfillment
-    
+
     render turbo_frame: "fulfillment-policies-frame"
   end
 
   def payment_policies
-    @external_account = current_account.external_accounts.find(params[:id])
-    
     begin
       ebay_client = EbayPolicyClient.new(@external_account)
       @payment_policies = ebay_client.get_payment_policies
@@ -88,15 +84,13 @@ class ExternalAccountsController < AccountsController
       Rails.logger.error "Failed to fetch eBay payment policies: #{e.message}"
       @payment_policies = []
     end
-    
+
     @local_payment_policies = @external_account.ebay_business_policies.payment
-    
+
     render turbo_frame: "payment-policies-frame"
   end
 
   def return_policies
-    @external_account = current_account.external_accounts.find(params[:id])
-    
     begin
       ebay_client = EbayPolicyClient.new(@external_account)
       @return_policies = ebay_client.get_return_policies
@@ -104,33 +98,31 @@ class ExternalAccountsController < AccountsController
       Rails.logger.error "Failed to fetch eBay return policies: #{e.message}"
       @return_policies = []
     end
-    
+
     @local_return_policies = @external_account.ebay_business_policies.return
-    
+
     render turbo_frame: "return-policies-frame"
   end
 
   def inventory_locations
-    @external_account = current_account.external_accounts.find(params[:id])
-    
     begin
       # Get local locations that are synced to eBay
       local_synced_locations = current_account.locations.where.not(ebay_merchant_location_key: nil)
-      
+
       if local_synced_locations.any?
         # Fetch eBay data for our synced locations
         ebay_client = EbayApiClient.new(@external_account)
         response = ebay_client.get_inventory_locations
-        
+
         if response.success?
-          all_ebay_locations = response.data['locations'] || []
-          
+          all_ebay_locations = response.data["locations"] || []
+
           # Filter to only show eBay locations that match our local ones
           local_keys = local_synced_locations.pluck(:ebay_merchant_location_key)
           @inventory_locations = all_ebay_locations.select do |ebay_location|
-            local_keys.include?(ebay_location['merchantLocationKey'])
+            local_keys.include?(ebay_location["merchantLocationKey"])
           end
-          
+
           Rails.logger.info "Filtered eBay inventory locations: #{@inventory_locations.inspect}"
         else
           Rails.logger.error "Failed to fetch eBay inventory locations: #{response.error}"
@@ -143,21 +135,19 @@ class ExternalAccountsController < AccountsController
       Rails.logger.error "Failed to fetch eBay inventory locations: #{e.message}"
       @inventory_locations = []
     end
-    
+
     render turbo_frame: "inventory-locations-frame"
   end
 
   def edit
-    @external_account = current_account.external_accounts.find(params[:id])
     @locations = current_account.locations
   end
 
   def update
-    @external_account = current_account.external_accounts.find(params[:id])
     @locations = current_account.locations
-    
+
     if @external_account.update(external_account_update_params)
-      redirect_to account_external_account_path(current_account, @external_account), 
+      redirect_to account_external_account_path(current_account, @external_account),
                   notice: "External account updated successfully!"
     else
       render :edit, status: :unprocessable_entity
@@ -169,19 +159,20 @@ class ExternalAccountsController < AccountsController
 
 
   def destroy
-    @external_account = current_account.external_accounts.find(params[:id])
     @external_account.destroy
     redirect_to edit_account_path(current_account), notice: "External account disconnected successfully!"
   end
 
+  helper_method :current_external_account
   def current_external_account
     @external_account
   end
 
-  helper_method :current_external_account
-
   private
 
+  def set_external_account
+    @external_account = current_account.external_accounts.find(params[:external_account_id] || params[:id])
+  end
 
   def external_account_params
     params.require(:external_account).permit(:service_name, :domain)
@@ -190,5 +181,4 @@ class ExternalAccountsController < AccountsController
   def external_account_update_params
     params.require(:external_account).permit(:inventory_location_id)
   end
-
 end

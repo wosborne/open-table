@@ -1,43 +1,8 @@
-<turbo-frame id="payment-policies-frame">
-  <div class="content mt-5">
-    <h4 class="title is-5">Payment Policies</h4>
-    <% if @payment_policies.any? %>
-      <table class="table is-fullwidth">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Payment Method</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @payment_policies.each do |policy| %>
-            <tr>
-              <td><%= policy['name'] %></td>
-              <td>
-                <% if policy['paymentMethods']&.any? %>
-                  <%= policy['paymentMethods'].first['paymentMethodType'] %>
-                <% else %>
-                  -
-                <% end %>
-              </td>
-              <td>From eBay</td>
-              <td>
-                <a href="https://www.ebay.co.uk/bp/pay/edit/<%= policy['paymentPolicyId'] %>" target="_blank" class="button is-small is-light">
-                  Edit on eBay
-                </a>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="has-text-grey">No payment policies created yet.</p>
-    <% end %>
-    <%= link_to "Create Payment Policy", 
-          new_account_external_account_payment_policy_path(current_account, @external_account), 
-          class: "button is-primary",
-          data: { turbo_frame: "_top" } %>
-  </div>
-</turbo-frame>
+<%= render PolicyTableComponent.new(
+      policy_type: 'payment',
+      title: 'Payment Policies',
+      policies: @payment_policies,
+      local_policies: @local_payment_policies,
+      external_account: @external_account,
+      current_account: current_account
+    ) %>

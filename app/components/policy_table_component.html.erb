@@ -1,0 +1,32 @@
+<turbo-frame id="<%= frame_id %>">
+  <div class="content mt-5">
+    <h4 class="title is-5"><%= title %></h4>
+    <% if policies.any? %>
+      <table class="table is-fullwidth is-hoverable" data-controller="clickable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th><%= detail_column_header %></th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% policies.each do |policy| %>
+            <% local_policy = local_policy_for(policy) %>
+            <tr <%= "data-url=\"#{show_path(local_policy)}\"".html_safe if local_policy %> style="cursor: pointer;">
+              <td><%= policy['name'] %></td>
+              <td><%= detail_value(policy) %></td>
+              <td>From eBay</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="has-text-grey"><%= no_policies_message %></p>
+    <% end %>
+    <%= link_to create_button_text, 
+          create_button_path, 
+          class: "button is-primary", 
+          data: { turbo_frame: "_top" } %>
+  </div>
+</turbo-frame>
