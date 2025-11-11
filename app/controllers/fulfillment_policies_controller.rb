@@ -28,7 +28,6 @@ class FulfillmentPoliciesController < ExternalAccountsController
   end
 
   def create
-    binding.pry
     @fulfillment_policy = @external_account.fulfillment_policies.build(
       fulfillment_policy_params.slice(:name, :marketplace_id)
     )
@@ -55,6 +54,19 @@ class FulfillmentPoliciesController < ExternalAccountsController
                   notice: "Fulfillment policy '#{@fulfillment_policy.name}' updated successfully!"
     else
       render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
+    policy_name = @fulfillment_policy.name
+
+    if @fulfillment_policy.destroy
+      redirect_to account_external_account_path(current_account, @external_account),
+                  notice: "Fulfillment policy '#{policy_name}' deleted successfully!"
+    else
+      redirect_to account_external_account_fulfillment_policy_path(current_account, @external_account, @fulfillment_policy),
+                  alert: "Unable to delete fulfillment policy: #{@fulfillment_policy.errors.full_messages.join(', ')}"
     end
   end
 

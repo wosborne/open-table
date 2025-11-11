@@ -120,6 +120,13 @@ class EbayApiClient
     nil
   end
 
+  def delete_fulfillment_policy(policy_id)
+    delete("/sell/account/v1/fulfillment_policy/#{policy_id}")
+  rescue => e
+    Rails.logger.error "Unexpected error deleting fulfillment policy: #{e.message}"
+    nil
+  end
+
   private
 
   def make_xml_request(method, endpoint, xml_payload)

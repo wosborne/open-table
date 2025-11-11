@@ -13,6 +13,7 @@ class EbayBusinessPolicy < ApplicationRecord
 
   before_create :create_policy_on_ebay
   before_update :update_policy_on_ebay
+  before_destroy :delete_policy_on_ebay
   after_create :cache_ebay_policy_data_on_create
   after_update :cache_ebay_policy_data_on_update
 
@@ -142,6 +143,29 @@ class EbayBusinessPolicy < ApplicationRecord
 
     # Optionally pre-warm the cache by fetching fresh data
     ebay_attributes
+  end
+
+  def delete_policy_on_ebay
+    return true unless ebay_policy_id.present?
+
+    ebay_client = EbayApiClient.new(external_account)
+
+    api_method = "delete_#{policy_type}_policy"
+    response = ebay_client.public_send(api_method, ebay_policy_id)
+
+    if response && [200, 204].include?(response.code)
+      # Clear cache after successful deletion
+      cache_key = "ebay_policy_#{ebay_policy_id}"
+      Rails.cache.delete(cache_key)
+      true
+    else
+      handle_ebay_error(response)
+      throw :abort
+    end
+  rescue => e
+    Rails.logger.error "Error deleting #{policy_type} policy on eBay: #{e.message}"
+    errors.add(:base, "Error deleting policy from eBay: #{e.message}")
+    throw :abort
   end
 
   def handle_ebay_error(response)
