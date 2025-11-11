@@ -165,7 +165,7 @@ class ExternalAccountsController < AccountsController
 
   helper_method :current_external_account
   def current_external_account
-    @external_account
+    @external_account ||= current_account.external_accounts.find(params[:external_account_id] || params[:id])
   end
 
   private

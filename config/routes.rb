@@ -39,7 +39,7 @@ Rails.application.routes.draw do
       
       resources :return_policies, only: [:new, :create, :edit, :update]
       
-      resources :payment_policies, only: [:new, :create, :edit, :update, :show]
+      resources :payment_policies, only: [:new, :create, :edit, :update, :show, :destroy]
     end
 
     resources :products do

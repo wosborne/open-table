@@ -37,6 +37,18 @@ class PaymentPoliciesController < ExternalAccountsController
     end
   end
 
+  def destroy
+    policy_name = @payment_policy.name
+
+    if @payment_policy.destroy
+      redirect_to account_external_account_path(current_account, current_external_account),
+                  notice: "Payment policy '#{policy_name}' deleted successfully!"
+    else
+      redirect_to account_external_account_payment_policy_path(current_account, current_external_account, @payment_policy),
+                  alert: "Unable to delete payment policy: #{@payment_policy.errors.full_messages.join(', ')}"
+    end
+  end
+
   private
 
   def set_payment_policy
