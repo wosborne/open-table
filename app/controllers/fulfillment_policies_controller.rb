@@ -19,11 +19,12 @@ class FulfillmentPoliciesController < ExternalAccountsController
     end
   end
 
-  def edit
-    @fulfillment_policy = @external_account.ebay_business_policies.fulfillment.find(params[:id])
+  def show
+    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
+  end
 
-    # Cast to proper subclass if needed
-    @fulfillment_policy = @fulfillment_policy.becomes(EbayFulfillmentPolicy) unless @fulfillment_policy.is_a?(EbayFulfillmentPolicy)
+  def edit
+    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
   end
 
   def create
@@ -44,10 +45,7 @@ class FulfillmentPoliciesController < ExternalAccountsController
   end
 
   def update
-    @fulfillment_policy = @external_account.ebay_business_policies.fulfillment.find(params[:id])
-
-    # Cast to proper subclass if needed
-    @fulfillment_policy = @fulfillment_policy.becomes(EbayFulfillmentPolicy) unless @fulfillment_policy.is_a?(EbayFulfillmentPolicy)
+    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
 
     @fulfillment_policy.assign_attributes(fulfillment_policy_params.slice(:name, :marketplace_id))
     @fulfillment_policy.ebay_policy_data = build_ebay_policy_data(fulfillment_policy_params)

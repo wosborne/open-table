@@ -2,18 +2,18 @@
   <div class="content mt-5">
     <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
     <% if @fulfillment_policies.any? %>
-      <table class="table is-fullwidth">
+      <table class="table is-fullwidth is-hoverable" data-controller="clickable">
         <thead>
           <tr>
             <th>Name</th>
             <th>Shipping Service</th>
             <th>Created</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <% @fulfillment_policies.each do |policy| %>
-            <tr>
+            <% local_policy = @local_fulfillment_policies.find_by(ebay_policy_id: policy['fulfillmentPolicyId']) %>
+            <tr <%= "data-url=\"#{account_external_account_fulfillment_policy_path(current_account, @external_account, local_policy)}\"".html_safe if local_policy %> style="cursor: pointer;">
               <td><%= policy['name'] %></td>
               <td>
                 <% if policy['shippingOptions']&.any? && policy['shippingOptions'].first['shippingServices']&.any? %>
@@ -23,18 +23,6 @@
                 <% end %>
               </td>
               <td>From eBay</td>
-              <td>
-                <% local_policy = @local_fulfillment_policies.find_by(ebay_policy_id: policy['fulfillmentPolicyId']) %>
-                <% if local_policy %>
-                  <%= link_to "Edit", 
-                        edit_account_external_account_fulfillment_policy_path(current_account, @external_account, local_policy), 
-                        class: "button is-small is-primary",
-                        data: { turbo_frame: "_top" } %>
-                <% end %>
-                <a href="https://www.ebay.co.uk/bp/ship/edit/<%= policy['fulfillmentPolicyId'] %>" target="_blank" class="button is-small is-light">
-                  Edit on eBay
-                </a>
-              </td>
             </tr>
           <% end %>
         </tbody>
