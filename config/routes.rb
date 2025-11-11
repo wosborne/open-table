@@ -25,10 +25,6 @@ Rails.application.routes.draw do
     
     resources :external_accounts, only: %w[new create destroy show edit update] do
       member do
-        post :opt_into_business_policies
-        post :create_fulfillment_policy
-        post :create_custom_fulfillment_policy
-        post :create_inventory_location
         get :fulfillment_policies
         get :payment_policies
         get :return_policies

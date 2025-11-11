@@ -164,168 +164,21 @@ class ExternalAccountsController < AccountsController
     end
   end
 
-  def opt_into_business_policies
-    @external_account = current_account.external_accounts.find(params[:id])
-    ebay_service = EbayService.new(external_account: @external_account)
-    
-    if ebay_service.opt_into_business_policies
-      redirect_to account_external_account_path(current_account, @external_account), 
-                  notice: "Successfully opted into business policies!"
-    else
-      redirect_to account_external_account_path(current_account, @external_account), 
-                  alert: "Failed to opt into business policies. You may need to do this manually in your eBay account."
-    end
-  rescue => e
-    Rails.logger.error "Error opting into business policies: #{e.message}"
-    redirect_to account_external_account_path(current_account, @external_account), 
-                alert: "Error opting into business policies: #{e.message}"
-  end
 
-  def create_fulfillment_policy
-    @external_account = current_account.external_accounts.find(params[:id])
-    ebay_service = EbayService.new(external_account: @external_account)
-    
-    if ebay_service.create_default_fulfillment_policy
-      redirect_to account_external_account_path(current_account, @external_account), 
-                  notice: "Default fulfillment policy created successfully!"
-    else
-      redirect_to account_external_account_path(current_account, @external_account), 
-                  alert: "Failed to create fulfillment policy."
-    end
-  rescue => e
-    Rails.logger.error "Error creating fulfillment policy: #{e.message}"
-    redirect_to account_external_account_path(current_account, @external_account), 
-                alert: "Error creating fulfillment policy: #{e.message}"
-  end
 
-  def create_custom_fulfillment_policy
-    @external_account = current_account.external_accounts.find(params[:id])
-    ebay_service = EbayService.new(external_account: @external_account)
-    
-    policy_params = fulfillment_policy_params
-    
-    # Debug: Log the actual parameters received
-    Rails.logger.info "Fulfillment policy parameters: #{policy_params.to_json}"
-    Rails.logger.info "Domestic cost value: '#{policy_params[:domestic_cost]}'"
-    Rails.logger.info "Domestic cost present?: #{policy_params[:domestic_cost].present?}"
-    Rails.logger.info "Free shipping value: '#{policy_params[:domestic_free_shipping]}'"
-    
-    # Build the policy data structure according to eBay API requirements
-    # Note: categoryTypes is optional and defaults to ALL_EXCLUDING_MOTORS_VEHICLES if omitted
-    policy_data = {
-      name: policy_params[:name],
-      marketplaceId: policy_params[:marketplace_id] || "EBAY_GB",
-      handlingTime: {
-        value: policy_params[:handling_time].to_i,
-        unit: "DAY"
-      },
-      localPickup: false,
-      shipToLocations: {
-        regionIncluded: [
-          {
-            regionType: "COUNTRY",
-            regionId: "GB"
-          }
-        ]
-      },
-      shippingOptions: []
-    }
-    
-    # Add description only if provided (eBay doesn't like empty strings)
-    if policy_params[:description].present?
-      policy_data[:description] = policy_params[:description]
-    end
-    
-    # Add domestic shipping option if provided
-    if policy_params[:domestic_service_code].present?
-      domestic_service = {
-        shippingServiceCode: policy_params[:domestic_service_code],
-        freeShipping: policy_params[:domestic_free_shipping] == "1"
-      }
-      
-      # Only add cost if not free shipping
-      unless policy_params[:domestic_free_shipping] == "1"
-        if policy_params[:domestic_cost].present?
-          domestic_service[:shippingCost] = {
-            value: policy_params[:domestic_cost].to_s,
-            currency: policy_params[:currency] || "GBP"
-          }
-        end
-      end
-      
-      domestic_option = {
-        optionType: "DOMESTIC",
-        costType: "FLAT_RATE",
-        shippingServices: [domestic_service]
-      }
-      
-      policy_data[:shippingOptions] << domestic_option
-    end
-    
-    # Add international shipping option if provided
-    if policy_params[:international_service_code].present?
-      international_service = {
-        shippingServiceCode: policy_params[:international_service_code],
-        freeShipping: policy_params[:international_free_shipping] == "1"
-      }
-      
-      # Only add cost if not free shipping
-      unless policy_params[:international_free_shipping] == "1"
-        if policy_params[:international_cost].present?
-          international_service[:shippingCost] = {
-            value: policy_params[:international_cost].to_s,
-            currency: policy_params[:currency] || "GBP"
-          }
-        end
-      end
-      
-      international_option = {
-        optionType: "INTERNATIONAL",
-        costType: "FLAT_RATE",
-        shippingServices: [international_service]
-      }
-      
-      policy_data[:shippingOptions] << international_option
-    end
-    
-    # Log the policy data for debugging
-    Rails.logger.info "Creating custom fulfillment policy with data: #{policy_data.to_json}"
-    
-    response = ebay_service.create_fulfillment_policy(policy_data)
-    
-    if response && (response.success? || response.code == 201)
-      redirect_to account_external_account_path(current_account, @external_account), 
-                  notice: "Custom fulfillment policy '#{policy_params[:name]}' created successfully!"
-    else
-      Rails.logger.error "Custom fulfillment policy creation failed: #{response&.body}"
-      redirect_to account_external_account_path(current_account, @external_account), 
-                  alert: "Failed to create custom fulfillment policy."
-    end
-  rescue => e
-    Rails.logger.error "Error creating custom fulfillment policy: #{e.message}"
-    Rails.logger.error "Policy data was: #{policy_data.to_json}" if defined?(policy_data)
-    redirect_to account_external_account_path(current_account, @external_account), 
-                alert: "Error creating custom fulfillment policy: #{e.message}"
-  end
 
-  def create_inventory_location
-    @external_account = current_account.external_accounts.find(params[:id])
-    ebay_service = EbayService.new(external_account: @external_account)
-    
-    ebay_service.create_default_inventory_location
-    redirect_to account_external_account_path(current_account, @external_account), 
-                notice: "Default inventory location created successfully!"
-  rescue => e
-    Rails.logger.error "Error creating inventory location: #{e.message}"
-    redirect_to account_external_account_path(current_account, @external_account), 
-                alert: "Error creating inventory location: #{e.message}"
-  end
 
   def destroy
     @external_account = current_account.external_accounts.find(params[:id])
     @external_account.destroy
     redirect_to edit_account_path(current_account), notice: "External account disconnected successfully!"
   end
+
+  def current_external_account
+    @external_account
+  end
+
+  helper_method :current_external_account
 
   private
 
@@ -338,11 +191,4 @@ class ExternalAccountsController < AccountsController
     params.require(:external_account).permit(:inventory_location_id)
   end
 
-  def fulfillment_policy_params
-    params.require(:fulfillment_policy).permit(
-      :name, :description, :marketplace_id, :handling_time, :currency,
-      :domestic_service_code, :domestic_cost_type, :domestic_cost, :domestic_free_shipping,
-      :international_service_code, :international_cost_type, :international_cost, :international_free_shipping
-    )
-  end
 end

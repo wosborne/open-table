@@ -1,13 +1,14 @@
 class FulfillmentPoliciesController < ExternalAccountsController
   before_action :find_external_account
+  before_action :set_fulfillment_policy, except: [ :new, :create, :shipping_services ]
 
   def new
-    @fulfillment_policy = @external_account.fulfillment_policies.build
+    @fulfillment_policy = current_external_account.fulfillment_policies.build
   end
 
   def shipping_services
     begin
-      ebay_client = EbayApiClient.new(@external_account)
+      ebay_client = EbayApiClient.new(current_external_account)
       @services = ebay_client.get_shipping_services
       @selected_service = params[:selected_service]
       render turbo_frame: "service-select"
@@ -20,15 +21,13 @@ class FulfillmentPoliciesController < ExternalAccountsController
   end
 
   def show
-    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
   end
 
   def edit
-    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
   end
 
   def create
-    @fulfillment_policy = @external_account.fulfillment_policies.build(
+    @fulfillment_policy = current_external_account.fulfillment_policies.build(
       fulfillment_policy_params.slice(:name, :marketplace_id)
     )
     @fulfillment_policy.ebay_policy_data = build_ebay_policy_data(fulfillment_policy_params)
@@ -36,7 +35,7 @@ class FulfillmentPoliciesController < ExternalAccountsController
     Rails.logger.info "Creating fulfillment policy with data: #{@fulfillment_policy.ebay_policy_data.to_json}"
 
     if @fulfillment_policy.save
-      redirect_to account_external_account_path(current_account, @external_account),
+      redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Fulfillment policy '#{@fulfillment_policy.name}' created successfully!"
     else
       render :new, status: :unprocessable_entity
@@ -44,13 +43,11 @@ class FulfillmentPoliciesController < ExternalAccountsController
   end
 
   def update
-    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
-
     @fulfillment_policy.assign_attributes(fulfillment_policy_params.slice(:name, :marketplace_id))
     @fulfillment_policy.ebay_policy_data = build_ebay_policy_data(fulfillment_policy_params)
 
     if @fulfillment_policy.save
-      redirect_to account_external_account_path(current_account, @external_account),
+      redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Fulfillment policy '#{@fulfillment_policy.name}' updated successfully!"
     else
       render :edit, status: :unprocessable_entity
@@ -58,22 +55,30 @@ class FulfillmentPoliciesController < ExternalAccountsController
   end
 
   def destroy
-    @fulfillment_policy = @external_account.fulfillment_policies.find(params[:id])
     policy_name = @fulfillment_policy.name
 
     if @fulfillment_policy.destroy
-      redirect_to account_external_account_path(current_account, @external_account),
+      redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Fulfillment policy '#{policy_name}' deleted successfully!"
     else
-      redirect_to account_external_account_fulfillment_policy_path(current_account, @external_account, @fulfillment_policy),
+      redirect_to account_external_account_fulfillment_policy_path(current_account, current_external_account, @fulfillment_policy),
                   alert: "Unable to delete fulfillment policy: #{@fulfillment_policy.errors.full_messages.join(', ')}"
     end
+  end
+
+  helper_method :current_fulfillment_policy
+  def current_fulfillment_policy
+    @fulfillment_policy
   end
 
   private
 
   def find_external_account
     @external_account = current_account.external_accounts.find(params[:external_account_id])
+  end
+
+  def set_fulfillment_policy
+    @fulfillment_policy = current_external_account.fulfillment_policies.find(params[:id])
   end
 
   def fulfillment_policy_params
