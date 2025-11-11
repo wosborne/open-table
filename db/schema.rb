@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_05_121529) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_11_115123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,15 +62,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_121529) do
 
   create_table "ebay_business_policies", force: :cascade do |t|
     t.bigint "external_account_id", null: false
-    t.string "policy_type", null: false
     t.string "ebay_policy_id"
     t.string "name"
     t.string "marketplace_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "type"
     t.index ["ebay_policy_id"], name: "index_ebay_business_policies_on_ebay_policy_id", unique: true
-    t.index ["external_account_id", "policy_type"], name: "idx_on_external_account_id_policy_type_4eaa9fd4b2"
     t.index ["external_account_id"], name: "index_ebay_business_policies_on_external_account_id"
+    t.index ["type"], name: "index_ebay_business_policies_on_type"
   end
 
   create_table "ebay_notifications", force: :cascade do |t|

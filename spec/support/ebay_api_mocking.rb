@@ -309,21 +309,39 @@ module EbayApiMocking
       .and_return(mock_payment_policies_response)
     allow_any_instance_of(EbayApiClient).to receive(:get_return_policies)
       .and_return(mock_return_policies_response)
+    # Individual policy fetching for ebay_attributes
+    allow_any_instance_of(EbayApiClient).to receive(:get_fulfillment_policy)
+      .and_return(mock_individual_policy_response)
+    allow_any_instance_of(EbayApiClient).to receive(:get_payment_policy)
+      .and_return(mock_individual_policy_response)
+    allow_any_instance_of(EbayApiClient).to receive(:get_return_policy)
+      .and_return(mock_individual_policy_response)
+  end
+
+  def mock_individual_policy_response
+    EbayApiResponse.new(
+      success: true,
+      status_code: 200,
+      data: {
+        "name" => "Individual Policy",
+        "marketplaceId" => "EBAY_GB"
+      }
+    )
   end
 
   def mock_empty_policies_response
-    {
+    EbayApiResponse.new(
       success: true,
       status_code: 200,
       data: {}
-    }
+    )
   end
 
   def mock_policy_api_error
-    {
+    EbayApiResponse.new(
       success: false,
       status_code: 400,
       error: "Failed to fetch policies"
-    }
+    )
   end
 end

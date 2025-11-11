@@ -35,15 +35,15 @@ Rails.application.routes.draw do
         get :inventory_locations
       end
       
-      resources :fulfillment_policies, only: [:new, :create] do
+      resources :fulfillment_policies, only: [:new, :create, :edit, :update] do
         collection do
           get :shipping_services
         end
       end
       
-      resources :return_policies, only: [:new, :create]
+      resources :return_policies, only: [:new, :create, :edit, :update]
       
-      resources :payment_policies, only: [:new, :create]
+      resources :payment_policies, only: [:new, :create, :edit, :update]
     end
 
     resources :products do

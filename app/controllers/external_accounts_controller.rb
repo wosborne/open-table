@@ -73,6 +73,8 @@ class ExternalAccountsController < AccountsController
       @fulfillment_policies = []
     end
     
+    @local_fulfillment_policies = @external_account.ebay_business_policies.fulfillment
+    
     render turbo_frame: "fulfillment-policies-frame"
   end
 
@@ -87,6 +89,8 @@ class ExternalAccountsController < AccountsController
       @payment_policies = []
     end
     
+    @local_payment_policies = @external_account.ebay_business_policies.payment
+    
     render turbo_frame: "payment-policies-frame"
   end
 
@@ -100,6 +104,8 @@ class ExternalAccountsController < AccountsController
       Rails.logger.error "Failed to fetch eBay return policies: #{e.message}"
       @return_policies = []
     end
+    
+    @local_return_policies = @external_account.ebay_business_policies.return
     
     render turbo_frame: "return-policies-frame"
   end
@@ -116,8 +122,8 @@ class ExternalAccountsController < AccountsController
         ebay_client = EbayApiClient.new(@external_account)
         response = ebay_client.get_inventory_locations
         
-        if response[:success]
-          all_ebay_locations = response[:data]['locations'] || []
+        if response.success?
+          all_ebay_locations = response.data['locations'] || []
           
           # Filter to only show eBay locations that match our local ones
           local_keys = local_synced_locations.pluck(:ebay_merchant_location_key)
@@ -127,7 +133,7 @@ class ExternalAccountsController < AccountsController
           
           Rails.logger.info "Filtered eBay inventory locations: #{@inventory_locations.inspect}"
         else
-          Rails.logger.error "Failed to fetch eBay inventory locations: #{response[:error]}"
+          Rails.logger.error "Failed to fetch eBay inventory locations: #{response.error}"
           @inventory_locations = []
         end
       else

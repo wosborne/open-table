@@ -51,11 +51,7 @@
       <%= f.label :service_code, "Shipping Service", class: "label" %>
       <div class="control">
         <turbo-frame id="service-select" src="<%= shipping_services_account_external_account_fulfillment_policies_path(current_account, @external_account) %>">
-          <div class="select is-fullwidth">
-            <select name="fulfillment_policy[service_code]">
-              <option>Loading services...</option>
-            </select>
-          </div>
+          <div class="input is-fullwidth is-skeleton"></div>
         </turbo-frame>
       </div>
     </div>

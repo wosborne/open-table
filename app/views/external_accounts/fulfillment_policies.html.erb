@@ -24,6 +24,13 @@
               </td>
               <td>From eBay</td>
               <td>
+                <% local_policy = @local_fulfillment_policies.find_by(ebay_policy_id: policy['fulfillmentPolicyId']) %>
+                <% if local_policy %>
+                  <%= link_to "Edit", 
+                        edit_account_external_account_fulfillment_policy_path(current_account, @external_account, local_policy), 
+                        class: "button is-small is-primary",
+                        data: { turbo_frame: "_top" } %>
+                <% end %>
                 <a href="https://www.ebay.co.uk/bp/ship/edit/<%= policy['fulfillmentPolicyId'] %>" target="_blank" class="button is-small is-light">
                   Edit on eBay
                 </a>

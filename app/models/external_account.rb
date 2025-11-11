@@ -8,12 +8,12 @@ class ExternalAccount < ApplicationRecord
   has_many :ebay_business_policies, dependent: :destroy
 
   # Specific policy type associations
-  has_many :fulfillment_policies, -> { where(policy_type: "fulfillment") },
-           class_name: "EbayBusinessPolicy", dependent: :destroy
-  has_many :payment_policies, -> { where(policy_type: "payment") },
-           class_name: "EbayBusinessPolicy", dependent: :destroy
-  has_many :return_policies, -> { where(policy_type: "return") },
-           class_name: "EbayBusinessPolicy", dependent: :destroy
+  has_many :fulfillment_policies, -> { where(type: "EbayFulfillmentPolicy") },
+           class_name: "EbayFulfillmentPolicy", dependent: :destroy
+  has_many :payment_policies, -> { where(type: "EbayPaymentPolicy") },
+           class_name: "EbayPaymentPolicy", dependent: :destroy
+  has_many :return_policies, -> { where(type: "EbayReturnPolicy") },
+           class_name: "EbayReturnPolicy", dependent: :destroy
 
   validates :service_name, presence: true, uniqueness: { scope: :account_id }
   validates :service_name, inclusion: { in: SERVICE_NAMES }
@@ -70,12 +70,12 @@ class ExternalAccount < ApplicationRecord
     ebay_client = EbayApiClient.new(self)
     response = ebay_client.get_inventory_locations
 
-    unless response[:success]
-      Rails.logger.error "Failed to fetch eBay inventory locations: #{response[:error]}"
+    unless response.success?
+      Rails.logger.error "Failed to fetch eBay inventory locations: #{response.error}"
       return nil
     end
 
-    response[:data]["locations"] || []
+    response.data["locations"] || []
   end
 
   def process_ebay_locations(ebay_locations)
@@ -142,12 +142,12 @@ class ExternalAccount < ApplicationRecord
     ebay_client = EbayApiClient.new(self)
     response = ebay_client.get_fulfillment_policies
 
-    unless response[:success]
-      Rails.logger.error "Failed to fetch eBay fulfillment policies: #{response[:error]}"
+    unless response.success?
+      Rails.logger.error "Failed to fetch eBay fulfillment policies: #{response.error}"
       return
     end
 
-    policies = response[:data]["fulfillmentPolicies"] || []
+    policies = response.data["fulfillmentPolicies"] || []
     sync_policies("fulfillment", policies, "fulfillmentPolicyId")
   end
 
@@ -155,12 +155,12 @@ class ExternalAccount < ApplicationRecord
     ebay_client = EbayApiClient.new(self)
     response = ebay_client.get_payment_policies
 
-    unless response[:success]
-      Rails.logger.error "Failed to fetch eBay payment policies: #{response[:error]}"
+    unless response.success?
+      Rails.logger.error "Failed to fetch eBay payment policies: #{response.error}"
       return
     end
 
-    policies = response[:data]["paymentPolicies"] || []
+    policies = response.data["paymentPolicies"] || []
     sync_policies("payment", policies, "paymentPolicyId")
   end
 
@@ -168,12 +168,12 @@ class ExternalAccount < ApplicationRecord
     ebay_client = EbayApiClient.new(self)
     response = ebay_client.get_return_policies
 
-    unless response[:success]
-      Rails.logger.error "Failed to fetch eBay return policies: #{response[:error]}"
+    unless response.success?
+      Rails.logger.error "Failed to fetch eBay return policies: #{response.error}"
       return
     end
 
-    policies = response[:data]["returnPolicies"] || []
+    policies = response.data["returnPolicies"] || []
     sync_policies("return", policies, "returnPolicyId")
   end
 
@@ -202,8 +202,9 @@ class ExternalAccount < ApplicationRecord
       "returnPolicyId"
     end
 
-    new_policy = ebay_business_policies.build(
-      policy_type: policy_type,
+    policy_class = EbayBusinessPolicy.policy_class_for(policy_type)
+    new_policy = policy_class.new(
+      external_account: self,
       ebay_policy_id: policy_data[policy_id_field],
       name: policy_data["name"],
       marketplace_id: policy_data["marketplaceId"] || "EBAY_GB"

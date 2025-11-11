@@ -1,41 +1,94 @@
 class FulfillmentPoliciesController < ExternalAccountsController
-  include EbayPolicyManageable
+  before_action :find_external_account
 
   def new
-    @fulfillment_policy = build_policy_model({}, "fulfillment")
+    @fulfillment_policy = @external_account.fulfillment_policies.build
   end
 
   def shipping_services
     begin
       ebay_client = EbayApiClient.new(@external_account)
       @services = ebay_client.get_shipping_services
+      @selected_service = params[:selected_service]
       render turbo_frame: "service-select"
     rescue => e
       Rails.logger.error "Error fetching eBay shipping services: #{e.message}"
       @services = []
+      @selected_service = params[:selected_service]
       render turbo_frame: "service-select"
     end
   end
 
-  def create
-    form_params = fulfillment_policy_params
-    @fulfillment_policy = build_policy_model(form_params, "fulfillment")
+  def edit
+    @fulfillment_policy = @external_account.ebay_business_policies.fulfillment.find(params[:id])
 
-    policy_data = build_ebay_policy_data(form_params)
-    create_policy_via_ebay_api(@fulfillment_policy, policy_data, :create_fulfillment_policy, "fulfillmentPolicyId")
+    # Cast to proper subclass if needed
+    @fulfillment_policy = @fulfillment_policy.becomes(EbayFulfillmentPolicy) unless @fulfillment_policy.is_a?(EbayFulfillmentPolicy)
+  end
+
+  def create
+    binding.pry
+    @fulfillment_policy = @external_account.fulfillment_policies.build(
+      fulfillment_policy_params.slice(:name, :marketplace_id)
+    )
+    @fulfillment_policy.ebay_policy_data = build_ebay_policy_data(fulfillment_policy_params)
+
+    Rails.logger.info "Creating fulfillment policy with data: #{@fulfillment_policy.ebay_policy_data.to_json}"
+
+    if @fulfillment_policy.save
+      redirect_to account_external_account_path(current_account, @external_account),
+                  notice: "Fulfillment policy '#{@fulfillment_policy.name}' created successfully!"
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def update
+    @fulfillment_policy = @external_account.ebay_business_policies.fulfillment.find(params[:id])
+
+    # Cast to proper subclass if needed
+    @fulfillment_policy = @fulfillment_policy.becomes(EbayFulfillmentPolicy) unless @fulfillment_policy.is_a?(EbayFulfillmentPolicy)
+
+    @fulfillment_policy.assign_attributes(fulfillment_policy_params.slice(:name, :marketplace_id))
+    @fulfillment_policy.ebay_policy_data = build_ebay_policy_data(fulfillment_policy_params)
+
+    if @fulfillment_policy.save
+      redirect_to account_external_account_path(current_account, @external_account),
+                  notice: "Fulfillment policy '#{@fulfillment_policy.name}' updated successfully!"
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   private
 
+  def find_external_account
+    @external_account = current_account.external_accounts.find(params[:external_account_id])
+  end
+
   def fulfillment_policy_params
-    params.require(:fulfillment_policy).permit(
+    params.require(:ebay_fulfillment_policy).permit(
       :name, :marketplace_id, :handling_time, :currency,
-      :service_code, :cost, :free_shipping
+      :service_code, :cost, :free_shipping, :category_default
     )
+  end
+
+
+  def build_base_policy_data(params)
+    {
+      name: params[:name],
+      marketplaceId: params[:marketplace_id] || "EBAY_GB"
+    }
   end
 
   def build_ebay_policy_data(policy_params)
     policy_data = build_base_policy_data(policy_params).merge({
+      categoryTypes: [
+        {
+          name: "ALL_EXCLUDING_MOTORS_VEHICLES",
+          default: true
+        }
+      ],
       handlingTime: {
         value: policy_params[:handling_time].to_i,
         unit: "DAY"
@@ -59,6 +112,14 @@ class FulfillmentPoliciesController < ExternalAccountsController
         freeShipping: policy_params[:free_shipping] == "1"
       }
 
+      # Add carrier code if available
+      carrier_code = get_shipping_carrier_for_service(policy_params[:service_code])
+      if carrier_code.present?
+        shipping_service[:shippingCarrierCode] = carrier_code
+      elsif policy_params[:service_code]&.include?("DPD")
+        shipping_service[:shippingCarrierCode] = "DPD"
+      end
+
       unless policy_params[:free_shipping] == "1"
         if policy_params[:cost].present?
           shipping_service[:shippingCost] = {
@@ -78,5 +139,13 @@ class FulfillmentPoliciesController < ExternalAccountsController
     end
 
     policy_data
+  end
+
+  def get_shipping_carrier_for_service(service_code)
+    ebay_client = EbayApiClient.new(@external_account)
+    shipping_services = ebay_client.get_shipping_services
+
+    service = shipping_services.find { |s| s[:value] == service_code }
+    service&.dig(:carrier)
   end
 end

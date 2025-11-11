@@ -1,6 +1,6 @@
 <turbo-frame id="service-select">
   <div class="select is-fullwidth">
-    <%= select "ebay_business_policy", "service_code", 
+    <%= select "ebay_fulfillment_policy", "service_code", 
         @services.empty? ? [["No services available", ""]] : 
                           [["Select shipping service...", ""]] + @services.map { |s| ["#{s[:label]} (#{s[:carrier]})", s[:value]] },
         { selected: @selected_service },

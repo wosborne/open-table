@@ -37,12 +37,12 @@ class Location < ApplicationRecord
     ebay_client = EbayApiClient.new(external_account)
     response = ebay_client.create_inventory_location(merchant_key, location_data)
     
-    if response[:success]
+    if response.success?
       update!(ebay_merchant_location_key: merchant_key)
       Rails.logger.info "Location '#{name}' synced to eBay with key: #{merchant_key}"
       true
     else
-      Rails.logger.error "Failed to sync location '#{name}' to eBay: #{response[:error]}"
+      Rails.logger.error "Failed to sync location '#{name}' to eBay: #{response.error}"
       false
     end
   rescue => e
@@ -72,9 +72,9 @@ class Location < ApplicationRecord
       
       response = ebay_client.create_inventory_location(self.ebay_merchant_location_key, location_data)
       
-      unless response[:success]
-        Rails.logger.error "Failed to create eBay location during create: #{response[:error]}"
-        self.errors.add(:base, "Failed to create location on eBay: #{response[:error]}")
+      unless response.success?
+        Rails.logger.error "Failed to create eBay location during create: #{response.error}"
+        self.errors.add(:base, "Failed to create location on eBay: #{response.error}")
         raise ActiveRecord::RecordInvalid.new(self)
       end
       

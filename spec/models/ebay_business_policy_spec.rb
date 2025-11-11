@@ -22,17 +22,11 @@ RSpec.describe EbayBusinessPolicy, type: :model do
     let(:valid_attributes) do
       {
         external_account: external_account,
-        policy_type: 'fulfillment',
+        type: 'EbayFulfillmentPolicy',
         ebay_policy_id: '12345678',
         name: 'Test Policy',
         marketplace_id: 'EBAY_GB'
       }
-    end
-
-    it 'validates presence of policy_type' do
-      policy = build(:ebay_business_policy, valid_attributes.merge(policy_type: nil))
-      expect(policy).not_to be_valid
-      expect(policy.errors[:policy_type]).to include("can't be blank")
     end
 
     it 'does not require ebay_policy_id for new records' do
@@ -60,11 +54,6 @@ RSpec.describe EbayBusinessPolicy, type: :model do
       expect(policy.errors[:marketplace_id]).to include("can't be blank")
     end
 
-    it 'validates inclusion of policy_type in allowed values' do
-      policy = build(:ebay_business_policy, valid_attributes.merge(policy_type: 'invalid'))
-      expect(policy).not_to be_valid
-      expect(policy.errors[:policy_type]).to include('is not included in the list')
-    end
 
     it 'has uniqueness validation for ebay_policy_id' do
       expect(described_class.validators_on(:ebay_policy_id).map(&:class)).to include(ActiveRecord::Validations::UniquenessValidator)
@@ -77,9 +66,9 @@ RSpec.describe EbayBusinessPolicy, type: :model do
   end
 
   describe 'scopes' do
-    let!(:fulfillment_policy) { create(:ebay_business_policy, policy_type: 'fulfillment', external_account: external_account) }
-    let!(:payment_policy) { create(:ebay_business_policy, policy_type: 'payment', external_account: external_account) }
-    let!(:return_policy) { create(:ebay_business_policy, policy_type: 'return', external_account: external_account) }
+    let!(:fulfillment_policy) { create(:ebay_fulfillment_policy, external_account: external_account) }
+    let!(:payment_policy) { create(:ebay_payment_policy, external_account: external_account) }
+    let!(:return_policy) { create(:ebay_return_policy, external_account: external_account) }
 
     describe '.fulfillment' do
       it 'returns only fulfillment policies' do
@@ -103,36 +92,36 @@ RSpec.describe EbayBusinessPolicy, type: :model do
   describe 'instance methods' do
     describe '#fulfillment?' do
       it 'returns true for fulfillment policy' do
-        policy = build(:ebay_business_policy, policy_type: 'fulfillment')
+        policy = build(:ebay_fulfillment_policy)
         expect(policy.fulfillment?).to be true
       end
 
       it 'returns false for non-fulfillment policy' do
-        policy = build(:ebay_business_policy, policy_type: 'payment')
+        policy = build(:ebay_payment_policy)
         expect(policy.fulfillment?).to be false
       end
     end
 
     describe '#payment?' do
       it 'returns true for payment policy' do
-        policy = build(:ebay_business_policy, policy_type: 'payment')
+        policy = build(:ebay_payment_policy)
         expect(policy.payment?).to be true
       end
 
       it 'returns false for non-payment policy' do
-        policy = build(:ebay_business_policy, policy_type: 'fulfillment')
+        policy = build(:ebay_fulfillment_policy)
         expect(policy.payment?).to be false
       end
     end
 
     describe '#return?' do
       it 'returns true for return policy' do
-        policy = build(:ebay_business_policy, policy_type: 'return')
+        policy = build(:ebay_return_policy)
         expect(policy.return?).to be true
       end
 
       it 'returns false for non-return policy' do
-        policy = build(:ebay_business_policy, policy_type: 'payment')
+        policy = build(:ebay_payment_policy)
         expect(policy.return?).to be false
       end
     end
@@ -144,20 +133,20 @@ RSpec.describe EbayBusinessPolicy, type: :model do
       expect(policy).to be_valid
     end
 
-    it 'creates fulfillment policy with trait' do
-      policy = build(:ebay_business_policy, :fulfillment, external_account: external_account)
+    it 'creates fulfillment policy' do
+      policy = build(:ebay_fulfillment_policy, external_account: external_account)
       expect(policy.policy_type).to eq 'fulfillment'
       expect(policy.fulfillment?).to be true
     end
 
-    it 'creates payment policy with trait' do
-      policy = build(:ebay_business_policy, :payment, external_account: external_account)
+    it 'creates payment policy' do
+      policy = build(:ebay_payment_policy, external_account: external_account)
       expect(policy.policy_type).to eq 'payment'
       expect(policy.payment?).to be true
     end
 
-    it 'creates return policy with trait' do
-      policy = build(:ebay_business_policy, :return, external_account: external_account)
+    it 'creates return policy' do
+      policy = build(:ebay_return_policy, external_account: external_account)
       expect(policy.policy_type).to eq 'return'
       expect(policy.return?).to be true
     end
@@ -167,7 +156,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
     let(:valid_attributes) do
       {
         external_account: external_account,
-        policy_type: 'fulfillment',
+        type: 'EbayFulfillmentPolicy',
         ebay_policy_id: '12345678',
         name: 'Test Policy',
         marketplace_id: 'EBAY_GB'
@@ -194,25 +183,15 @@ RSpec.describe EbayBusinessPolicy, type: :model do
     end
   end
 
-  describe 'constants' do
-    it 'defines correct policy types' do
-      expect(described_class::POLICY_TYPES).to match_array(%w[fulfillment payment return])
-    end
-
-    it 'policy types are frozen' do
-      expect(described_class::POLICY_TYPES).to be_frozen
-    end
-  end
 
   describe 'database constraints' do
     it 'enforces uniqueness at database level' do
       create(:ebay_business_policy, ebay_policy_id: '12345', external_account: external_account)
 
       expect {
-        described_class.create!(
+        EbayPaymentPolicy.create!(
           ebay_policy_id: '12345',
           external_account: external_account,
-          policy_type: 'payment',
           name: 'Test',
           marketplace_id: 'EBAY_GB'
         )
@@ -247,9 +226,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
         end
 
         it 'creates fulfillment policy on eBay and sets ebay_policy_id' do
-          policy = build(:ebay_business_policy, 
+          policy = build(:ebay_fulfillment_policy, 
             external_account: external_account,
-            policy_type: 'fulfillment',
             ebay_policy_id: nil
           )
           policy.ebay_policy_data = policy_data
@@ -269,9 +247,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           allow_any_instance_of(EbayApiClient).to receive(:create_payment_policy)
             .and_return(payment_response)
 
-          policy = build(:ebay_business_policy, 
+          policy = build(:ebay_payment_policy, 
             external_account: external_account,
-            policy_type: 'payment',
             ebay_policy_id: nil
           )
           policy.ebay_policy_data = policy_data
@@ -290,9 +267,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           allow_any_instance_of(EbayApiClient).to receive(:create_return_policy)
             .and_return(return_response)
 
-          policy = build(:ebay_business_policy, 
+          policy = build(:ebay_return_policy, 
             external_account: external_account,
-            policy_type: 'return',
             ebay_policy_id: nil
           )
           policy.ebay_policy_data = policy_data
@@ -319,9 +295,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
         end
 
         it 'prevents save and adds error messages' do
-          policy = build(:ebay_business_policy, 
+          policy = build(:ebay_fulfillment_policy, 
             external_account: external_account,
-            policy_type: 'fulfillment',
             ebay_policy_id: nil
           )
           policy.ebay_policy_data = policy_data
@@ -339,9 +314,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
         end
 
         it 'prevents save and adds error message' do
-          policy = build(:ebay_business_policy, 
+          policy = build(:ebay_fulfillment_policy, 
             external_account: external_account,
-            policy_type: 'fulfillment',
             ebay_policy_id: nil
           )
           policy.ebay_policy_data = policy_data
@@ -354,9 +328,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
 
       context 'when no ebay_policy_data is set' do
         it 'skips eBay API call and saves normally' do
-          policy = build(:ebay_business_policy, 
+          policy = build(:ebay_fulfillment_policy, 
             external_account: external_account,
-            policy_type: 'fulfillment',
             ebay_policy_id: '12345678'
           )
 
@@ -368,9 +341,8 @@ RSpec.describe EbayBusinessPolicy, type: :model do
 
     describe 'before_update callback' do
       let!(:existing_policy) do
-        create(:ebay_business_policy,
+        create(:ebay_fulfillment_policy,
           external_account: external_account,
-          policy_type: 'fulfillment',
           ebay_policy_id: '12345678'
         )
       end

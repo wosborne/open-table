@@ -90,6 +90,14 @@ class EbayApiClient
     get("/sell/account/v1/fulfillment_policy/#{policy_id}")
   end
 
+  def get_payment_policy(policy_id)
+    get("/sell/account/v1/payment_policy/#{policy_id}")
+  end
+
+  def get_return_policy(policy_id)
+    get("/sell/account/v1/return_policy/#{policy_id}")
+  end
+
   def get_payment_policies
     get("/sell/account/v1/payment_policy", { marketplace_id: "EBAY_GB" })
   end
@@ -452,10 +460,14 @@ class EbayApiClient
 
   def extract_shipping_services(data)
     services = data["ShippingServiceDetails"] || []
-    # Only return domestic UK services
+    # Only return domestic UK services with valid carriers (for fulfillment policies)
     services.select { |service|
-      service["ShippingService"]&.include?("UK_") &&
-      !service["ShippingService"]&.include?("International")
+      service_code = service["ShippingService"]
+      carrier = service["ShippingCarrier"]
+      
+      service_code&.include?("UK_") &&
+      !service_code&.include?("International") &&
+      carrier.present?
     }.map do |service|
       {
         value: service["ShippingService"],
