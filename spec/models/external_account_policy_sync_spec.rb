@@ -64,6 +64,7 @@ RSpec.describe ExternalAccount, type: :model do
     context 'when API call succeeds' do
       before do
         allow(ebay_client).to receive(:get_fulfillment_policies).and_return(mock_fulfillment_policies_response)
+        allow(ebay_client).to receive(:get_fulfillment_policy).and_return(mock_individual_policy_response)
       end
 
       it 'creates new policies that do not exist locally' do
@@ -96,7 +97,7 @@ RSpec.describe ExternalAccount, type: :model do
       end
 
       it 'handles policies with missing marketplace_id' do
-        response_with_missing_marketplace = {
+        response_with_missing_marketplace = EbayApiResponse.new(
           success: true,
           status_code: 200,
           data: {
@@ -107,7 +108,7 @@ RSpec.describe ExternalAccount, type: :model do
               }
             ]
           }
-        }
+        )
         allow(ebay_client).to receive(:get_fulfillment_policies).and_return(response_with_missing_marketplace)
 
         expect {
@@ -152,6 +153,7 @@ RSpec.describe ExternalAccount, type: :model do
     before do
       allow(EbayApiClient).to receive(:new).with(external_account).and_return(ebay_client)
       allow(ebay_client).to receive(:get_payment_policies).and_return(mock_payment_policies_response)
+      allow(ebay_client).to receive(:get_payment_policy).and_return(mock_individual_policy_response)
     end
 
     it 'creates payment policies with correct attributes' do
@@ -171,6 +173,7 @@ RSpec.describe ExternalAccount, type: :model do
     before do
       allow(EbayApiClient).to receive(:new).with(external_account).and_return(ebay_client)
       allow(ebay_client).to receive(:get_return_policies).and_return(mock_return_policies_response)
+      allow(ebay_client).to receive(:get_return_policy).and_return(mock_individual_policy_response)
     end
 
     it 'creates return policies with correct attributes' do
@@ -228,8 +231,8 @@ RSpec.describe ExternalAccount, type: :model do
   describe 'private helper methods' do
     describe '#policy_exists_locally?' do
       it 'returns true when policy exists' do
-        external_account.ebay_business_policies.create!(
-          policy_type: 'fulfillment',
+        EbayFulfillmentPolicy.create!(
+          external_account: external_account,
           ebay_policy_id: '123456789',
           name: 'Test Policy',
           marketplace_id: 'EBAY_GB'
