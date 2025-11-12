@@ -1,26 +1,73 @@
 class ReturnPoliciesController < ExternalAccountsController
-  include EbayPolicyManageable
+  before_action :set_return_policy, only: [:show, :edit, :update, :destroy]
 
   def new
-    @return_policy = build_policy_model({}, "return")
+    @return_policy = current_external_account.return_policies.build
+  end
+
+  def show
+  end
+
+  def edit
   end
 
   def create
-    form_params = return_policy_params
-    @return_policy = build_policy_model(form_params, "return")
+    @return_policy = current_external_account.return_policies.build(
+      return_policy_params.slice(:name, :marketplace_id)
+    )
+    @return_policy.ebay_policy_data = build_ebay_policy_data(return_policy_params)
+    
+    if @return_policy.save
+      redirect_to account_external_account_path(current_account, current_external_account),
+                  notice: "Return policy '#{@return_policy.name}' created successfully!"
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
 
-    policy_data = build_ebay_policy_data(form_params)
-    create_policy_via_ebay_api(@return_policy, policy_data, :create_return_policy, "returnPolicyId")
+  def update
+    @return_policy.assign_attributes(return_policy_params.slice(:name, :marketplace_id))
+    @return_policy.ebay_policy_data = build_ebay_policy_data(return_policy_params)
+    
+    if @return_policy.save
+      redirect_to account_external_account_path(current_account, current_external_account),
+                  notice: "Return policy '#{@return_policy.name}' updated successfully!"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    policy_name = @return_policy.name
+
+    if @return_policy.destroy
+      redirect_to account_external_account_path(current_account, current_external_account),
+                  notice: "Return policy '#{policy_name}' deleted successfully!"
+    else
+      redirect_to account_external_account_return_policy_path(current_account, current_external_account, @return_policy),
+                  alert: "Unable to delete return policy: #{@return_policy.errors.full_messages.join(', ')}"
+    end
   end
 
   private
 
+  def set_return_policy
+    @return_policy = current_external_account.return_policies.find(params[:id])
+  end
+
   def return_policy_params
-    params.require(:ebay_business_policy).permit(
+    params.require(:ebay_return_policy).permit(
       :name, :marketplace_id, :returns_accepted, :return_period_value,
       :return_period_unit, :refund_method, :return_shipping_cost_payer,
       :return_instructions
     )
+  end
+
+  def build_base_policy_data(params)
+    {
+      name: params[:name],
+      marketplaceId: params[:marketplace_id] || "EBAY_GB"
+    }
   end
 
   def build_ebay_policy_data(policy_params)
