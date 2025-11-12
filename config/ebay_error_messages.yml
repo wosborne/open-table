@@ -1,0 +1,53 @@
+# eBay API Error Messages Configuration
+# Maps eBay error IDs and HTTP status codes to user-friendly messages
+
+error_codes:
+  25007:
+    message: "Please check that your product has all required fields filled out."
+    category: "validation"
+  21917:
+    message: "Please ensure your eBay inventory location is properly set up."
+    category: "location"
+  25700:
+    message: "Please check your product's eBay category setting."
+    category: "category"
+  21916:
+    message: "Please check your product images."
+    category: "images"
+  25002:
+    message: "Offer entity already exists"
+    category: "duplicate"
+    action: "skip" # Special handling for this error
+
+http_status_codes:
+  302:
+    message: "eBay authentication issue - please reconnect your eBay account and try again."
+    category: "auth"
+  401:
+    message: "eBay authentication expired - please reconnect your eBay account."
+    category: "auth"
+  400:
+    message: "Bad request - please check your data and try again."
+    category: "validation"
+  429:
+    message: "eBay rate limit exceeded - please wait a few minutes and try again."
+    category: "rate_limit"
+  500:
+    message: "eBay servers are experiencing issues - please try again later."
+    category: "server_error"
+  503:
+    message: "eBay servers are experiencing issues - please try again later."
+    category: "server_error"
+
+# Default messages for different operations when specific error codes aren't available
+operation_defaults:
+  inventory_item_creation: "Failed to create eBay inventory item"
+  offer_creation: "Failed to create eBay offer"
+  offer_publishing: "Failed to publish eBay offer"
+  draft_deletion: "Failed to delete eBay draft"
+
+# Exception handling messages
+exceptions:
+  timeout: "Request timed out. Please try again."
+  unauthorized: "eBay authentication expired - please reconnect your eBay account."
+  connection_error: "Unable to connect to eBay. Please check your internet connection and try again."

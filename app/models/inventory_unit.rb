@@ -39,15 +39,17 @@ class InventoryUnit < ApplicationRecord
     
     # Step 1: Create inventory item
     inventory_item_data = build_ebay_inventory_item_data
+    
     inventory_result = api_client.put(
-      "/sell/inventory/v1/inventory_item/#{variant.sku}", 
+      "/sell/inventory/v1/inventory_item/#{URI.encode_www_form_component(variant.sku)}", 
       inventory_item_data
     )
     
-    unless inventory_result[:success]
+    unless inventory_result.success?
+      error_message = build_user_friendly_error_message("inventory item creation", inventory_result)
       return {
         success: false,
-        message: "Failed to create eBay inventory item: #{format_ebay_error(inventory_result)}"
+        message: error_message
       }
     end
 
@@ -55,15 +57,12 @@ class InventoryUnit < ApplicationRecord
     offer_data = build_ebay_offer_data(ebay_account)
     offer_result = api_client.post("/sell/inventory/v1/offer", offer_data)
     
-    unless offer_result[:success]
-      if offer_already_exists_error?(offer_result)
-        Rails.logger.info "eBay offer already exists for SKU #{variant.sku}, proceeding"
-      else
-        return {
-          success: false,
-          message: "Failed to create eBay offer: #{format_ebay_error(offer_result)}"
-        }
-      end
+    unless offer_result.success? || offer_already_exists_error?(offer_result)
+      error_message = build_user_friendly_error_message("offer creation", offer_result)
+      return {
+        success: false,
+        message: error_message
+      }
     end
 
     # Create the external account inventory unit record
@@ -74,7 +73,7 @@ class InventoryUnit < ApplicationRecord
         sku: variant.sku,
         title: build_ebay_title,
         created_at: Time.current.iso8601,
-        offer_id: offer_result.dig(:data, 'offerId')
+        offer_id: offer_result.data&.dig('offerId')
       }
     )
     
@@ -84,10 +83,24 @@ class InventoryUnit < ApplicationRecord
       ebay_listing: ebay_listing
     }
   rescue => e
-    Rails.logger.error "eBay inventory creation error: #{e.message}"
+    
+    # Let the exception message speak for itself with minimal enhancement
+    error_message = case e
+    when RestClient::ExceptionWithResponse
+      "eBay API error: #{e.message}"
+    when Net::TimeoutError, RestClient::RequestTimeout
+      ebay_error_config.dig('exceptions', 'timeout')
+    when RestClient::Unauthorized
+      ebay_error_config.dig('exceptions', 'unauthorized')
+    when SocketError, RestClient::ServerBrokeConnection
+      ebay_error_config.dig('exceptions', 'connection_error')
+    else
+      "Unexpected error: #{e.message}"
+    end
+    
     {
       success: false,
-      message: "eBay API error: #{e.message}"
+      message: error_message
     }
   end
 
@@ -121,13 +134,13 @@ class InventoryUnit < ApplicationRecord
 
     publish_result = api_client.post("/sell/inventory/v1/offer/#{offer_id}/publish")
     
-    if publish_result[:success]
+    if publish_result.success?
       ebay_listing.update!(
         marketplace_data: ebay_listing.marketplace_data.merge(
           'published' => true,
           'listed_at' => Time.current.iso8601,
           'price' => variant.price&.to_s,
-          'listing_id' => publish_result.dig(:data, 'listingId')
+          'listing_id' => publish_result.data&.dig('listingId')
         )
       )
       
@@ -136,13 +149,13 @@ class InventoryUnit < ApplicationRecord
         message: "Published eBay offer successfully!"
       }
     else
+      error_message = build_user_friendly_error_message("offer publishing", publish_result)
       {
         success: false,
-        message: "Failed to publish eBay offer: #{format_ebay_error(publish_result)}"
+        message: error_message
       }
     end
   rescue => e
-    Rails.logger.error "eBay publish error: #{e.message}"
     {
       success: false,
       message: "eBay API error: #{e.message}"
@@ -172,7 +185,7 @@ class InventoryUnit < ApplicationRecord
     
     delete_result = api_client.delete("/sell/inventory/v1/inventory_item/#{sku}")
     
-    if delete_result[:success]
+    if delete_result.success?
       ebay_listing.destroy!
       
       {
@@ -180,13 +193,13 @@ class InventoryUnit < ApplicationRecord
         message: "eBay draft deleted successfully!"
       }
     else
+      error_message = build_user_friendly_error_message("draft deletion", delete_result)
       {
         success: false,
-        message: "Failed to delete eBay draft: #{format_ebay_error(delete_result)}"
+        message: error_message
       }
     end
   rescue => e
-    Rails.logger.error "eBay delete error: #{e.message}"
     {
       success: false,
       message: "eBay API error: #{e.message}"
@@ -330,20 +343,72 @@ class InventoryUnit < ApplicationRecord
   end
 
   def format_ebay_error(result)
-    if result[:detailed_errors]&.any?
-      result[:detailed_errors].map { |e| e[:message] }.join(", ")
+    if result.detailed_errors&.any?
+      result.detailed_errors.map { |e| e[:message] }.join(", ")
     else
-      result[:error].to_s
+      result.error.to_s
+    end
+  end
+
+  def build_user_friendly_error_message(operation, api_result)
+    # Use eBay's actual error messages when available
+    if api_result.detailed_errors&.any?
+      main_error = api_result.detailed_errors.first
+      ebay_message = main_error[:long_message] || main_error[:message]
+      
+      # Check for specific error ID mapping first
+      if main_error[:error_id] && ebay_error_config.dig('error_codes', main_error[:error_id])
+        error_config = ebay_error_config['error_codes'][main_error[:error_id]]
+        enhanced_message = error_config['message']
+        return ebay_message.present? ? "#{ebay_message} #{enhanced_message}" : enhanced_message
+      end
+      
+      # Fall back to HTTP status code mapping
+      if ebay_error_config.dig('http_status_codes', api_result.status_code)
+        status_message = ebay_error_config['http_status_codes'][api_result.status_code]['message']
+        return ebay_message.present? ? ebay_message : status_message
+      end
+      
+      # Use original eBay message or fallback
+      ebay_message || build_fallback_error_message(operation, api_result)
+    else
+      # Fallback when no detailed errors available
+      build_fallback_error_message(operation, api_result)
+    end
+  end
+
+
+  def build_fallback_error_message(operation, api_result)
+    # Use this when no detailed_errors are available
+    if api_result.error.present?
+      # Try to get message from status code configuration
+      if ebay_error_config.dig('http_status_codes', api_result.status_code)
+        return ebay_error_config['http_status_codes'][api_result.status_code]['message']
+      end
+      
+      # Fall back to generic error handling
+      if api_result.error.is_a?(String)
+        api_result.error
+      else
+        operation_name = ebay_error_config.dig('operation_defaults', operation.to_s) || "eBay #{operation}"
+        "#{operation_name} failed with status #{api_result.status_code}. Please try again."
+      end
+    else
+      operation_name = ebay_error_config.dig('operation_defaults', operation.to_s) || "eBay #{operation}"
+      "#{operation_name} failed with status #{api_result.status_code}. Please try again."
     end
   end
 
   def offer_already_exists_error?(result)
-    return false unless result[:detailed_errors]&.any?
+    return false unless result.detailed_errors&.any?
     
-    result[:detailed_errors].any? do |error|
-      error[:error_id] == 25002 && 
-      error[:message]&.include?("Offer entity already exists")
+    result.detailed_errors.any? do |error|
+      error[:error_id] == 25002 || error[:message]&.include?("Offer entity already exists")
     end
+  end
+
+  def ebay_error_config
+    @ebay_error_config ||= YAML.load_file(Rails.root.join('config', 'ebay_error_messages.yml'))
   end
 
 end
