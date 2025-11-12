@@ -50,8 +50,22 @@ class EbayApiClient
     end
   end
 
-  def post_xml(endpoint, xml_payload)
-    make_xml_request(:post, endpoint, xml_payload)
+  def post_xml(endpoint, xml_payload, call_name = "GeteBayDetails")
+    make_xml_request(:post, endpoint, xml_payload, call_name)
+  end
+
+  # Trading API call for XML notifications
+  def trading_api_call(xml_payload, call_name = nil)
+    # Extract call name from XML if not provided
+    if call_name.nil?
+      if match = xml_payload.match(/<(\w+Request)\s/)
+        call_name = match[1].gsub("Request", "")
+      else
+        call_name = "GeteBayDetails" # fallback
+      end
+    end
+
+    post_xml("/ws/api.dll", xml_payload, call_name)
   end
 
   def create_return_policy(policy_data)
@@ -143,7 +157,7 @@ class EbayApiClient
 
   private
 
-  def make_xml_request(method, endpoint, xml_payload)
+  def make_xml_request(method, endpoint, xml_payload, call_name = "GeteBayDetails")
     attempt_count = 0
 
     begin
@@ -153,7 +167,7 @@ class EbayApiClient
 
       headers = {
         "X-EBAY-API-COMPATIBILITY-LEVEL" => "1193",
-        "X-EBAY-API-CALL-NAME" => "GeteBayDetails",
+        "X-EBAY-API-CALL-NAME" => call_name,
         "X-EBAY-API-SITEID" => "3", # eBay GB
         "X-EBAY-API-IAF-TOKEN" => @access_token, # OAuth token for Trading API
         "Content-Type" => "text/xml; charset=utf-8"
