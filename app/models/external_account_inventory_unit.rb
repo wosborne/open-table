@@ -34,18 +34,34 @@ class ExternalAccountInventoryUnit < ApplicationRecord
     published? ? 'Live on eBay' : 'In eBay Inventory'
   end
 
-  def perform_action(action)
-    case action
-    when 'publish'
-      publish_listing
-    when 'end'
-      end_listing
-    when 'relist'
-      relist_listing
-    when 'archive'
-      archive_listing
-    else
-      { success: false, message: "Unknown action: #{action}" }
+  def end_listing
+    return unless external_account.service_name == 'ebay'
+    
+    begin
+      api_client = EbayApiClient.new(external_account)
+      offer_id = marketplace_data&.dig('offer_id')
+      
+      if offer_id.blank?
+        return { success: false, message: "No offer ID found for this listing." }
+      end
+      
+      # Call eBay API to withdraw the offer
+      withdraw_result = api_client.post("/sell/inventory/v1/offer/#{offer_id}/withdraw")
+      
+      success = withdraw_result.respond_to?(:success?) ? withdraw_result.success? : withdraw_result[:success]
+      
+      if success
+        update_marketplace_data(status: 'ended', published: false)
+        Rails.logger.info "Successfully withdrew eBay offer: #{offer_id}"
+        { success: true, message: "#{external_account.service_name.humanize} listing ended." }
+      else
+        error_msg = withdraw_result.respond_to?(:error) ? withdraw_result.error : withdraw_result[:error]
+        Rails.logger.error "Failed to withdraw eBay offer #{offer_id}: #{error_msg}"
+        { success: false, message: "Failed to end eBay listing: #{error_msg}" }
+      end
+    rescue => e
+      Rails.logger.error "Error withdrawing eBay offer: #{e.message}"
+      { success: false, message: "Error ending eBay listing: #{e.message}" }
     end
   end
 
@@ -58,11 +74,6 @@ class ExternalAccountInventoryUnit < ApplicationRecord
       price: inventory_unit.variant&.price
     )
     { success: true, message: "Listed on #{external_account.service_name.humanize} successfully!" }
-  end
-
-  def end_listing
-    update_marketplace_data(status: 'ended')
-    { success: true, message: "#{external_account.service_name.humanize} listing ended." }
   end
 
   def relist_listing
@@ -93,14 +104,17 @@ class ExternalAccountInventoryUnit < ApplicationRecord
       # Delete inventory item (this also deletes associated offers)
       delete_result = api_client.delete("/sell/inventory/v1/inventory_item/#{sku}")
       
-      if delete_result[:success]
+      success = delete_result.respond_to?(:success?) ? delete_result.success? : delete_result[:success]
+      error_msg = delete_result.respond_to?(:error) ? delete_result.error : delete_result[:error]
+      
+      if success
         Rails.logger.info "Successfully removed eBay inventory item: #{sku}"
       elsif ebay_item_not_found?(delete_result)
         Rails.logger.info "eBay inventory item #{sku} already removed or not found - continuing with deletion"
       else
-        Rails.logger.error "Failed to remove eBay inventory item #{sku}: #{delete_result[:error]}"
+        Rails.logger.error "Failed to remove eBay inventory item #{sku}: #{error_msg}"
         # Prevent the destruction - throw an error to halt the transaction
-        raise "Failed to remove item from eBay: #{delete_result[:error]}"
+        raise "Failed to remove item from eBay: #{error_msg}"
       end
     rescue => e
       Rails.logger.error "Error removing eBay inventory item: #{e.message}"
@@ -111,7 +125,14 @@ class ExternalAccountInventoryUnit < ApplicationRecord
 
   def ebay_item_not_found?(result)
     # Check if eBay returned a "not found" error, meaning item is already gone
-    result[:status_code] == 404 ||
-    (result.dig(:detailed_errors)&.any? { |error| error[:error_id] == 25001 }) == true
+    # Handle both hash format (for tests) and EbayApiResponse objects
+    status_code = result.respond_to?(:status_code) ? result.status_code : result[:status_code]
+    detailed_errors = result.respond_to?(:detailed_errors) ? result.detailed_errors : result[:detailed_errors]
+    
+    status_code == 404 ||
+    (detailed_errors&.any? { |error| 
+      error_id = error.respond_to?(:dig) ? error.dig(:errorId) || error.dig(:error_id) : error[:errorId] || error[:error_id]
+      [25001, 25710].include?(error_id)
+    }) == true
   end
 end

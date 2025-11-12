@@ -7,9 +7,53 @@
 
   <div class="columns">
     <div class="column is-8">
-      <div class="box">
+      <div class="box" id="ebay-inventory-form">
         <h1 class="title is-3">Add to eBay Inventory</h1>
         <p class="subtitle is-6">Review the details that will be sent to eBay</p>
+
+        <% if @error %>
+          <div class="notification is-danger">
+            <button class="delete" onclick="this.parentElement.remove()"></button>
+            <h4 class="title is-6">eBay Error</h4>
+            <p><strong><%= @error %></strong></p>
+            
+            <% if @error.match?(/authentication|expired|reconnect|302/i) %>
+              <div class="content mt-4">
+                <p class="has-text-weight-semibold">What to do:</p>
+                <ol>
+                  <li><%= link_to "Reconnect your eBay account", account_external_accounts_path(current_account), class: "has-text-link" %></li>
+                  <li>Try again after reconnecting</li>
+                </ol>
+              </div>
+            <% elsif @error.match?(/required|missing|field|location/i) %>
+              <div class="content mt-4">
+                <p class="has-text-weight-semibold">What to do:</p>
+                <ol>
+                  <li>Check that your product has a valid eBay category set</li>
+                  <li>Ensure all required product fields are filled out</li>
+                  <li>Make sure your inventory location is set up in eBay</li>
+                </ol>
+              </div>
+            <% elsif @error.match?(/category/i) %>
+              <div class="content mt-4">
+                <p class="has-text-weight-semibold">What to do:</p>
+                <ol>
+                  <li><%= link_to "Update your product's eBay category", edit_account_variant_path(current_account, @inventory_unit.variant), class: "has-text-link" %></li>
+                  <li>Choose a valid eBay category for this product type</li>
+                  <li>Save the changes and try again</li>
+                </ol>
+              </div>
+            <% elsif @error.match?(/rate limit|too many/i) %>
+              <div class="content mt-4">
+                <p class="has-text-weight-semibold">What to do:</p>
+                <ol>
+                  <li>Wait a few minutes before trying again</li>
+                  <li>eBay limits how many requests can be made per minute</li>
+                </ol>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
 
         <h2 class="title is-5">Listing Preview</h2>
         

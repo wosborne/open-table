@@ -1,1 +1,7 @@
-<%= turbo_stream.replace "ebay_marketplace", partial: "inventory_units/ebay_marketplace", locals: { inventory_unit: current_inventory_unit } %>
+<% if @error %>
+  <%= turbo_stream.update "ebay-inventory-form" do %>
+    <%= render "form_box", inventory_unit: @inventory_unit, external_account_inventory_unit: @external_account_inventory_unit, error: @error %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.replace "ebay_marketplace", partial: "inventory_units/ebay_marketplace", locals: { inventory_unit: current_inventory_unit } %>
+<% end %>

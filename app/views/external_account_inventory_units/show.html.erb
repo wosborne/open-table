@@ -1,6 +1,6 @@
 <% content_for :title, "eBay Listing Details" %>
 
-<div class="container">
+<div id="external_account_inventory_unit_<%= @external_account_inventory_unit.id %>" class="container">
   <div class="mb-5">
     <%= link_to "← Back to Inventory Unit", account_inventory_unit_path(current_account, @inventory_unit), class: "button is-text" %>
   </div>
@@ -97,27 +97,48 @@
         <hr>
 
         <div class="buttons">
-          <% unless @external_account_inventory_unit.published? %>
-            <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit), 
-                        method: :patch,
-                        class: "button is-success" do %>
-              <span class="icon">
-                <i class="fas fa-play"></i>
-              </span>
-              <span>Publish to eBay</span>
+          <% if @external_account_inventory_unit.published? %>
+            <%= form_with url: account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit),
+                          method: :patch,
+                          local: false,
+                          data: { 
+                            confirm: "End this eBay listing? This will remove it from eBay but keep it in your inventory."
+                          },
+                          class: "is-inline" do |form| %>
+              <%= form.hidden_field :action_type, value: 'end' %>
+              <%= form.button type: "submit", class: "button is-warning" do %>
+                <span class="icon">
+                  <i class="fas fa-stop"></i>
+                </span>
+                <span>End Listing</span>
+              <% end %>
+            <% end %>
+          <% else %>
+            <%= form_with url: account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit),
+                          method: :patch,
+                          local: false,
+                          class: "is-inline" do |form| %>
+              <%= form.hidden_field :action_type, value: 'publish' %>
+              <%= form.button type: "submit", class: "button is-success" do %>
+                <span class="icon">
+                  <i class="fas fa-play"></i>
+                </span>
+                <span>Publish to eBay</span>
+              <% end %>
             <% end %>
           <% end %>
 
-          <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit), 
-                      class: "button is-danger",
-                      data: { 
-                        turbo_method: :delete,
-                        confirm: "Remove this eBay listing? This will delete it from both eBay and your account." 
-                      } do %>
-            <span class="icon">
-              <i class="fas fa-trash"></i>
-            </span>
-            <span>Remove from eBay</span>
+          <%= form_with url: account_inventory_unit_external_account_inventory_unit_path(current_account, @inventory_unit, @external_account_inventory_unit),
+                        method: :delete,
+                        local: false,
+                        data: { confirm: "Remove this eBay listing? This will delete it from both eBay and your account." },
+                        class: "is-inline" do |form| %>
+            <%= form.button type: "submit", class: "button is-danger" do %>
+              <span class="icon">
+                <i class="fas fa-trash"></i>
+              </span>
+              <span>Remove from eBay</span>
+            <% end %>
           <% end %>
         </div>
       </div>

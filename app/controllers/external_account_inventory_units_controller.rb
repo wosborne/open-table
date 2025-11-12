@@ -20,23 +20,38 @@ class ExternalAccountInventoryUnitsController < InventoryUnitsController
   def create
     result = current_inventory_unit.add_to_ebay_inventory
     
-    if result[:success]
-      ebay_listing = result[:ebay_listing]
-      redirect_to account_inventory_unit_external_account_inventory_unit_path(current_account, current_inventory_unit, ebay_listing), 
-                  notice: "Successfully added to eBay inventory!"
-    else
-      @error = result[:message]
-      @inventory_unit = current_inventory_unit
-      @external_account_inventory_unit = ExternalAccountInventoryUnit.new
-      render :new
+    respond_to do |format|
+      if result[:success]
+        ebay_listing = result[:ebay_listing]
+        format.html { redirect_to account_inventory_unit_external_account_inventory_unit_path(current_account, current_inventory_unit, ebay_listing), notice: "Successfully added to eBay inventory!" }
+        format.turbo_stream { redirect_to account_inventory_unit_external_account_inventory_unit_path(current_account, current_inventory_unit, ebay_listing), notice: "Successfully added to eBay inventory!" }
+      else
+        @error = result[:message]
+        @inventory_unit = current_inventory_unit
+        @external_account_inventory_unit = ExternalAccountInventoryUnit.new
+        
+        format.html { render :new, status: :unprocessable_entity }
+        format.turbo_stream
+      end
     end
   end
 
   def update
     @inventory_unit = current_inventory_unit
-    result = current_inventory_unit.publish_ebay_offer
+    action = params[:action_type]
+    
+    case action
+    when 'publish'
+      result = current_inventory_unit.publish_ebay_offer
+    when 'end'
+      result = @external_account_inventory_unit.end_listing
+    else
+      result = { success: false, message: "Unknown action: #{action}" }
+    end
     
     if result[:success]
+      # Reload the external_account_inventory_unit to get updated data
+      @external_account_inventory_unit.reload
       render_response
     else
       @error = result[:message]

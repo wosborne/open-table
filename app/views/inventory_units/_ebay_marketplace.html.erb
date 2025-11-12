@@ -5,7 +5,7 @@
     
     <% if ebay_listing %>
       <% if !ebay_listing.published? %>
-        <div class="notification is-warning is-light">
+        <div class="notification is-light">
           <div class="level mb-2">
             <div class="level-left">
               <div class="level-item">
@@ -25,21 +25,12 @@
           
           <div class="buttons is-small mt-3">
             <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
-                        class: "button is-small is-success",
-                        data: { turbo_method: :patch, turbo_frame: "ebay_marketplace" } do %>
+                        class: "button is-small is-info",
+                        data: { turbo_frame: "_top" } do %>
               <span class="icon is-small">
-                <i class="fas fa-play"></i>
+                <i class="fas fa-cog"></i>
               </span>
-              <span>Publish Offer</span>
-            <% end %>
-            
-            <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
-                        class: "button is-small is-danger",
-                        data: { turbo_method: :delete, confirm: "Remove from eBay inventory? This will remove it from both eBay and your account." } do %>
-              <span class="icon is-small">
-                <i class="fas fa-trash"></i>
-              </span>
-              <span>Remove from eBay</span>
+              <span>Manage eBay Listing</span>
             <% end %>
           </div>
         </div>
@@ -74,12 +65,12 @@
           
           <div class="buttons is-small">
             <%= link_to account_inventory_unit_external_account_inventory_unit_path(current_account, inventory_unit, ebay_listing), 
-                        class: "button is-small is-danger",
-                        data: { turbo_method: :delete, confirm: "End this eBay listing?" } do %>
+                        class: "button is-small is-info",
+                        data: { turbo_frame: "_top" } do %>
               <span class="icon is-small">
-                <i class="fas fa-stop"></i>
+                <i class="fas fa-cog"></i>
               </span>
-              <span>End Listing</span>
+              <span>Manage eBay Listing</span>
             <% end %>
           </div>
         </div>

@@ -57,11 +57,11 @@ class EbayPolicyClient
   def get_all_fulfillment_policies
     result = @api_client.get("/sell/account/v1/fulfillment_policy", { marketplace_id: "EBAY_GB" })
     
-    if result[:success]
-      Rails.logger.info "Fetched fulfillment policies: #{result[:data].inspect}"
-      result[:data]['fulfillmentPolicies'] || []
+    if result.success?
+      Rails.logger.info "Fetched fulfillment policies: #{result.data.inspect}"
+      result.data['fulfillmentPolicies'] || []
     else
-      Rails.logger.error "Failed to fetch fulfillment policies: #{result[:error]}"
+      Rails.logger.error "Failed to fetch fulfillment policies: #{result.error}"
       []
     end
   end
@@ -86,8 +86,8 @@ class EbayPolicyClient
   def is_opted_into_business_policies?
     result = @api_client.get("/sell/account/v1/program/get_opted_in_programs")
     
-    if result[:success]
-      opted_in_programs = result[:data]['programs'] || []
+    if result.success?
+      opted_in_programs = result.data['programs'] || []
       
       business_policy_program = opted_in_programs.find do |program|
         program['programType'] == 'SELLING_POLICY_MANAGEMENT'
@@ -106,10 +106,10 @@ class EbayPolicyClient
     
     result = @api_client.post("/sell/account/v1/program/opt_in", payload)
     
-    if result[:success]
+    if result.success?
       { success: true, message: "Successfully opted into Business Policies Management. This can take up to 24 hours to process." }
     else
-      { success: false, message: "Failed to opt into Business Policies: #{result[:error]}" }
+      { success: false, message: "Failed to opt into Business Policies: #{result.error}" }
     end
   end
 
@@ -118,8 +118,8 @@ class EbayPolicyClient
   def get_policies(policy_type, response_key)
     result = @api_client.get("/sell/account/v1/#{policy_type}_policy", { marketplace_id: "EBAY_GB" })
     
-    if result[:success]
-      result[:data][response_key] || []
+    if result.success?
+      result.data[response_key] || []
     else
       []
     end

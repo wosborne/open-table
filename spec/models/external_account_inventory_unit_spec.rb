@@ -161,71 +161,6 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
     end
   end
 
-  describe "#perform_action" do
-    let(:unit) { create(:external_account_inventory_unit, external_account: ebay_account, inventory_unit: inventory_unit) }
-
-    describe "publish action" do
-      it "updates marketplace_data and returns success" do
-        result = unit.perform_action('publish')
-        
-        expect(result[:success]).to be true
-        expect(result[:message]).to include("Listed on Ebay successfully!")
-        
-        unit.reload
-        expect(unit.marketplace_data['status']).to eq('active')
-        expect(unit.marketplace_data['listed_at']).to be_present
-      end
-    end
-
-    describe "end action" do
-      it "updates status to ended" do
-        result = unit.perform_action('end')
-        
-        expect(result[:success]).to be true
-        expect(result[:message]).to include("Ebay listing ended")
-        
-        unit.reload
-        expect(unit.marketplace_data['status']).to eq('ended')
-      end
-    end
-
-    describe "relist action" do
-      it "updates status to active and sets new listed_at" do
-        result = unit.perform_action('relist')
-        
-        expect(result[:success]).to be true
-        expect(result[:message]).to include("Relisted on Ebay!")
-        
-        unit.reload
-        expect(unit.marketplace_data['status']).to eq('active')
-        expect(unit.marketplace_data['listed_at']).to be_present
-      end
-    end
-
-    describe "archive action" do
-      it "destroys the record" do
-        # Mock the eBay API call that happens during destroy
-        api_client = instance_double(EbayApiClient)
-        allow(EbayApiClient).to receive(:new).and_return(api_client)
-        allow(api_client).to receive(:delete).and_return({ success: true })
-        
-        result = unit.perform_action('archive')
-        
-        expect(result[:success]).to be true
-        expect(result[:message]).to include("Ebay listing archived")
-        expect { unit.reload }.to raise_error(ActiveRecord::RecordNotFound)
-      end
-    end
-
-    describe "unknown action" do
-      it "returns failure for unknown actions" do
-        result = unit.perform_action('unknown_action')
-        
-        expect(result[:success]).to be false
-        expect(result[:message]).to include("Unknown action: unknown_action")
-      end
-    end
-  end
 
   describe "eBay cleanup callbacks" do
     describe "#remove_from_ebay" do
@@ -234,6 +169,10 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
 
       before do
         allow(EbayApiClient).to receive(:new).and_return(api_client)
+        allow(api_client).to receive(:get_inventory_locations).and_return({ success: true, data: [] })
+        allow(api_client).to receive(:get_fulfillment_policies).and_return({ success: true, data: [] })
+        allow(api_client).to receive(:get_payment_policies).and_return({ success: true, data: [] })
+        allow(api_client).to receive(:get_return_policies).and_return({ success: true, data: [] })
       end
 
       context "when external account is eBay" do
@@ -266,6 +205,16 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
           allow(api_client).to receive(:delete).and_return({
             success: false,
             detailed_errors: [{ error_id: 25001 }]
+          })
+          expect(Rails.logger).to receive(:info).with(/already removed or not found/)
+          
+          unit.destroy
+        end
+
+        it "handles eBay resource not found error 25710 gracefully" do
+          allow(api_client).to receive(:delete).and_return({
+            success: false,
+            detailed_errors: [{ error_id: 25710 }]
           })
           expect(Rails.logger).to receive(:info).with(/already removed or not found/)
           
@@ -337,6 +286,16 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
 
       it "returns true for error_id 25001" do
         result = { detailed_errors: [{ error_id: 25001 }] }
+        expect(unit.send(:ebay_item_not_found?, result)).to be true
+      end
+
+      it "returns true for error_id 25710 (resource not found)" do
+        result = { detailed_errors: [{ error_id: 25710 }] }
+        expect(unit.send(:ebay_item_not_found?, result)).to be true
+      end
+
+      it "returns true for errorId 25710 in eBay response format" do
+        result = { detailed_errors: [{ errorId: 25710 }] }
         expect(unit.send(:ebay_item_not_found?, result)).to be true
       end
 
