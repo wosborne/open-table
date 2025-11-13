@@ -148,7 +148,20 @@ class ExternalAccountsController < AccountsController
       Rails.logger.info "Controller received response_xml: #{response_xml.inspect}"
 
       if response_xml.present?
-        @notification_data = parse_notification_preferences(response_xml)
+        if response_xml.is_a?(Hash) && response_xml[:combined]
+          # Parse both Application and User XML separately, then combine data
+          Rails.logger.info "Parsing Application XML separately"
+          app_data = parse_notification_preferences(response_xml[:application_xml])
+          Rails.logger.info "App data parsed: #{app_data}"
+          
+          Rails.logger.info "Parsing User XML separately"  
+          user_data = parse_notification_preferences(response_xml[:user_xml])
+          Rails.logger.info "User data parsed: #{user_data}"
+          
+          @notification_data = app_data.merge(enabled_events: user_data[:enabled_events])
+        else
+          @notification_data = parse_notification_preferences(response_xml)
+        end
       else
         @notification_data = { error: "Failed to retrieve notification preferences - empty response" }
       end
