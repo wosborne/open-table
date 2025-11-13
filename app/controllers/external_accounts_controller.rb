@@ -203,16 +203,16 @@ class ExternalAccountsController < AccountsController
   end
 
   def parse_notification_preferences(xml_response)
-    require 'rexml/document'
+    require 'nokogiri'
     
     Rails.logger.info "Parsing XML response: #{xml_response}"
     
-    doc = REXML::Document.new(xml_response)
+    doc = Nokogiri::XML(xml_response)
     
     # Check if the response was successful
-    ack_element = doc.elements['//Ack']
+    ack_element = doc.at_xpath('//xmlns:Ack', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
     if ack_element && ack_element.text != 'Success'
-      error_message = doc.elements['//ShortMessage']&.text || 'Unknown error'
+      error_message = doc.at_xpath('//xmlns:ShortMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text || 'Unknown error'
       return { error: error_message }
     end
     
@@ -227,20 +227,20 @@ class ExternalAccountsController < AccountsController
     }
     
     # Extract application delivery preferences
-    app_prefs = doc.elements['//ApplicationDeliveryPreferences']
+    app_prefs = doc.at_xpath('//xmlns:ApplicationDeliveryPreferences', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
     if app_prefs
-      data[:webhook_url] = app_prefs.elements['ApplicationURL']&.text
-      data[:alert_enabled] = app_prefs.elements['AlertEnable']&.text == 'Enable'
-      data[:application_enabled] = app_prefs.elements['ApplicationEnable']&.text == 'Enable'
-      data[:payload_type] = app_prefs.elements['NotificationPayloadType']&.text
-      data[:device_type] = app_prefs.elements['DeviceType']&.text
-      data[:payload_version] = app_prefs.elements['PayloadVersion']&.text
+      data[:webhook_url] = app_prefs.at_xpath('xmlns:ApplicationURL', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      data[:alert_enabled] = app_prefs.at_xpath('xmlns:AlertEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text == 'Enable'
+      data[:application_enabled] = app_prefs.at_xpath('xmlns:ApplicationEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text == 'Enable'
+      data[:payload_type] = app_prefs.at_xpath('xmlns:NotificationPayloadType', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      data[:device_type] = app_prefs.at_xpath('xmlns:DeviceType', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      data[:payload_version] = app_prefs.at_xpath('xmlns:PayloadVersion', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
     end
     
     # Extract enabled notification events
-    doc.elements.each('//NotificationEnable') do |notification|
-      event_type = notification.elements['EventType']&.text
-      event_enabled = notification.elements['EventEnable']&.text == 'Enable'
+    doc.xpath('//xmlns:NotificationEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').each do |notification|
+      event_type = notification.at_xpath('xmlns:EventType', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      event_enabled = notification.at_xpath('xmlns:EventEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text == 'Enable'
       
       if event_type && event_enabled
         data[:enabled_events] << event_type
