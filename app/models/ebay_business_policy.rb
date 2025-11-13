@@ -9,11 +9,11 @@ class EbayBusinessPolicy < ApplicationRecord
 
   validates :ebay_policy_id, presence: true, uniqueness: true, if: :persisted?
 
-  attr_accessor :ebay_policy_data
+  attr_accessor :ebay_policy_data, :skip_ebay_deletion
 
   before_create :create_policy_on_ebay
   before_update :update_policy_on_ebay
-  before_destroy :delete_policy_on_ebay
+  before_destroy :delete_policy_on_ebay, unless: :destroyed_by_association
   after_create :cache_ebay_policy_data_on_create
   after_update :cache_ebay_policy_data_on_update
 
@@ -146,6 +146,21 @@ class EbayBusinessPolicy < ApplicationRecord
   end
 
   def delete_policy_on_ebay
+    # Debug the external account state
+    Rails.logger.info "External account state - destroyed?: #{external_account&.destroyed?}, marked_for_destruction?: #{external_account&.marked_for_destruction?}"
+
+    # Skip eBay deletion if external account is being destroyed (cascade deletion)
+    if external_account&.destroyed? || external_account&.marked_for_destruction?
+      Rails.logger.info "Skipping eBay deletion for policy #{ebay_policy_id} (external account cascade deletion)"
+      return true
+    end
+
+    Rails.logger.info "delete_policy_on_ebay called for policy #{id} (#{ebay_policy_id}), skip_ebay_deletion=#{skip_ebay_deletion}"
+    if skip_ebay_deletion
+      Rails.logger.info "Skipping eBay deletion for policy #{ebay_policy_id} (manual skip flag)"
+      return true
+    end
+
     return true unless ebay_policy_id.present?
 
     ebay_client = EbayApiClient.new(external_account)
@@ -153,7 +168,7 @@ class EbayBusinessPolicy < ApplicationRecord
     api_method = "delete_#{policy_type}_policy"
     response = ebay_client.public_send(api_method, ebay_policy_id)
 
-    if response && [200, 204].include?(response.code)
+    if response && [ 200, 204 ].include?(response.code)
       # Clear cache after successful deletion
       cache_key = "ebay_policy_#{ebay_policy_id}"
       Rails.cache.delete(cache_key)

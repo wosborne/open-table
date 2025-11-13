@@ -1,10 +1,8 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  config.hosts << "64fbd59ed37a.ngrok-free.app"
-  config.hosts << "caa4a01837b2.ngrok-free.app"
-  # Allow any ngrok host for development
-  config.hosts << /.*\.ngrok-free\.app$/
+  config.hosts << "unruffled-winterly-khadijah.ngrok-free.dev"
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Make code changes take effect immediately without server restart.

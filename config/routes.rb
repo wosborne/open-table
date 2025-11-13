@@ -30,6 +30,7 @@ Rails.application.routes.draw do
         get :payment_policies
         get :return_policies
         get :inventory_locations
+        get :notification_preferences
       end
       
       resources :fulfillment_policies, only: [:new, :create, :edit, :update, :show, :destroy] do
@@ -103,5 +104,6 @@ Rails.application.routes.draw do
 
   get "/external_accounts/shopify_callback", to: "external_accounts#shopify_callback"
   get "/external_accounts/ebay_callback", to: "external_accounts#ebay_callback"
+  get "/external_accounts/ebay_authn_auth_callback", to: "external_accounts#ebay_authn_auth_callback"
   match "/ebay/marketplace_notifications", to: "ebay_notifications#marketplace_notifications", via: [:get, :post]
 end

@@ -9,7 +9,7 @@
     <div class="navbar-end">
       <div class="navbar-item has-dropdown" data-controller="dropdown" data-dropdown-target="dropdown">
         <div class="navbar-link" data-action="click->dropdown#toggle">Account</div>
-        <div class="navbar-dropdown is-boxed is-active">
+        <div class="navbar-dropdown is-boxed is-active is-right">
           <% if current_account %>
             <%= link_to "Account Settings", account_path(current_account), class: "navbar-item" %>
           <% end %>

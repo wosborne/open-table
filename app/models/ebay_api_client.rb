@@ -1,7 +1,7 @@
 class EbayApiClient
   include EbayApiErrorHandling
 
-  attr_reader :external_account, :api_base_url, :access_token
+  attr_reader :external_account, :api_base_url, :access_token, :last_raw_xml_response
 
   def initialize(external_account)
     @external_account = external_account
@@ -166,7 +166,7 @@ class EbayApiClient
       url = "#{trading_api_base}#{endpoint}"
 
       headers = {
-        "X-EBAY-API-COMPATIBILITY-LEVEL" => "1193",
+        "X-EBAY-API-COMPATIBILITY-LEVEL" => "1173",
         "X-EBAY-API-CALL-NAME" => call_name,
         "X-EBAY-API-SITEID" => "3", # eBay GB
         "X-EBAY-API-IAF-TOKEN" => @access_token, # OAuth token for Trading API
@@ -174,6 +174,7 @@ class EbayApiClient
       }
 
       response = RestClient.post(url, xml_payload, headers)
+      @last_raw_xml_response = response.body
       result = handle_xml_response(response)
 
       # Check if the XML response indicates token expiration and retry if needed
@@ -186,6 +187,7 @@ class EbayApiClient
           # Update headers with new token
           headers["X-EBAY-API-IAF-TOKEN"] = @access_token
           response = RestClient.post(url, xml_payload, headers)
+          @last_raw_xml_response = response.body
           result = handle_xml_response(response)
         else
           Rails.logger.error "XML API token refresh failed"

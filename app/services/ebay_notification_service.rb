@@ -25,18 +25,34 @@ class EbayNotificationService
   end
 
   def get_notification_preferences
-    xml_payload = build_get_notification_preferences_xml
-    
     Rails.logger.info "Getting eBay notification preferences for: #{@external_account.ebay_username}"
     
-    response = @client.trading_api_call(xml_payload)
+    # Get both Application and User level preferences
+    app_xml = build_get_notification_preferences_xml("Application")
+    user_xml = build_get_notification_preferences_xml("User")
     
-    if response[:success]
-      Rails.logger.info "Successfully retrieved eBay notification preferences"
-      Rails.logger.info "Response: #{response[:body]}"
-      response[:body]
+    # Get Application level (webhook URL, general settings)
+    app_response = @client.trading_api_call(app_xml)
+    
+    # Get User level (individual event subscriptions)  
+    user_response = @client.trading_api_call(user_xml)
+    
+    if app_response[:success] && user_response[:success]
+      Rails.logger.info "Successfully retrieved both Application and User notification preferences"
+      
+      # Combine both responses
+      app_xml_body = @client.last_raw_xml_response
+      
+      # Make second call and get User preferences
+      @client.trading_api_call(user_xml)
+      user_xml_body = @client.last_raw_xml_response
+      
+      # Combine the data by merging the XML responses
+      combined_xml = merge_notification_preferences_xml(app_xml_body, user_xml_body)
+      Rails.logger.info "Combined XML Response: #{combined_xml}"
+      combined_xml
     else
-      Rails.logger.error "Failed to get eBay notification preferences: #{response[:error]}"
+      Rails.logger.error "Failed to get eBay notification preferences"
       nil
     end
   rescue => e
@@ -52,9 +68,6 @@ class EbayNotificationService
     <<~XML
       <?xml version="1.0" encoding="utf-8"?>
       <SetNotificationPreferencesRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-        <RequesterCredentials>
-          <eBayAuthToken>#{@external_account.api_token}</eBayAuthToken>
-        </RequesterCredentials>
         <ApplicationDeliveryPreferences>
           <AlertEnable>Enable</AlertEnable>
           <ApplicationEnable>Enable</ApplicationEnable>
@@ -130,16 +143,38 @@ class EbayNotificationService
     end
   end
 
-  def build_get_notification_preferences_xml
+  def build_get_notification_preferences_xml(preference_level = "User")
     <<~XML
       <?xml version="1.0" encoding="utf-8"?>
       <GetNotificationPreferencesRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-        <RequesterCredentials>
-          <eBayAuthToken>#{@external_account.api_token}</eBayAuthToken>
-        </RequesterCredentials>
-        <PreferenceLevel>Application</PreferenceLevel>
+        <PreferenceLevel>#{preference_level}</PreferenceLevel>
       </GetNotificationPreferencesRequest>
     XML
   end
+
+  def merge_notification_preferences_xml(app_xml, user_xml)
+    require 'nokogiri'
+    
+    # Parse both XML responses
+    app_doc = Nokogiri::XML(app_xml)
+    user_doc = Nokogiri::XML(user_xml)
+    
+    # Extract ApplicationDeliveryPreferences from app response
+    app_prefs = app_doc.at_xpath("//xmlns:ApplicationDeliveryPreferences", "xmlns" => "urn:ebay:apis:eBLBaseComponents")
+    
+    # Extract UserDeliveryPreferenceArray from user response  
+    user_prefs = user_doc.at_xpath("//xmlns:UserDeliveryPreferenceArray", "xmlns" => "urn:ebay:apis:eBLBaseComponents")
+    
+    # Create combined response based on app response structure
+    combined_doc = app_doc.dup
+    
+    # Add UserDeliveryPreferenceArray if it exists
+    if user_prefs && app_prefs
+      app_prefs.add_next_sibling(user_prefs)
+    end
+    
+    combined_doc.to_xml
+  end
+
 
 end

@@ -48,8 +48,8 @@ class ExternalAccountsController < AccountsController
     user = User.find_by(id: state["user_id"], state_nonce: state["nonce"]) if state
 
     if user
-      ebay_auth.create_external_account_for(user)
-      redirect_to account_tables_path(user.accounts.first), notice: "eBay account connected successfully!"
+      external_account = ebay_auth.create_external_account_for(user)
+      redirect_to account_external_account_path(user.accounts.first, external_account), notice: "eBay account connected successfully!"
     else
       redirect_to root_path, alert: "Invalid authentication state"
     end
@@ -57,6 +57,7 @@ class ExternalAccountsController < AccountsController
     Rails.logger.error "eBay authentication failed: #{e.message}"
     redirect_to root_path, alert: "eBay authentication failed: #{e.message}"
   end
+
 
 
   def show
@@ -139,6 +140,26 @@ class ExternalAccountsController < AccountsController
     render turbo_frame: "inventory-locations-frame"
   end
 
+  def notification_preferences
+    begin
+      notification_service = EbayNotificationService.new(@external_account)
+      response_xml = notification_service.get_notification_preferences
+      
+      Rails.logger.info "Controller received response_xml: #{response_xml.inspect}"
+
+      if response_xml.present?
+        @notification_data = parse_notification_preferences(response_xml)
+      else
+        @notification_data = { error: "Failed to retrieve notification preferences - empty response" }
+      end
+    rescue => e
+      Rails.logger.error "Failed to fetch eBay notification preferences: #{e.message}"
+      @notification_data = { error: e.message }
+    end
+
+    render turbo_frame: "notification-preferences-frame"
+  end
+
   def edit
     @locations = current_account.locations
   end
@@ -179,5 +200,57 @@ class ExternalAccountsController < AccountsController
 
   def external_account_update_params
     params.require(:external_account).permit(:inventory_location_id)
+  end
+
+  def parse_notification_preferences(xml_response)
+    require 'rexml/document'
+    
+    Rails.logger.info "Parsing XML response: #{xml_response}"
+    
+    doc = REXML::Document.new(xml_response)
+    
+    # Check if the response was successful
+    ack_element = doc.elements['//Ack']
+    if ack_element && ack_element.text != 'Success'
+      error_message = doc.elements['//ShortMessage']&.text || 'Unknown error'
+      return { error: error_message }
+    end
+    
+    data = {
+      webhook_url: nil,
+      alert_enabled: false,
+      application_enabled: false,
+      enabled_events: [],
+      payload_type: nil,
+      device_type: nil,
+      payload_version: nil
+    }
+    
+    # Extract application delivery preferences
+    app_prefs = doc.elements['//ApplicationDeliveryPreferences']
+    if app_prefs
+      data[:webhook_url] = app_prefs.elements['ApplicationURL']&.text
+      data[:alert_enabled] = app_prefs.elements['AlertEnable']&.text == 'Enable'
+      data[:application_enabled] = app_prefs.elements['ApplicationEnable']&.text == 'Enable'
+      data[:payload_type] = app_prefs.elements['NotificationPayloadType']&.text
+      data[:device_type] = app_prefs.elements['DeviceType']&.text
+      data[:payload_version] = app_prefs.elements['PayloadVersion']&.text
+    end
+    
+    # Extract enabled notification events
+    doc.elements.each('//NotificationEnable') do |notification|
+      event_type = notification.elements['EventType']&.text
+      event_enabled = notification.elements['EventEnable']&.text == 'Enable'
+      
+      if event_type && event_enabled
+        data[:enabled_events] << event_type
+      end
+    end
+    
+    Rails.logger.info "Parsed notification data: #{data}"
+    data
+  rescue => e
+    Rails.logger.error "Error parsing notification preferences XML: #{e.message}"
+    { error: "Failed to parse notification preferences: #{e.message}" }
   end
 end

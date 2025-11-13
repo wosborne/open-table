@@ -4,9 +4,13 @@ class EbayWebhooksController < ApplicationController
   before_action :verify_ebay_webhook
 
   def notifications
-    Rails.logger.info "eBay Notification received"
+    Rails.logger.info "="*50
+    Rails.logger.info "eBay Notification received at: #{Time.current}"
     Rails.logger.info "Content-Type: #{request.content_type}"
-    Rails.logger.info "Request body: #{request.raw_post}"
+    Rails.logger.info "User-Agent: #{request.headers['User-Agent']}"
+    Rails.logger.info "X-EBAY-SIGNATURE: #{request.headers['X-EBAY-SIGNATURE']&.truncate(50)}"
+    Rails.logger.info "Request body (#{request.raw_post.length} chars): #{request.raw_post}"
+    Rails.logger.info "="*50
     
     body = request.raw_post
     
@@ -27,7 +31,7 @@ class EbayWebhooksController < ApplicationController
       notification.mark_as_verified! if request.content_type&.include?('application/json')
       
       if notification.external_account
-        Rails.logger.info "Saved notification ID: #{notification.id} for account: #{notification.external_account.username}"
+        Rails.logger.info "Saved notification ID: #{notification.id} for account: #{notification.external_account.id}"
         process_notification(body, notification)
       else
         Rails.logger.warn "Could not identify external account for notification ID: #{notification.id}"

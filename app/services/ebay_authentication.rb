@@ -34,6 +34,11 @@ class EbayAuthentication
     token_response = JSON.parse(request_access_token.body)
     access_token = token_response["access_token"]
     refresh_token = token_response["refresh_token"]
+    
+    # Log token details for debugging
+    Rails.logger.info "eBay OAuth token response: #{token_response.inspect}"
+    Rails.logger.info "Token type: #{token_response['token_type']}"
+    Rails.logger.info "Expires in: #{token_response['expires_in']} seconds"
 
     # Remove existing eBay account for this user
     user.accounts.first.external_accounts.find_by(service_name: "ebay")&.destroy

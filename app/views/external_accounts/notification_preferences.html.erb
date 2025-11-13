@@ -1,0 +1,32 @@
+<turbo-frame id="notification-preferences-frame">
+  <div class="content mt-5">
+    <h4 class="title is-5">Notification Preferences</h4>
+    
+    <% if @notification_data[:error] %>
+      <div class="notification is-warning">
+        <strong>Error:</strong> <%= @notification_data[:error] %>
+        <% if @notification_data[:error].include?("token") %>
+          <br>
+          <small>Your eBay token may have expired. Try reconnecting your eBay account.</small>
+        <% end %>
+      </div>
+    <% else %>
+      <% if @notification_data[:enabled_events].any? %>
+        <div class="tags">
+          <% @notification_data[:enabled_events].each do |event| %>
+            <span class="tag is-success is-light"><%= event.humanize %></span>
+          <% end %>
+        </div>
+        
+        <div class="content is-small mt-3">
+          <p><strong><%= @notification_data[:enabled_events].count %></strong> event types enabled</p>
+        </div>
+      <% else %>
+        <div class="notification is-warning">
+          <strong>No notification events are configured.</strong><br>
+          <small>Please reconnect your eBay account to configure notifications.</small>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</turbo-frame>
