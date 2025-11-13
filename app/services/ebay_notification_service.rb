@@ -217,22 +217,9 @@ class EbayNotificationService
   end
 
   def webhook_endpoint_url
-    host = webhook_host
-    Rails.application.routes.url_helpers.ebay_webhooks_url(host: host, protocol: 'https')
-  end
-
-  def webhook_host
-    if Rails.env.production?
-      Rails.application.credentials.dig(:app, :production_host) || "your-app.com"
-    else
-      # Extract host from eBay callback URL
-      callback_url = Rails.application.credentials.dig(:ebay, :callback_url)
-      if callback_url
-        URI.parse(callback_url).host
-      else
-        "localhost:3000"
-      end
-    end
+    webhook_url = Rails.application.credentials.dig(:notification_webhook_url)
+    raise "notification_webhook_url not configured in credentials" if webhook_url.blank?
+    webhook_url
   end
 
   def build_get_notification_preferences_xml(preference_level = "User")
