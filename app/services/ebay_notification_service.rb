@@ -217,8 +217,8 @@ class EbayNotificationService
   end
 
   def webhook_endpoint_url
-    webhook_url = Rails.application.credentials.dig(:notification_webhook_url)
-    raise "notification_webhook_url not configured in credentials" if webhook_url.blank?
+    webhook_url = Rails.application.credentials.dig(:ebay, :notification_webhook_url)
+    raise "ebay.notification_webhook_url not configured in credentials" if webhook_url.blank?
     webhook_url
   end
 
