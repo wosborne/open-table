@@ -94,7 +94,6 @@ class EbayNotificationService
           <ApplicationEnable>Enable</ApplicationEnable>
           <ApplicationURL>#{webhook_url}</ApplicationURL>
           <DeviceType>Platform</DeviceType>
-          <NotificationPayloadType>SOAP12</NotificationPayloadType>
         </ApplicationDeliveryPreferences>
       </SetNotificationPreferencesRequest>
     XML
