@@ -81,6 +81,26 @@ class EbayNotificationService
     nil
   end
 
+  def get_notification_usage
+    Rails.logger.info "Getting eBay notification usage for: #{@external_account.ebay_username}"
+    
+    usage_xml = build_get_notification_usage_xml
+    response = @client.trading_api_call(usage_xml)
+    
+    if response[:success]
+      Rails.logger.info "Successfully retrieved notification usage"
+      xml_body = @client.last_raw_xml_response
+      Rails.logger.info "Usage XML: #{xml_body}"
+      xml_body
+    else
+      Rails.logger.error "Failed to get notification usage: #{response[:error]}"
+      nil
+    end
+  rescue => e
+    Rails.logger.error "Error getting eBay notification usage: #{e.message}"
+    nil
+  end
+
   private
 
   def build_application_preferences_xml
@@ -227,6 +247,24 @@ class EbayNotificationService
       <GetNotificationPreferencesRequest xmlns="urn:ebay:apis:eBLBaseComponents">
         <PreferenceLevel>#{preference_level}</PreferenceLevel>
       </GetNotificationPreferencesRequest>
+    XML
+  end
+
+  def build_get_notification_usage_xml
+    # eBay documentation says 72 hours, but seems to have stricter limits in practice
+    # Try 48 hours to be safe
+    start_time = 48.hours.ago.utc.iso8601
+    end_time = Time.current.utc.iso8601
+    
+    Rails.logger.info "GetNotificationsUsage StartTime: #{start_time}"
+    Rails.logger.info "GetNotificationsUsage EndTime: #{end_time}"
+    
+    <<~XML
+      <?xml version="1.0" encoding="utf-8"?>
+      <GetNotificationsUsageRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+        <StartTime>#{start_time}</StartTime>
+        <EndTime>#{end_time}</EndTime>
+      </GetNotificationsUsageRequest>
     XML
   end
 

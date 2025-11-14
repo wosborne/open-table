@@ -165,9 +165,18 @@ class ExternalAccountsController < AccountsController
       else
         @notification_data = { error: "Failed to retrieve notification preferences - empty response" }
       end
+
+      # Get notification usage stats
+      usage_xml = notification_service.get_notification_usage
+      if usage_xml.present?
+        @notification_usage = parse_notification_usage(usage_xml)
+      else
+        @notification_usage = { error: "Failed to retrieve notification usage" }
+      end
     rescue => e
       Rails.logger.error "Failed to fetch eBay notification preferences: #{e.message}"
       @notification_data = { error: e.message }
+      @notification_usage = { error: e.message }
     end
 
     render turbo_frame: "notification-preferences-frame"
@@ -265,5 +274,66 @@ class ExternalAccountsController < AccountsController
   rescue => e
     Rails.logger.error "Error parsing notification preferences XML: #{e.message}"
     { error: "Failed to parse notification preferences: #{e.message}" }
+  end
+
+  def parse_notification_usage(xml_response)
+    require 'nokogiri'
+    
+    Rails.logger.info "Parsing notification usage XML: #{xml_response}"
+    
+    doc = Nokogiri::XML(xml_response)
+    
+    # Check if the response was successful
+    ack_element = doc.at_xpath('//xmlns:Ack', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
+    if ack_element && ack_element.text != 'Success'
+      error_message = doc.at_xpath('//xmlns:ShortMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text || 'Unknown error'
+      return { error: error_message }
+    end
+    
+    data = {
+      start_time: nil,
+      end_time: nil,
+      notification_statistics: [],
+      total_notifications: 0,
+      total_failed_notifications: 0
+    }
+    
+    # Extract time range
+    data[:start_time] = doc.at_xpath('//xmlns:StartTime', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+    data[:end_time] = doc.at_xpath('//xmlns:EndTime', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+    
+    # Extract notification statistics - GetNotificationsUsage returns aggregate stats, not per-event-type
+    stats_element = doc.at_xpath('//xmlns:NotificationStatistics', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
+    if stats_element
+      delivered_count = stats_element.at_xpath('xmlns:DeliveredCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
+      error_count = stats_element.at_xpath('xmlns:ErrorCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
+      expired_count = stats_element.at_xpath('xmlns:ExpiredCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
+      queued_new_count = stats_element.at_xpath('xmlns:QueuedNewCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
+      queued_pending_count = stats_element.at_xpath('xmlns:QueuedPendingCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
+      
+      # Calculate totals
+      total_failed = error_count + expired_count
+      total_delivered = delivered_count
+      total_pending = queued_new_count + queued_pending_count
+      total_notifications = total_delivered + total_failed + total_pending
+      
+      data[:total_notifications] = total_notifications
+      data[:total_failed_notifications] = total_failed
+      data[:total_delivered] = total_delivered
+      data[:total_pending] = total_pending
+      data[:breakdown] = {
+        delivered: delivered_count,
+        errors: error_count,
+        expired: expired_count,
+        queued_new: queued_new_count,
+        queued_pending: queued_pending_count
+      }
+    end
+    
+    Rails.logger.info "Parsed notification usage data: #{data}"
+    data
+  rescue => e
+    Rails.logger.error "Error parsing notification usage XML: #{e.message}"
+    { error: "Failed to parse notification usage: #{e.message}" }
   end
 end
