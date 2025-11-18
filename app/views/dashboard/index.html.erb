@@ -1,18 +1,36 @@
 <% content_for :title, "Dashboard - Setup Progress" %>
 
 <div class="container">
-  <section class="section">
-    <h1 class="title">Welcome to Phone Flipr</h1>
-    <h2 class="subtitle">Let's get your eBay account set up for selling</h2>
+  <h1 class="title">Welcome to Phone Flipr</h1>
+  <h2 class="subtitle">Let's get your eBay account set up for selling</h2>
 
-    <%= render 'setup_progress' %>
+  <%= render 'setup_progress' %>
 
-    <% if @onboarding_status[:is_complete] %>
-      <% if @has_products %>
-        <div class="box mt-5">
-          <h3 class="title is-4">Next Steps</h3>
-          
-          <div class="notification is-success is-light mb-4">
+  <% if @onboarding_status[:is_complete] %>
+    <% if @has_products %>
+      <div class="box mt-5">
+        <h3 class="title is-4">Next Steps</h3>
+        
+        <div class="notification is-success is-light mb-4">
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <span class="icon">
+                  <i class="fas fa-check-circle"></i>
+                </span>
+              </div>
+              <div class="level-item">
+                <div>
+                  <p class="title is-5">🎉 Setup Complete!</p>
+                  <p class="subtitle is-6">Your eBay account and first product are ready.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <% if @has_variants %>
+          <div class="notification is-success is-light">
             <div class="level">
               <div class="level-left">
                 <div class="level-item">
@@ -22,15 +40,21 @@
                 </div>
                 <div class="level-item">
                   <div>
-                    <p class="title is-5">🎉 Setup Complete!</p>
-                    <p class="subtitle is-6">Your eBay account and first product are ready.</p>
+                    <p class="title is-5">✅ Product Variants Created!</p>
+                    <p class="subtitle is-6">Your products have variants ready for inventory tracking.</p>
                   </div>
+                </div>
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <%= link_to "View Variants", account_variants_path(current_account), 
+                              class: "button is-success is-small" %>
                 </div>
               </div>
             </div>
           </div>
 
-          <% if @has_variants %>
+          <% if @has_inventory_units %>
             <div class="notification is-success is-light">
               <div class="level">
                 <div class="level-left">
@@ -41,69 +65,19 @@
                   </div>
                   <div class="level-item">
                     <div>
-                      <p class="title is-5">✅ Product Variants Created!</p>
-                      <p class="subtitle is-6">Your products have variants ready for inventory tracking.</p>
+                      <p class="title is-5">✅ Inventory Units Created!</p>
+                      <p class="subtitle is-6">Your inventory is tracked and ready for eBay listing.</p>
                     </div>
                   </div>
                 </div>
                 <div class="level-right">
                   <div class="level-item">
-                    <%= link_to "View Variants", account_variants_path(current_account), 
+                    <%= link_to "View Inventory", account_inventory_units_path(current_account), 
                                 class: "button is-success is-small" %>
                   </div>
                 </div>
               </div>
             </div>
-
-            <% if @has_inventory_units %>
-              <div class="notification is-success is-light">
-                <div class="level">
-                  <div class="level-left">
-                    <div class="level-item">
-                      <span class="icon">
-                        <i class="fas fa-check-circle"></i>
-                      </span>
-                    </div>
-                    <div class="level-item">
-                      <div>
-                        <p class="title is-5">✅ Inventory Units Created!</p>
-                        <p class="subtitle is-6">Your inventory is tracked and ready for eBay listing.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="level-right">
-                    <div class="level-item">
-                      <%= link_to "View Inventory", account_inventory_units_path(current_account), 
-                                  class: "button is-success is-small" %>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            <% else %>
-              <div class="notification is-info is-light">
-                <div class="level">
-                  <div class="level-left">
-                    <div class="level-item">
-                      <span class="icon">
-                        <i class="fas fa-plus-circle"></i>
-                      </span>
-                    </div>
-                    <div class="level-item">
-                      <div>
-                        <p class="title is-5">Create Inventory Units</p>
-                        <p class="subtitle is-6">Add inventory units to track individual items and list them on eBay.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="level-right">
-                    <div class="level-item">
-                      <%= link_to "Create Inventory", new_account_inventory_unit_path(current_account), 
-                                  class: "button is-success" %>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            <% end %>
           <% else %>
             <div class="notification is-info is-light">
               <div class="level">
@@ -115,25 +89,49 @@
                   </div>
                   <div class="level-item">
                     <div>
-                      <p class="title is-5">Create Product Variants</p>
-                      <p class="subtitle is-6">Add variants with different options like size, color, or condition to start tracking inventory.</p>
+                      <p class="title is-5">Create Inventory Units</p>
+                      <p class="subtitle is-6">Add inventory units to track individual items and list them on eBay.</p>
                     </div>
                   </div>
                 </div>
                 <div class="level-right">
                   <div class="level-item">
-                    <%= link_to "Create Variants", new_account_variant_path(current_account), 
+                    <%= link_to "Create Inventory", new_account_inventory_unit_path(current_account), 
                                 class: "button is-success" %>
                   </div>
                 </div>
               </div>
             </div>
           <% end %>
-        </div>
-      <% else %>
-        <%= render 'setup_first_product' %>
-      <% end %>
+        <% else %>
+          <div class="notification is-info is-light">
+            <div class="level">
+              <div class="level-left">
+                <div class="level-item">
+                  <span class="icon">
+                    <i class="fas fa-plus-circle"></i>
+                  </span>
+                </div>
+                <div class="level-item">
+                  <div>
+                    <p class="title is-5">Create Product Variants</p>
+                    <p class="subtitle is-6">Add variants with different options like size, color, or condition to start tracking inventory.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <%= link_to "Create Variants", new_account_variant_path(current_account), 
+                              class: "button is-success" %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render 'setup_first_product' %>
     <% end %>
-    </div>
-  </section>
+  <% end %>
+  </div>
 </div>
