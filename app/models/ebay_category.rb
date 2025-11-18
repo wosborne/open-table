@@ -9,10 +9,10 @@ class EbayCategory
   def get_categories
     result = @api_client.get("/commerce/taxonomy/v1/category_tree/0", { marketplace_id: "EBAY_GB" })
     
-    if result[:success]
-      result[:data]
+    if result.success?
+      result.data
     else
-      { error: result[:error] }
+      { error: result.error }
     end
   end
 
@@ -28,10 +28,10 @@ class EbayCategory
 
     result = @api_client.get(endpoint, params)
     
-    if result[:success]
-      result[:data]
+    if result.success?
+      result.data
     else
-      { error: result[:error] }
+      { error: result.error }
     end
   end
 
@@ -44,10 +44,10 @@ class EbayCategory
         category_id: category_id
       })
       
-      if result[:success]
-        result[:data]
+      if result.success?
+        result.data
       else
-        { error: result[:error] }
+        { error: result.error }
       end
     end
   end
@@ -61,10 +61,10 @@ class EbayCategory
         q: query
       })
       
-      if result[:success]
-        result[:data]
+      if result.success?
+        result.data
       else
-        { error: result[:error] }
+        { error: result.error }
       end
     end
   end
@@ -75,8 +75,8 @@ class EbayCategory
       category_id: category_id
     })
     
-    if result[:success]
-      category_data = result[:data]
+    if result.success?
+      category_data = result.data
       
       specifics_result = get_item_specifics(category_id)
       
@@ -85,7 +85,7 @@ class EbayCategory
         item_specifics: specifics_result[:error] ? [] : specifics_result[:aspects] || []
       }
     else
-      { error: result[:error] }
+      { error: result.error }
     end
   end
 

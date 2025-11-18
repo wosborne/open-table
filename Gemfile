@@ -91,3 +91,5 @@ gem "view_component"
 gem "ebay-ruby"
 gem "omniauth-ebay-oauth"
 gem "omniauth-rails_csrf_protection"
+
+gem "noticed"

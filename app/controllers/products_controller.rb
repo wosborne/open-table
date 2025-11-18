@@ -15,7 +15,7 @@ class ProductsController < AccountsController
     @product = current_account.products.new(product_params)
 
     if @product.save
-      redirect_to account_products_path(current_account), notice: "Product was successfully created.", status: :see_other
+      redirect_to account_product_path(current_account, @product), notice: "Product was successfully created.", status: :see_other
     else
       load_ebay_categories
       render :new, status: :unprocessable_entity

@@ -4,43 +4,24 @@ class EbayWebhooksController < ApplicationController
   before_action :verify_ebay_webhook
 
   def notifications
-    Rails.logger.info "="*50
-    Rails.logger.info "eBay Notification received at: #{Time.current}"
-    Rails.logger.info "Content-Type: #{request.content_type}"
-    Rails.logger.info "User-Agent: #{request.headers['User-Agent']}"
-    Rails.logger.info "X-EBAY-SIGNATURE: #{request.headers['X-EBAY-SIGNATURE']&.truncate(50)}"
-    Rails.logger.info "Request body (#{request.raw_post.length} chars): #{request.raw_post}"
-    Rails.logger.info "="*50
-    
     body = request.raw_post
     
     if body.present?
       # Verify signature for JSON notifications
       if request.content_type&.include?('application/json')
         unless verify_json_signature(body, request)
-          Rails.logger.error "eBay JSON notification signature verification failed"
           head :unauthorized and return
         end
-        Rails.logger.info "eBay JSON notification signature verified"
       end
       
-      # Save notification to database (auto-detects JSON vs XML)
-      notification = EbayNotification.create_from_webhook(body, request)
-      
-      # Mark as verified if signature was checked
-      notification.mark_as_verified! if request.content_type&.include?('application/json')
-      
-      if notification.external_account
-        Rails.logger.info "Saved notification ID: #{notification.id} for account: #{notification.external_account.id}"
-        process_notification(body, notification)
+      # Extract notification data and queue processing
+      if request.content_type&.include?('application/json')
+        process_json_webhook(body)
       else
-        Rails.logger.warn "Could not identify external account for notification ID: #{notification.id}"
+        process_xml_webhook(body)
       end
-    else
-      Rails.logger.warn "Empty notification body received"
     end
     
-    # Always respond with 200 OK to acknowledge receipt
     head :ok
   end
 
@@ -85,66 +66,39 @@ class EbayWebhooksController < ApplicationController
 
   private
 
-  def process_notification(body, notification)
-    Rails.logger.info "Processing eBay Notification (#{notification.payload_type})"
-    
-    begin
-      if notification.is_json_notification?
-        process_json_notification(body, notification)
-      else
-        process_xml_notification(body, notification)
-      end
-      
-      notification.mark_as_processed!
-    rescue => e
-      Rails.logger.error "Error processing eBay notification: #{e.message}"
-      Rails.logger.error "Notification body: #{body}"
-      notification.mark_as_failed!(e) if notification
-    end
+  def process_json_webhook(json_body)
+    # Only handling XML transaction notifications for now
   end
 
-  def process_json_notification(json_body, notification)
-    Rails.logger.info "Processing eBay JSON Notification"
-    
-    parsed_json = JSON.parse(json_body)
-    topic = parsed_json.dig('metadata', 'topic')
-    
-    case topic
-    when 'ITEM_AVAILABILITY'
-      Rails.logger.info "Processing item availability notification"
-      process_item_availability_notification(parsed_json, notification)
-    when 'ITEM_PRICE_REVISION'
-      Rails.logger.info "Processing item price revision notification"
-      process_item_price_notification(parsed_json, notification)
-    when 'MARKETPLACE_ACCOUNT_DELETION'
-      Rails.logger.info "Processing marketplace account deletion notification"
-      process_account_deletion_notification(parsed_json, notification)
-    else
-      Rails.logger.info "Received JSON notification topic: #{topic} (not processing)"
-    end
-  end
-
-  def process_xml_notification(xml_body, notification)
-    Rails.logger.info "Processing eBay XML Notification"
-    
-    # Extract notification type and data from XML
+  def process_xml_webhook(xml_body)
     notification_type = extract_notification_type(xml_body)
+    recipient_user_id = extract_recipient_user_id(xml_body)
+    
+    unless recipient_user_id
+      Rails.logger.error "eBay webhook: No recipient_user_id found"
+      return
+    end
+    
+    # Find the external account by eBay username
+    external_account = ExternalAccount.find_by(service_name: 'ebay', ebay_username: recipient_user_id)
+    
+    unless external_account
+      Rails.logger.error "eBay webhook: No external account found for ebay_username: #{recipient_user_id}"
+      return
+    end
     
     case notification_type
-    when 'AuctionCheckoutComplete', 'FixedPriceTransaction', 'ItemSold'
-      Rails.logger.info "Processing order notification: #{notification_type}"
-      process_order_notification(xml_body, notification_type, notification)
+    when 'ItemTransactions'
+      TransactionNotificationHandler.new(external_account).process(xml_body)
     when 'ItemListed', 'ItemRevised', 'ItemClosed', 'ItemExtended', 'ItemSuspended', 'ItemUnsold', 'ItemOutOfStock', 'EndOfAuction'
-      Rails.logger.info "Processing listing notification: #{notification_type}"
-      process_listing_notification(xml_body, notification_type, notification)
+      # TODO: Handle other notification types if needed
+      Rails.logger.info "eBay webhook: Received #{notification_type} notification for #{recipient_user_id}"
     else
-      Rails.logger.info "Received notification type: #{notification_type} (not processing)"
+      Rails.logger.info "eBay webhook: Unknown notification type: #{notification_type}"
     end
   end
 
   def extract_notification_type(xml_body)
-    # Simple regex to extract the notification type from XML
-    # Example: <GetItemTransactionsResponse xmlns="urn:ebay:apis:eBLBaseComponents">
     if match = xml_body.match(/<(\w+)Response.*?xmlns=/)
       match[1].gsub('Get', '').gsub('Response', '')
     else
@@ -152,100 +106,55 @@ class EbayWebhooksController < ApplicationController
     end
   end
 
-  def process_item_availability_notification(parsed_json, notification)
-    Rails.logger.info "Processing item availability notification"
-    Rails.logger.info "Notification JSON: #{parsed_json}"
-    
-    # Extract item details
-    item_data = parsed_json.dig('notification', 'data')
-    item_id = item_data&.dig('itemId')
-    sku = item_data&.dig('sku')
-    quantity = item_data&.dig('availability', 'shipToLocationAvailability', 'quantity')
-    
-    Rails.logger.info "Item availability change - ID: #{item_id}, SKU: #{sku}, Quantity: #{quantity}"
-    
-    # TODO: Update local inventory based on eBay availability changes
-    # Find inventory unit by SKU and update status if quantity is 0
-    
-    Rails.logger.info "Item availability notification processed successfully"
+  def extract_transaction_id(xml_body)
+    if match = xml_body.match(/<TransactionID[^>]*>([^<]+)<\/TransactionID>/)
+      match[1]
+    end
   end
 
-  def process_item_price_notification(parsed_json, notification)
-    Rails.logger.info "Processing item price revision notification"
-    Rails.logger.info "Notification JSON: #{parsed_json}"
-    
-    # Extract price details
-    item_data = parsed_json.dig('notification', 'data')
-    item_id = item_data&.dig('itemId')
-    sku = item_data&.dig('sku')
-    new_price = item_data&.dig('price', 'value')
-    currency = item_data&.dig('price', 'currency')
-    
-    Rails.logger.info "Item price change - ID: #{item_id}, SKU: #{sku}, Price: #{new_price} #{currency}"
-    
-    # TODO: Update local pricing based on eBay price changes
-    
-    Rails.logger.info "Item price notification processed successfully"
+  def extract_item_id(xml_body)
+    if match = xml_body.match(/<ItemID[^>]*>([^<]+)<\/ItemID>/)
+      match[1]
+    end
   end
 
-  def process_account_deletion_notification(parsed_json, notification)
-    Rails.logger.info "Processing marketplace account deletion notification"
-    Rails.logger.info "Notification JSON: #{parsed_json}"
-    
-    # Extract account details
-    account_data = parsed_json.dig('notification', 'data')
-    seller_id = account_data&.dig('sellerId')
-    marketplace_id = account_data&.dig('marketplaceId')
-    
-    Rails.logger.info "Account deletion - Seller: #{seller_id}, Marketplace: #{marketplace_id}"
-    
-    # TODO: Handle account deletion (disable external account, clean up listings)
-    
-    Rails.logger.info "Account deletion notification processed successfully"
+  def extract_recipient_user_id(xml_body)
+    if match = xml_body.match(/<RecipientUserID[^>]*>([^<]+)<\/RecipientUserID>/)
+      match[1]
+    end
   end
 
-  def process_order_notification(xml_body, notification_type, notification)
-    Rails.logger.info "Processing #{notification_type} notification"
-    Rails.logger.info "Notification XML: #{xml_body}"
-    
-    Rails.logger.info "Order notification received and logged successfully"
+  def find_external_account_from_json(parsed_json)
+    seller_id = parsed_json.dig('notification', 'data', 'sellerId') ||
+                parsed_json.dig('notification', 'data', 'sellerUsername') ||
+                parsed_json.dig('notification', 'data', 'seller', 'username')
+
+    if seller_id
+      ExternalAccount.where(service_name: "ebay", ebay_username: seller_id).first
+    else
+      ExternalAccount.where(service_name: "ebay").first
+    end
   end
 
-  def process_listing_notification(xml_body, notification_type, notification)
-    Rails.logger.info "Processing #{notification_type} notification"
-    Rails.logger.info "Notification XML: #{xml_body}"
-    
-    Rails.logger.info "Listing notification received and logged successfully"
+  def find_external_account_from_xml(xml_body)
+    if match = xml_body.match(/<RecipientUserID[^>]*>([^<]+)<\/RecipientUserID>/)
+      ebay_user_id = match[1]
+      ExternalAccount.where(service_name: "ebay", ebay_username: ebay_user_id).first
+    else
+      ExternalAccount.where(service_name: "ebay").first
+    end
   end
 
   def verify_json_signature(body, request)
     signature = request.headers['X-EBAY-SIGNATURE']
-    
-    unless signature.present?
-      Rails.logger.error "Missing X-EBAY-SIGNATURE header"
-      return false
-    end
-    
-    Rails.logger.info "Verifying eBay signature: #{signature[0..20]}..."
+    return false unless signature.present?
     
     # TODO: Implement proper ECC signature verification
-    # For now, we'll accept all signatures during development
-    # In production, this should use eBay's public key to verify the signature
-    
-    Rails.logger.info "eBay signature verification skipped (development mode)"
+    # For now, accept all signatures during development
     true
   end
 
   def verify_ebay_webhook
-    # Log all headers and params for debugging
-    Rails.logger.info "eBay webhook headers: #{request.headers.to_h.select { |k,v| k.downcase.include?('ebay') || k.downcase.include?('auth') || k.downcase.include?('token') }}"
-    Rails.logger.info "eBay webhook params: #{params.to_unsafe_h}"
-    Rails.logger.info "eBay webhook method: #{request.method}"
-    
-    # For now, skip verification to see what eBay is sending
-    Rails.logger.info "Skipping eBay webhook verification for debugging"
-    
-    # Return true to allow the request to proceed
     true
   end
 end

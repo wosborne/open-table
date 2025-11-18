@@ -15,8 +15,8 @@ class Account < ApplicationRecord
   has_many :external_accounts, dependent: :destroy
   has_one :shopify_account, -> { where(service_name: "shopify") }, class_name: "ExternalAccount"
   has_one :ebay_account, -> { where(service_name: "ebay") }, class_name: "ExternalAccount"
-  
-  has_many :ebay_notifications, through: :external_accounts
+
+  has_many :notifications, as: :recipient, class_name: "Noticed::Notification", dependent: :destroy
 
 
   validates :name, presence: true

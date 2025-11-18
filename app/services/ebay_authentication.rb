@@ -34,11 +34,6 @@ class EbayAuthentication
     token_response = JSON.parse(request_access_token.body)
     access_token = token_response["access_token"]
     refresh_token = token_response["refresh_token"]
-    
-    # Log token details for debugging
-    Rails.logger.info "eBay OAuth token response: #{token_response.inspect}"
-    Rails.logger.info "Token type: #{token_response['token_type']}"
-    Rails.logger.info "Expires in: #{token_response['expires_in']} seconds"
 
     # Remove existing eBay account for this user
     user.accounts.first.external_accounts.find_by(service_name: "ebay")&.destroy
@@ -50,6 +45,14 @@ class EbayAuthentication
       refresh_token: refresh_token,
       domain: "ebay.com" # eBay doesn't have per-shop domains like Shopify
     )
+
+    # Fetch and store eBay user information (required for webhooks to work)
+    user_info = fetch_ebay_user_info(access_token)
+    external_account.update!(
+      ebay_username: user_info["username"],
+      ebay_user_id: user_info["userId"]
+    )
+    Rails.logger.info "eBay account connected: #{user_info['username']}"
 
 
     # Subscribe to order notifications
@@ -69,14 +72,29 @@ class EbayAuthentication
 
   private
 
-  def request_access_token
-    Rails.logger.info "eBay OAuth token exchange request:"
-    Rails.logger.info "  URL: #{@api_base_url}/identity/v1/oauth2/token"
-    Rails.logger.info "  Code: #{@params["code"]}"
-    Rails.logger.info "  Redirect URI: #{@redirect_uri}"
-    Rails.logger.info "  Client ID: #{@client_id}"
-    Rails.logger.info "  Auth header: Basic #{auth_header}"
+  def fetch_ebay_user_info(access_token)
+    # Use the correct Identity API base URL (apiz.ebay.com instead of api.ebay.com)
+    identity_base_url = @api_base_url.gsub("api.", "apiz.")
+    
+    response = RestClient.get(
+      "#{identity_base_url}/commerce/identity/v1/user/",
+      {
+        "Authorization" => "Bearer #{access_token}",
+        "Accept" => "application/json"
+      }
+    )
 
+    user_info = JSON.parse(response.body)
+    user_info
+  rescue RestClient::ExceptionWithResponse => e
+    Rails.logger.error "eBay user info error: #{e.response&.code} - #{e.response&.body}"
+    raise StandardError, "Failed to fetch eBay user info: #{e.response&.body}"
+  rescue => e
+    Rails.logger.error "eBay user info network error: #{e.message}"
+    raise StandardError, "Failed to fetch eBay user info: #{e.message}"
+  end
+
+  def request_access_token
     response = RestClient.post(
       "#{@api_base_url}/identity/v1/oauth2/token",
       {
@@ -90,7 +108,6 @@ class EbayAuthentication
       }
     )
 
-    Rails.logger.info "eBay OAuth response: #{response.code} - #{response.body}"
     response
   rescue RestClient::ExceptionWithResponse => e
     Rails.logger.error "eBay OAuth error: #{e.response&.code} - #{e.response&.body}"
