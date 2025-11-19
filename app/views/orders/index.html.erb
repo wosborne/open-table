@@ -1,7 +1,7 @@
 <h1 class="title">Orders</h1>
 
 <% if @orders.any? %>
-  <%= render ModelTableComponent.new(resources: @orders, current_account: current_account) %>
+  <%= render TableGridComponent.new(resources: @orders, current_account: current_account) %>
 <% else %>
   <div class="has-text-centered has-text-grey-light p-6">
     <p class="is-size-4">No orders found</p>

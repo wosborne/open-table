@@ -1,23 +1,18 @@
 <h1 class="title">Inventory Units</h1>
 
-<div class="level">
-  <div class="level-left">
-  </div>
-
-  <div class="level-right">
-    <div class="level-item">
-      <%= link_to new_account_inventory_unit_path(current_account), class: "button" do %>
-        <span class="icon-text">
-          <span class="icon">
-            <i class="fas fa-plus"></i>
-          </span>
-          <span>New Inventory Unit</span>
+<div class="field is-grouped is-grouped-right">
+  <p class="control">
+    <%= link_to new_account_inventory_unit_path(current_account), class: "button is-fullwidth-mobile" do %>
+      <span class="icon-text">
+        <span class="icon">
+          <i class="fas fa-plus"></i>
         </span>
-      <% end %>
-    </div>
-  </div>
+        <span>New Inventory Unit</span>
+      </span>
+    <% end %>
+  </p>
 </div>
 
 <%= turbo_frame_tag "inventory_units", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-  <%= render ModelTableComponent.new(resources: @inventory_units, current_account: current_account) %>
+  <%= render TableGridComponent.new(resources: @inventory_units, current_account: current_account) %>
 <% end %>
