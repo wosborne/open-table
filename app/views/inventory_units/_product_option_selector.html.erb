@@ -1,0 +1,50 @@
+<%= turbo_frame_tag "variant_selector" do %>
+  <div data-controller="product-option-selector" data-product-option-selector-variant-selector-url-value="<%= variant_selector_account_inventory_units_path(current_account) %>">
+    <div class="field">
+      <label class="label">Product</label>
+      <div class="control">
+        <%= select_tag :product_id, options_from_collection_for_select(products, :id, :name, selected_product&.id), prompt: "Select Product", class: "input", data: { action: "change->product-option-selector#updateFrame" } %>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Variant</label>
+      <% if selected_product %>
+        <% existing_variants = selected_product.variants %>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <% if existing_variants.any? %>
+              <%= select_tag "inventory_unit[variant_id]", 
+                  options_from_collection_for_select(existing_variants, :id, ->(v) { "#{v.sku} - #{number_to_currency(v.price)}" }, @inventory_unit.variant_id),
+                  { 
+                    prompt: "Select variant", 
+                    class: "input"
+                  } %>
+            <% else %>
+              <%= select_tag "inventory_unit[variant_id]", 
+                  options_for_select([]),
+                  { 
+                    prompt: "No variants available", 
+                    class: "input",
+                    disabled: true
+                  } %>
+            <% end %>
+          </div>
+        </div>
+        
+        <p class="help mt-2">
+          <% if existing_variants.any? %>
+            Need a different variant? 
+          <% else %>
+            No variants exist for this product. 
+          <% end %>
+          <%= link_to "Create a new variant", new_account_variant_path(current_account, product_id: selected_product.id), class: "has-text-link", target: "_blank" %>
+        </p>
+      <% else %>
+        <div class="control">
+          <a class="button is-static">Select a product first</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

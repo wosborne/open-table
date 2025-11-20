@@ -1,0 +1,21 @@
+<%= turbo_frame_tag "product_form" do %>
+  <div class="box">
+    <%= form_with model: [current_account, @product],
+      data: {
+        turbo_frame: "_top"
+      } do |form| %>
+
+      <%= render "products/form_fields", form: form %>
+
+      <div class="field is-grouped">
+        <div class="control">
+          <%= form.submit class: "button is-primary" %>
+        </div>
+        <div class="control">
+          <%= link_to 'Cancel', account_products_path(current_account), class: "button is-light", data: { turbo_frame: "_top" } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+<% end %>

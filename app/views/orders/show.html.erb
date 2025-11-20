@@ -1,0 +1,3 @@
+<h1 class="title">Order <%= @order.name %></h1>
+
+<%= render TableGridComponent.new(resources: @order.order_line_items, current_account: current_account) %> 

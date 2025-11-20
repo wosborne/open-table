@@ -1,0 +1,8 @@
+<%= render PolicyTableComponent.new(
+      policy_type: 'return',
+      title: 'Return Policies',
+      policies: @return_policies,
+      local_policies: @local_return_policies,
+      external_account: @external_account,
+      current_account: current_account
+    ) %>

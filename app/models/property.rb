@@ -1,7 +1,22 @@
 class Property < ApplicationRecord
   include Positionable
 
-  enum :data_type, %i[text number date select checkbox linked_record formula], suffix: "type"
+  ALL_TYPE_MAP = {
+    "id" => "Properties::IdProperty",
+    "text" => "Properties::TextProperty",
+    "number" => "Properties::NumberProperty",
+    "date" => "Properties::DateProperty",
+    "select" => "Properties::SelectProperty",
+    "checkbox" => "Properties::CheckboxProperty",
+    "linked_record" => "Properties::LinkedRecordProperty",
+    "formula" => "Properties::FormulaProperty",
+    "timestamp" => "Properties::TimestampProperty",
+    "shopify" => "Properties::ShopifyProperty"
+  }.freeze
+
+  TYPE_MAP = ALL_TYPE_MAP.except("timestamp", "shopify").freeze
+
+  VALID_TYPES = ALL_TYPE_MAP.values.freeze
 
   belongs_to :table
   belongs_to :linked_table, class_name: "Table", optional: true
@@ -15,19 +30,23 @@ class Property < ApplicationRecord
   accepts_nested_attributes_for :formula, allow_destroy: true
 
   validates :name, presence: true
-  validates :data_type, presence: true
-  validates :data_type, inclusion: { in: data_types.keys }
+  validates :type, presence: true, inclusion: { in: VALID_TYPES }
   validates :linked_table, presence: true, if: :linked_record_type?
 
-  before_save :create_options_from_existing_values, if: :data_type_changed?
+  before_validation :map_type
+
   before_save :remove_linked_table, unless: :linked_record_type?
 
   after_create :create_view_properties_for_each_view
 
-  before_save :convert_date_item_values, if: :format_changed?
+  before_destroy :prevent_destroy
+
+  scope :select_type, -> { where(type: TYPE_MAP["select"]) }
+  scope :number_type, -> { where(type: TYPE_MAP["number"]) }
+  scope :searchable, -> { where.not(type: [ ALL_TYPE_MAP["timestamp"], ALL_TYPE_MAP["shopify"] ]) }
 
   def all_values
-    table.items.where("properties ->> ? IS NOT NULL", id.to_s).pluck(Arel.sql("properties ->> '#{id}'")).uniq
+    table.records.where("properties ->> ? IS NOT NULL", id.to_s).pluck(Arel.sql("properties ->> '#{id}'")).uniq
   end
 
   def potential_options
@@ -40,16 +59,18 @@ class Property < ApplicationRecord
     options.any? ? options : potential_options
   end
 
-  private
-
-  def create_options_from_existing_values
-    options.destroy_all
-    return unless select_type?
-
-    all_values.each do |value|
-      options.find_or_create_by(value: value)
+  ALL_TYPE_MAP.each do |key, klass|
+    define_method("#{key}_type?") do
+      is_a?(klass.constantize) || type == klass
     end
   end
+
+  def recast
+    return self if self.is_a?(type.constantize)
+    becomes(type.constantize)
+  end
+
+  private
 
   def remove_linked_table
     self.linked_table = nil if linked_record_type?
@@ -65,29 +86,15 @@ class Property < ApplicationRecord
     end
   end
 
-  def convert_date_item_values
-    return unless date_type?
-
-    table.items.each do |item|
-      value = item.properties[id.to_s]
-      next unless value
-
-      begin
-        original_date = Date.strptime(value, format_was)
-        new_date = original_date.strftime(format)
-        item.properties[id.to_s] = new_date
-        item.save
-      rescue
-        begin
-          new_date = Date.strptime(value, format)
-          item.properties[id.to_s] = new_date
-          item.save
-        rescue Date::Error => e
-          next
-        end
-      rescue Date::Error => e
-        next
-      end
+  def map_type
+    if type_changed? && !VALID_TYPES.include?(type)
+      self.type = TYPE_MAP[type]
     end
+  end
+
+  def prevent_destroy
+    return unless deletable
+    errors.add(:base, "Cannot delete fixed properties")
+    throw(:abort)
   end
 end

@@ -1,13 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["refreshItemIdsInput"]
+  static targets = ["refreshRecordIdsInput"]
   
   refreshCells(_event) {
-    const itemIds = Array.from(document.querySelectorAll('[data-item-id]'))
-                         .map(el => el.dataset.itemId);
+    const recordIds = Array.from(document.querySelectorAll('[data-record-id]'))
+                         .map(el => el.dataset.recordId);
 
-    this.refreshItemIdsInputTarget.value = JSON.stringify(itemIds)
-    this.refreshItemIdsInputTarget.closest("form").requestSubmit();
+    this.refreshRecordIdsInputTarget.value = JSON.stringify(recordIds)
+    this.refreshRecordIdsInputTarget.closest("form").requestSubmit();
   }
 }

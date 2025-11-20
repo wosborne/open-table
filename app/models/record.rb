@@ -1,0 +1,43 @@
+class Record < ApplicationRecord
+  belongs_to :table
+
+  has_many :outgoing_links, class_name: "Link", foreign_key: :from_record_id, dependent: :destroy
+  has_many :incoming_links, class_name: "Link", foreign_key: :to_record_id, dependent: :destroy
+
+  has_many :linked_records, through: :outgoing_links, source: :to_record
+  has_many :linked_from_records, through: :incoming_links, source: :from_record
+
+  before_create :set_created_at_property
+  before_create :set_id_property
+
+  before_save :set_updated_at_property
+
+  def set_property(params)
+    properties[params[:property_id]] = params[:value]
+    save
+  end
+
+  private
+
+  def set_id_property
+    property = table.properties.find_by(type: "Properties::IdProperty")
+    if property
+      next_id = table.last_record_id + 1
+      properties[property.id.to_s] = property.prefix_id(next_id)
+      table.update(last_record_id: next_id)
+    end
+  end
+
+  def set_created_at_property
+    created_at_property = table.properties.find_by(name: "Created at")
+    updated_at_property = table.properties.find_by(name: "Updated at")
+    time = Time.now
+    properties[created_at_property.id.to_s] = time if created_at_property
+    properties[updated_at_property.id.to_s] = time if updated_at_property
+  end
+
+  def set_updated_at_property
+    property = table.properties.find_by(name: "Updated at")
+    properties[property.id.to_s] = Time.zone.now if property
+  end
+end

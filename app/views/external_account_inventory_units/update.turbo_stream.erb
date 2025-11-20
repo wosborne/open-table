@@ -1,0 +1,12 @@
+<% if @error %>
+  <%= turbo_stream.prepend "main" do %>
+    <div class="notification is-danger">
+      <button class="delete"></button>
+      <strong>Error:</strong> <%= @error %>
+    </div>
+  <% end %>
+<% else %>
+  <%= turbo_stream.replace "external_account_inventory_unit_#{@external_account_inventory_unit.id}" do %>
+    <%= render template: 'external_account_inventory_units/show' %>
+  <% end %>
+<% end %>

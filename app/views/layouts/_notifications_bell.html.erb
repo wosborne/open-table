@@ -1,0 +1,36 @@
+<% if current_account %>
+  <div class="navbar-item has-dropdown" data-controller="dropdown" data-dropdown-target="dropdown">
+    <div class="navbar-item is-hoverable" data-action="click->dropdown#toggle" style="cursor: pointer;">
+      <span class="icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
+      </span>
+      <% if current_account.notifications.unread.count > 0 %>
+        <span class="tag is-danger is-small">
+          <%= current_account.notifications.unread.count %>
+        </span>
+      <% end %>
+    </div>
+    <div class="navbar-dropdown is-boxed is-right">
+      <div class="navbar-item">
+        <strong>Notifications</strong>
+      </div>
+      <hr class="navbar-divider">
+      <% current_account.notifications.newest_first.limit(5).each do |notification| %>
+        <div class="navbar-item <%= 'has-background-light' unless notification.read? %>">
+          <div class="content is-small">
+            <strong><%= notification.event.type.gsub('Notifier', '') %></strong>
+            <br>
+            <span class="has-text-grey"><%= time_ago_in_words(notification.created_at) %> ago</span>
+          </div>
+        </div>
+      <% end %>
+      <% if current_account.notifications.count == 0 %>
+        <div class="navbar-item">
+          <em class="has-text-grey">No notifications yet</em>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

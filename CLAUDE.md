@@ -1,0 +1,16 @@
+- This project is built with Ruby on Rails 8
+- Use Hotwire (Stimulus and Turbo) to make the app reactive
+- Use Bulma css classes for styling, fallback to custom css if required
+- Never use style html tags for css, all css sould be in a .css file
+- Never use script html tags outside the main head, instead use stimulus js controllers
+- Keep the code modularised so files and methods don't become too complex
+- When modularizing the code prioritise model classes over services
+- Follow DRY coding principles
+- When calling external api's for front end data use the elements .src property with hotwire to dynamicaly load the componenet
+- Never put in placeholder comments for code, ask a questions and context if detaisl are missing
+- Never assume how an external api works, always look for the latest documentation
+- Refactor your code to be DRY when you have finished your task
+- Avoid going outside of the specified scope
+- Do not use the ebay_service module, instead always use the ebay_api_client
+- When adding code to the ebay_api_client do not mock results to get it working, find the solution
+- Provide "data: { turbo_frame: "_top" }" to links when within a turbo frame

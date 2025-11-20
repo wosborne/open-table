@@ -1,0 +1,65 @@
+<!-- Display general errors -->
+<% if form.object.errors.any? %>
+  <div class="notification is-danger">
+    <strong><%= pluralize(form.object.errors.count, "error") %> prohibited this product from being saved:</strong>
+    <ul>
+      <% form.object.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= render "/components/form/input_wrapper",
+  label: form.label(:name, class: "label"),
+  input: form.text_field(:name, autofocus: true, class: "input"),
+  errors: form.object.errors.full_messages_for(:name) %>
+
+<%= render "/components/form/input_wrapper",
+  label: form.label(:description, class: "label"),
+  input: form.text_area(:description, autofocus: true, class: "textarea"),
+  errors: form.object.errors.full_messages_for(:description) %>
+
+<div data-controller="ebay-category" data-ebay-category-account-slug-value="<%= current_account.slug %>">
+  <div class="field">
+    <%= form.label :ebay_category_id, "eBay Category (Optional)", class: "label" %>
+    <% if @ebay_categories.empty? %>
+      <div class="notification is-light">
+        <p class="mb-3">To use eBay categories and aspects, you need to connect an eBay account first.</p>
+        <%= link_to "Connect eBay Account", edit_account_path(current_account.id), class: "button is-primary", data: { turbo_frame: "_top" } %>
+      </div>
+    <% else %>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <%= form.select :ebay_category_id, 
+              options_for_select([["Select a category...", ""]] + @ebay_categories.map { |cat| [cat[:display_name], cat[:category_id]] }, form.object.ebay_category_id), 
+              {}, 
+              { 
+                class: "input",
+                data: { 
+                  action: "change->ebay-category#categoryChanged",
+                  ebay_category_target: "categorySelect"
+                }
+              } %>
+        </div>
+      </div>
+      <% form.object.errors.full_messages_for(:ebay_category_id).each do |error| %>
+        <p class="help is-danger"><%= error %></p>
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- Hidden fields for product options -->
+  <% form.object.variation_aspects.each_with_index do |aspect, index| %>
+    <% next if aspect[:name].downcase == "model" %>
+    <% existing_option = form.object.product_options.find { |po| po.name == aspect[:name] } %>
+    <% if existing_option %>
+      <%= hidden_field_tag "product[product_options_attributes][#{index}][id]", existing_option.id %>
+    <% end %>
+    <%= hidden_field_tag "product[product_options_attributes][#{index}][name]", aspect[:name] %>
+  <% end %>
+
+  <%= turbo_frame_tag "product_options_frame", data: { ebay_category_target: "optionsFrame" } do %>
+    <%= render EbayAspectsComponent.new(product: form.object) %>
+  <% end %>
+</div> 

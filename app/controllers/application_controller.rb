@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
 
   def after_sign_in_path_for(resource)
     if resource.accounts.any?
-      account_tables_path(resource.accounts.first)
+      account_dashboard_path(resource.accounts.first)
     else
       new_account_path
     end

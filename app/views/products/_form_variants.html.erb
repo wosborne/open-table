@@ -1,0 +1,136 @@
+<h3 class="title is-size-4">Variants</h3>
+<% if @product.new_record? %>
+  <p class="help is-warning">You must save the product before you can create variants.</p>
+<% else %>
+  <% affected_variants = @product.variants_affected_by_option_changes %>
+  <% if affected_variants.any? %>
+    <div class="notification is-info" id="sku-warning">
+      <div class="content">
+        <p><strong><%= affected_variants.count %> variants</strong> have had changes to their options, would you like to regenerate their SKUs?</p>
+        <details class="mt-2">
+          <summary class="has-text-link is-clickable">Show changes</summary>
+          <ul class="mt-2">
+            <% affected_variants.each do |variant_info| %>
+              <li><code><%= variant_info[:current_sku] %></code> → <code><%= variant_info[:suggested_sku] %></code></li>
+            <% end %>
+          </ul>
+        </details>
+        <%= link_to "Regenerate SKUs", regenerate_skus_account_product_path(current_account, @product), 
+              method: :patch, 
+              class: "button is-warning is-small mt-3",
+              data: { 
+                turbo_method: "patch",
+                turbo_confirm: "Are you sure you want to regenerate #{affected_variants.count} variant SKUs? This will update the SKUs permanently." 
+              } %>
+      </div>
+    </div>
+  <% end %>
+  
+  <% unsaved_count = @product.variants.select { |v| v.new_record? }.size %>
+  <% if unsaved_count > 0 %>
+    <p class="help is-info">
+      <strong><%= unsaved_count %> variant<%= 's' if unsaved_count > 1 %> not yet saved.</strong>
+    </p>
+  <% end %>
+  <table class="table is-fullwidth is-hoverable" data-controller="variant-sort" data-variant-sort-variant-rows-value="tbody">
+    <thead>
+      <tr>
+        <th data-action="click->variant-sort#sort" data-variant-sort-column-value="sku" class="is-clickable">
+          SKU <span data-variant-sort-target="symbol" data-column="sku" class="icon"><i></i></span>
+        </th>
+        <% @product.product_options.each do |option| %>
+          <th data-action="click->variant-sort#sort" data-variant-sort-column-value="option-<%= option.id %>" class="is-clickable">
+            <%= option.name.presence || 'Option' %> <span data-variant-sort-target="symbol" data-column="option-<%= option.id %>" class="icon"><i></i></span>
+          </th>
+        <% end %>
+        <th data-action="click->variant-sort#sort" data-variant-sort-column-value="price" class="is-clickable">
+          Price <span data-variant-sort-target="symbol" data-column="price" class="icon"><i></i></span>
+        </th>
+
+        <th data-action="click->variant-sort#sort" data-variant-sort-column-value="stock" class="is-clickable">
+          Stock <span data-variant-sort-target="symbol" data-column="stock" class="icon"><i></i></span>
+        </th>
+        <th>History</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @product.variants.empty? %>
+        <tr>
+          <td colspan="<%= 3 + @product.product_options.size %>">
+            <span class="has-text-grey">No variants yet. Add options above to generate variants.</span>
+          </td>
+        </tr>
+      <% else %>
+        <%= form.fields_for :variants do |variant_form| %>
+          <tr>
+            <%# Hidden fields for variant_option_values to preserve associations %>
+            <% variant_form.object.variant_option_values.each do |vov| %>
+              <%= variant_form.fields_for :variant_option_values, vov do |vov_form| %>
+                <%= vov_form.hidden_field :id %>
+                <%= vov_form.hidden_field :product_option_id %>
+                <%= vov_form.hidden_field :product_option_value_id %>
+              <% end %>
+            <% end %>
+            <td>
+              <% current_sku = variant_form.object.sku || variant_form.object.suggested_sku %>
+              <% suggested_sku = variant_form.object.suggested_sku %>
+              <% sku_changed = current_sku != suggested_sku && variant_form.object.persisted? %>
+              <% version_info = variant_form.object.persisted? ? "Version #{variant_form.object.sku_version_number}" : "New variant" %>
+              <% previous_sku = variant_form.object.previous_sku %>
+              <% tooltip_text = if sku_changed
+                                  "Current: #{current_sku} (#{version_info})\nSuggested: #{suggested_sku}"
+                                elsif previous_sku
+                                  "Current: #{current_sku} (#{version_info})\nPrevious: #{previous_sku}"
+                                else
+                                  "#{current_sku} (#{version_info})"
+                                end %>
+              <%= variant_form.text_field :sku, 
+                    class: "input is-small #{'has-background-warning-light' if sku_changed}", 
+                    value: current_sku, 
+                    disabled: variant_form.object.sku.present?,
+                    title: tooltip_text %>
+            </td>
+            <% @product.product_options.each do |option| %>
+              <% vov = variant_form.object.variant_option_values.find { |v| v.product_option_id == option.id } %>
+              <td data-option-id="option-<%= option.id %>"><%= vov&.product_option_value&.value %></td>
+            <% end %>
+            <td>
+              <%= variant_form.text_field :price, class: "input is-small", placeholder: "Price", value: (variant_form.object.price.presence || 0) %>
+              <% variant_form.object.errors.full_messages_for(:price).each do |error| %>
+                <p class="help is-danger"><%= error %></p>
+              <% end %>
+            </td>
+            <td>
+              <%= variant_form.object.inventory_count %>
+            </td>
+            <td>
+              <% if variant_form.object.persisted? %>
+                <button type="button" class="button is-small is-info is-outlined" onclick="document.getElementById('variant-history-<%= variant_form.object.id %>').classList.add('is-active')">
+                  <span class="icon is-small">
+                    <i class="fas fa-history"></i>
+                  </span>
+                </button>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+  
+  <!-- Render modals for each variant -->
+  <% @product.variants.each do |variant| %>
+    <%= render "variant_history_modal", variant: variant if variant.persisted? %>
+  <% end %>
+<% end %>
+
+<script>
+// Simple modal close functionality
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-background') || 
+      e.target.classList.contains('delete') || 
+      e.target.closest('.delete')) {
+    e.target.closest('.modal').classList.remove('is-active');
+  }
+});
+</script> 

@@ -1,0 +1,106 @@
+<div class="box">
+  <h3 class="title is-4">Setup Progress</h3>
+  
+  <div class="field">
+    <label class="label">
+      <%= @onboarding_status[:completion_percentage] %>% Complete
+    </label>
+    <progress class="progress is-large <%= @onboarding_status[:is_complete] ? 'is-success' : 'is-primary' %>" 
+              value="<%= @onboarding_status[:completion_percentage] %>" 
+              max="100">
+      <%= @onboarding_status[:completion_percentage] %>%
+    </progress>
+  </div>
+
+  <% unless @onboarding_status[:is_complete] %>
+    <div class="content">
+      <% @onboarding_status[:steps].each_with_index do |step, index| %>
+        <div class="notification <%= step[:completed] ? 'is-success is-light' : 'is-warning is-light' %>">
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <span class="icon">
+                  <% if step[:completed] %>
+                    <i class="fas fa-check-circle"></i>
+                  <% else %>
+                    <i class="fas fa-exclamation-circle"></i>
+                  <% end %>
+                </span>
+              </div>
+              <div class="level-item">
+                <div>
+                  <p class="heading">Step <%= index + 1 %></p>
+                  <p class="title is-5"><%= step[:name] %></p>
+                  <p class="subtitle is-6"><%= step[:description] %></p>
+                </div>
+              </div>
+            </div>
+            <div class="level-right">
+              <div class="level-item">
+                <% unless step[:completed] %>
+                  <% case step[:name] %>
+                  <% when "eBay Account Connected" %>
+                    <%= link_to "Connect eBay", new_account_external_account_path(current_account, service_name: 'ebay'), 
+                                class: "button is-primary" %>
+                  <% when "Business Policies Opt-in" %>
+                    <%= button_to "Opt In via API", account_ebay_opt_into_business_policies_path(current_account), 
+                                  method: :post, class: "button is-primary", 
+                                  data: { confirm: "This will opt your eBay account into Business Policies Management. Continue?" } %>
+                    <a href="https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2Fmyb%2FPoliciesBeta" 
+                       target="_blank" class="button is-light">
+                      Or go to eBay
+                    </a>
+                  <% when "Inventory Location" %>
+                    <%= link_to "Set Up Inventory Location", new_account_location_path(current_account), 
+                                class: "button is-primary" %>
+                  <% when "Payment Policy" %>
+                    <a href="https://www.ebay.co.uk/bp/manage" 
+                       target="_blank" class="button is-primary">
+                      Create Payment Policy on eBay
+                    </a>
+                  <% when "Fulfillment Policy" %>
+                    <a href="https://www.ebay.co.uk/bp/manage" 
+                       target="_blank" class="button is-primary">
+                      Create Fulfillment Policy on eBay
+                    </a>
+                  <% when "Return Policy" %>
+                    <a href="https://www.ebay.co.uk/bp/manage" 
+                       target="_blank" class="button is-primary">
+                      Create Return Policy on eBay
+                    </a>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @onboarding_status[:is_complete] %>
+    <div class="notification is-success is-light">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <span class="icon">
+              <i class="fas fa-check-circle"></i>
+            </span>
+          </div>
+          <div class="level-item">
+            <div>
+              <p class="title is-5">🎉 eBay Setup Complete!</p>
+              <p class="subtitle is-6">Your account is connected and ready for selling</p>
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <%= link_to "Manage eBay Account", account_external_account_path(current_account, current_account.ebay_account), 
+                        class: "button is-primary is-small" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

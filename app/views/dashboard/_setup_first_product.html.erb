@@ -1,0 +1,31 @@
+<div class="box mt-5">
+  <h3 class="title is-4">Setup First Product</h3>
+  
+  <div class="content">
+    <p>Now that your eBay account is set up, let's create your first product to start selling.</p>
+    
+    <div class="notification is-info is-light">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <span class="icon">
+              <i class="fas fa-plus-circle"></i>
+            </span>
+          </div>
+          <div class="level-item">
+            <div>
+              <p class="title is-5">Create Product</p>
+              <p class="subtitle is-6">Add a new product with variants and pricing</p>
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <%= link_to "Create Product", new_account_product_path(current_account), 
+                        class: "button is-success" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

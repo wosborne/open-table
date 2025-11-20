@@ -1,0 +1,43 @@
+<div data-controller="table clickable" class="is-flex is-flex-direction-column is-flex-grow-1">
+  <!-- Future filtering controls will go here -->
+  
+  <!-- Table view (desktop/tablet) -->
+  <div class="is-hidden-mobile table-container" data-controller="record-attribute" style="height: 100%; overflow-x: auto;">
+    <table class="table is-hoverable is-narrow mb-2" style="min-width: 100%;">
+      <thead>
+        <tr data-controller="column-position">
+          <% all_columns.each do |column| %>
+            <th style="white-space: nowrap;"><%= column.to_s.humanize.titleize %></th>
+          <% end %>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% resources.each do |resource| %>
+          <tr class="is-clickable" data-url="<%= resource_url(resource) %>">
+            <% all_columns.each do |column| %>
+              <td style="white-space: nowrap;">
+                <%= column_value(resource, column) %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Grid view (mobile) -->
+  <div class="is-hidden-tablet">
+    <div class="grid is-gap-3 is-col-min-12" data-controller="record-attribute">
+      <% resources.each do |resource| %>
+        <div class="grid-cell p-4 box is-clickable" data-url="<%= resource_url(resource) %>" style="overflow: hidden;">
+          <% all_columns.each do |column| %>
+            <div class="mb-2" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <%= column_value(resource, column) %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

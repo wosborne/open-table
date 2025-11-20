@@ -15,3 +15,8 @@
 .sidebar {
   border-right: 1px solid var(--bulma-border);
 }
+
+.navbar-link:focus, .navbar-link:focus-within, .navbar-link:hover, button.navbar-item:focus, button.navbar-item:focus-within, button.navbar-item:hover {
+    --bulma-navbar-item-background-l-delta: var(--bulma-navbar-item-hover-background-l-delta);
+    --bulma-navbar-item-background-a: 1;
+}

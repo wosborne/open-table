@@ -1,0 +1,119 @@
+<% content_for :title, "#{@external_account.service_name.humanize} Account" %>
+
+<div class="container">
+  <div class="mb-5">
+    <%= link_to "← Back", account_path(current_account), class: "button is-text" %>
+  </div>
+
+  <div>
+    <div class="level mb-5">
+      <div class="level-left">
+        <div class="level-item">
+          <h1 class="title is-3">
+            <%= @external_account.service_name.humanize %> Account
+          </h1>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <span class="tag is-success">Connected</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3 class="title is-5 mb-4">Account Information</h3>
+      <p><strong>Service:</strong> <%= @external_account.service_name.humanize %></p>
+      <% if @external_account.shopify? && @external_account.domain.present? %>
+        <p><strong>Account:</strong> <%= @external_account.domain %></p>
+      <% elsif @external_account.ebay? && @external_account.ebay_display_name.present? %>
+        <p><strong>Account:</strong> <%= @external_account.ebay_display_name %></p>
+      <% elsif @external_account.ebay? && @external_account.ebay_username.present? %>
+        <p><strong>Account:</strong> <%= @external_account.ebay_username %></p>
+      <% end %>
+      <p><strong>Connected:</strong> <%= time_ago_in_words(@external_account.created_at) %> ago</p>
+    </div>
+
+
+    <!-- eBay Business Policies Section -->
+    <% if @external_account.ebay? %>
+      <div class="mt-5">
+        <h3 class="title is-4">eBay Business Policies</h3>
+        
+        <div class="notification is-success is-light">
+          <strong>✓ eBay Integration Active</strong><br>
+          Your account is connected and notifications are configured.
+        </div>
+        
+        <!-- Fulfillment Policies -->
+        <section class="section px-0">
+          <turbo-frame id="fulfillment-policies-frame" 
+                      src="<%= fulfillment_policies_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
+
+        <!-- Payment Policies -->
+        <section class="section px-0">
+          <turbo-frame id="payment-policies-frame" 
+                      src="<%= payment_policies_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Payment Policies</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
+
+        <!-- Return Policies -->
+        <section class="section px-0">
+          <turbo-frame id="return-policies-frame" 
+                      src="<%= return_policies_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Return Policies</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
+
+        <!-- Inventory Locations -->
+        <section class="section px-0">
+          <turbo-frame id="inventory-locations-frame" 
+                      src="<%= inventory_locations_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Inventory Locations</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
+
+        <!-- Notification Preferences -->
+        <section class="section px-0">  
+          <turbo-frame id="notification-preferences-frame" 
+                      src="<%= notification_preferences_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Notification Preferences</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
+      </div>
+    <% end %>
+
+
+    <!-- Actions -->
+    <div class="buttons mt-5">
+      <%= link_to "Edit Account", 
+            edit_account_external_account_path(current_account, @external_account), 
+            class: "button is-primary" %>
+      
+      <%= link_to "Disconnect Account", 
+            account_external_account_path(current_account, @external_account), 
+            method: :delete,
+            data: { confirm: "Are you sure you want to disconnect this #{@external_account.service_name} account?" },
+            class: "button is-danger is-outlined" %>
+    </div>
+  </div>
+</div>

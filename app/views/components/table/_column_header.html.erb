@@ -6,14 +6,20 @@
   <div class="dropdown is-clickable" style="width: 100%; height: 100%;" data-dropdown-target="dropdown" data-action="click->dropdown#open">
     <div class="dropdown-trigger draggable">
       <%= form_with url: refresh_cells_account_table_property_path(current_account, current_table, property) do |f| %>
-        <%= f.hidden_field :item_ids, data: { column_target: "refreshItemIdsInput" } %>
+        <%= f.hidden_field :record_ids, data: { column_target: "refreshRecordIdsInput" } %>
       <% end %>
 
-      <%= property.name %>
+      <span class="icon-text">
+        <span class="icon is-clickable has-text-grey">
+          <i class="fas <%= property_symbol(Property::ALL_TYPE_MAP.invert[property.type])%>"></i>
+        </span>
+        <span><%= property.name %></span>
+      </span>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
         <%= form_with model: property,
+          scope: :property,
           url: account_table_property_path(current_account, property.table_id, property),
           id: "property-form-#{property.id}",
           data: {
@@ -28,18 +34,20 @@
           <%= f.hidden_field :id %>
 
           <div class="dropdown-item">
-            <%= f.text_field :name, class: "input is-small" %>
+            <%= f.text_field :name, class: "input is-small", disabled: !property.editable %>
           </div>
           
-          <div class="dropdown-item">
-            <div class="field">
-              <div class="control is-expanded">
-                <div class="select is-small is-fullwidth">
-                  <%= f.select :data_type, Property.data_types.keys, {}, { data: { action: "change->property-type#typeChanged" } } %>
+          <% unless Property::ALL_TYPE_MAP.slice("id", "timestamp").values.include?(property.type) %>
+            <div class="dropdown-item">
+              <div class="field">
+                <div class="control is-expanded">
+                  <div class="select is-small is-fullwidth">
+                    <%= f.select :type, Property::TYPE_MAP.keys.excluding("id"), { selected: Property::TYPE_MAP.invert[property.type], disabled: !property.editable }, { data: { action: "change->property-type#typeChanged" } } %>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          <% end %>
 
           <%= render partial: "components/table/properties/type_fields", locals: { f: f, property: } %>
         <% end %>
@@ -48,10 +56,12 @@
 
         <div class="dropdown-item">
           <div class="field is-grouped">
-            <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
-              <span class="icon">
-                <i class="fas fa-trash"></i>
-              </span>
+            <% if property.deletable %>
+              <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
+                <span class="icon">
+                  <i class="fas fa-trash"></i>
+                </span>
+              <% end %>
             <% end %>
             
             <p class="control is-expanded">

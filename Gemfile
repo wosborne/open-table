@@ -40,10 +40,6 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-gem "devise"
-gem "friendly_id"
-gem "dentaku"
-
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -71,4 +67,29 @@ group :test do
   gem "simplecov", require: false
   gem "capybara"
   gem "selenium-webdriver"
+  gem "launchy"
 end
+
+gem "devise"
+
+gem "friendly_id"
+
+gem "dentaku"
+
+gem "shopify_api", "~> 14.10" # Docs April 2025
+
+gem "jwt", "~> 3.1"
+
+gem "rest-client", "~> 2.1"
+
+gem "foreman", "~> 0.88.1"
+
+gem "paper_trail"
+
+gem "view_component"
+
+gem "ebay-ruby"
+gem "omniauth-ebay-oauth"
+gem "omniauth-rails_csrf_protection"
+
+gem "noticed"

@@ -1,0 +1,127 @@
+<div class="container">
+  <nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+      <li><%= link_to "Dashboard", account_dashboard_path(current_account) %></li>
+      <li><%= link_to "External Accounts", account_external_account_path(current_account, @external_account) %></li>
+      <li class="is-active"><a href="#" aria-current="page">Fulfillment Policy</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="title"><%= @fulfillment_policy.name %></h1>
+  <h2 class="subtitle">eBay Account: <%= @external_account.ebay_display_name || @external_account.ebay_username %></h2>
+
+  <div class="box">
+    <div class="field">
+      <label class="label">Policy Name</label>
+      <div class="content">
+        <%= @fulfillment_policy.name %>
+      </div>
+    </div>
+
+
+    <div class="field">
+      <label class="label">Handling Time</label>
+      <div class="content">
+        <%= @fulfillment_policy.handling_time || "N/A" %> business days
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Category Default</label>
+      <div class="content">
+        <%= @fulfillment_policy.category_default? ? "Yes" : "No" %>
+      </div>
+    </div>
+
+    <h3 class="title is-5">Shipping Details</h3>
+    
+    <% if @fulfillment_policy.service_code.present? %>
+      <div class="field">
+        <label class="label">Shipping Service</label>
+        <div class="content">
+          <%= @fulfillment_policy.service_code %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="field">
+      <label class="label">Free Shipping</label>
+      <div class="content">
+        <%= @fulfillment_policy.free_shipping? ? "Yes" : "No" %>
+      </div>
+    </div>
+
+    <% unless @fulfillment_policy.free_shipping? %>
+      <% if @fulfillment_policy.cost.present? %>
+        <div class="field">
+          <label class="label">Shipping Cost</label>
+          <div class="content">
+            <%= @fulfillment_policy.currency %> <%= @fulfillment_policy.cost %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% ebay_attrs = @fulfillment_policy.ebay_attributes %>
+    <% if ebay_attrs.present? && ebay_attrs["shipToLocations"].present? %>
+      <div class="field">
+        <label class="label">Ship to Locations</label>
+        <div class="content">
+          <% if ebay_attrs["shipToLocations"]["regionIncluded"].present? %>
+            <% ebay_attrs["shipToLocations"]["regionIncluded"].each do |region| %>
+              <%= region["regionType"] %>: <%= region["regionId"] %><br>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if ebay_attrs.present? && ebay_attrs["localPickup"].present? %>
+      <div class="field">
+        <label class="label">Local Pickup</label>
+        <div class="content">
+          <%= ebay_attrs["localPickup"] ? "Available" : "Not Available" %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if ebay_attrs.present? && ebay_attrs["categoryTypes"].present? %>
+      <div class="field">
+        <label class="label">Category Types</label>
+        <div class="content">
+          <% ebay_attrs["categoryTypes"].each do |category| %>
+            <%= category["name"] %><%= " (default)" if category["default"] %><br>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="field is-grouped">
+      <% if @fulfillment_policy.persisted? %>
+        <div class="control">
+          <%= link_to "Edit", edit_account_external_account_fulfillment_policy_path(current_account, @external_account, @fulfillment_policy), class: "button is-primary", data: { turbo_frame: "_top" } %>
+        </div>
+        <div class="control">
+          <%= link_to "Delete", account_external_account_fulfillment_policy_path(current_account, @external_account, @fulfillment_policy), 
+                      class: "button is-danger", 
+                      data: { 
+                        turbo_method: :delete,
+                        turbo_frame: "_top",
+                        turbo_confirm: "Are you sure you want to delete this fulfillment policy? This will also delete it from eBay and cannot be undone." 
+                      } %>
+        </div>
+      <% else %>
+        <% if @fulfillment_policy.ebay_policy_id.present? %>
+          <div class="control">
+            <a href="https://www.ebay.co.uk/bp/ship/edit/<%= @fulfillment_policy.ebay_policy_id %>" target="_blank" class="button is-primary">
+              Edit on eBay
+            </a>
+          </div>
+        <% end %>
+      <% end %>
+      <div class="control">
+        <%= link_to "Back", account_external_account_path(current_account, @external_account), class: "button", data: { turbo_frame: "_top" } %>
+      </div>
+    </div>
+  </div>
+</div>

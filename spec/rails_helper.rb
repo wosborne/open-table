@@ -99,4 +99,5 @@ RSpec.configure do |config|
   config.include Devise::TestHelpers, type: :view
 
   config.include SignInHelper, type: :system
+  config.include EbayApiMocking
 end

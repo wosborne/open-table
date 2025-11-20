@@ -1,14 +1,14 @@
-<tr id="item-<%= item.id %>" data-item-id="<%= item.id %>" data-action="click->table#selectRow">
+<tr id="record-<%= record.id %>" data-record-id="<%= record.id %>" data-action="click->table#selectRow">
 
   <td class="is-align-content-center" data-action="click->table#toggleItem">
     <label class="checkbox">
-      <input type="checkbox" data-table-target="checkbox" data-action="click->table#stopPropagation change->table#onCheckboxChange" value="<%= item.id %>" aria-label="Select item <%= item.id %>" />
+      <input type="checkbox" data-table-target="checkbox" data-action="click->table#stopPropagation change->table#onCheckboxChange" value="<%= record.id %>" aria-label="Select record <%= record.id %>" />
     </label>
   </td>
 
   <% current_view.visible_properties.each do |property| %>
     <td class="is-align-content-center">
-      <%= render "components/table/cell", item:, property: property, value: item.properties[property.id.to_s]%>
+      <%= render "components/table/cell", record: record, property: property, value: record.properties[property.id.to_s]%>
     </td>
   <% end %>
 </tr>

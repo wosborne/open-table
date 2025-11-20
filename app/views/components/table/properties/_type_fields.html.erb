@@ -1,12 +1,21 @@
 <%= turbo_frame_tag "property-type-fields-#{property.id}" do %>
-  <% case params[:type] || property.data_type %>
-  <% when "linked_record" %>
+  <% case params[:type] || property.type %>
+  <% when "linked_record", "Properties::LinkedRecordProperty" %>
     <%= render "components/table/properties/tables", f: %>
-  <% when "select" %>
+
+  <% when "select", "Properties::SelectProperty" %>
     <%= render "components/table/properties/options", f:, property: %>
-  <% when "formula" %>
+
+  <% when "formula", "Properties::FormulaProperty" %>
     <%= render "components/table/properties/formula", f:, property: %>
-  <% when "date" %>
+
+  <% when "date", "Properties::DateProperty" %>
     <%= render "components/table/properties/date", f:, property: %>
+
+  <% when "id", "Properties::IdProperty" %>
+    <%= render "components/table/properties/id", f:, property: %>
+
+  <% when "timestamp", "Properties::TimestampProperty" %>
+    <%= render "components/table/properties/timestamp", f:, property: %>
   <% end %>
 <% end %>

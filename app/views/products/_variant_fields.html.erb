@@ -1,0 +1,64 @@
+<%= f.fields_for :variants, variant, child_index: do |ff| %>
+  <%= ff.hidden_field :id, value: ff.object.id %>
+  
+  <div class="nested-form-wrapper" data-new-record="<%= ff&.object&.new_record? %>">
+    <div class="field columns">
+      <div class="column is-4">
+        <%= ff.label :name, class: "label is-small" %>
+        <div class="field">
+          <p class="control is-expanded">
+            <%= ff.text_field :name, autofocus: true, class: "input is-small" %>
+          </p>
+
+          <% ff.object.errors.full_messages_for(:name)&.each do |error| %>
+            <p class="help is-danger"><%= error %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="column is-4">
+        <div class="label is-small">SKU</div>
+        <div class="field">
+          <p class="control">
+            <a class="button is-static is-small is-fullwidth is-justify-content-start">
+              <%= ff.object.sku || "Generated on save" %>
+            </a>
+          </p>
+
+          <% ff.object.errors.full_messages_for(:sku)&.each do |error| %>
+            <p class="help is-danger"><%= error %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="column is-3">
+        <%= ff.label :price, class: "label is-small" %>
+        <div class="field">
+          <p class="control has-icons-left is-small ">
+            <%= ff.text_field :price, class: "input is-small" %>
+            <span class="icon is-small is-left">
+              <i class="fas fa-sterling-sign"></i>
+            </span>
+          </p>
+
+          <% ff.object.errors.full_messages_for(:price)&.each do |error| %>
+            <p class="help is-danger"><%= error %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="column is-narrow is-align-self-flex-end">
+        <div class="field">
+          <p class="control is-small">
+            <%= ff.button :remove, class: "button is-danger is-small", data: { action: "nested-form#remove" } do %>
+              <span class="icon is-small">
+                <i class="fas fa-trash"></i>
+              </span>
+            <% end %>
+            <%= ff.hidden_field :_destroy %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

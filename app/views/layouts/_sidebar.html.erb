@@ -1,31 +1,22 @@
 <aside class="menu p-4">
   <h2 class="title is-4"><%= current_account.name %></h2>
-  <p class="menu-label">Tables</p>
   <ul class="menu-list">
-    <% current_account.tables.each do |table| %>
-      <li>
-        <%= link_to table.name, account_table_path(current_account, table) %>
-        <% if table.views.any? %>
-          <ul>
-            <% table.views.each do |view| %>
-              <li>
-                <%= link_to view.name, account_table_view_path(current_account, table, view) %>
-              </li>
-            <% end %>
-          </ul>
-        <% end %>
-      </li>
-    <% end %>
-
     <li>
-      <%= link_to new_account_table_path(current_account), class: "mt-4" do %>
-        <span class="icon-text">
-          <span class="icon">
-            <i class="fas fa-plus"></i>
-          </span>
-          <span>Create New Table</span>
-        </span>
-      <% end %>
+      <%= link_to "Dashboard", account_dashboard_path(current_account) %>
+    </li>
+    <li>
+      <%= link_to "Products", account_products_path(current_account) %>
+    </li>
+    <li>
+      <%= link_to "Variants", account_variants_path(current_account) %>
+    </li>
+    <li>
+      <%= link_to "Inventory Units", account_inventory_units_path(current_account) %>
+    </li>
+    <li>
+      <%= link_to "Orders", account_orders_path(current_account) %>
     </li>
   </ul>
+
+
 </aside>

@@ -18,11 +18,11 @@ module Tables
         item_properties = {}
 
         row.each do |header, value|
-          property = @table.properties.find_or_create_by(name: header, data_type: :text)
+          property = @table.properties.find_or_create_by(name: header, type: Property::TYPE_MAP["text"])
           item_properties[property.id] = value
         end
 
-        @table.items.create(properties: item_properties)
+        @table.records.create(properties: item_properties)
       end
 
       @table.import.destroy

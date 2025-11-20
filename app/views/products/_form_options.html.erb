@@ -1,0 +1,50 @@
+<h3 class="title is-size-5">Options (max 3)</h3>
+<div class="columns">
+  <%= form.fields_for :product_options do |option_form| %>
+    <div class="column">
+      <%= option_form.label :name, class: "label is-small" %>
+      <%= option_form.text_field :name, class: "input is-small", placeholder: "Option name (e.g. Color)" %>
+      <div class="mt-2" data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper">
+        <label class="label is-small">Values</label>
+        <template data-nested-form-target="template">
+          <div class="field is-grouped mb-1 nested-form-wrapper">
+            <%= option_form.fields_for :product_option_values, ProductOptionValue.new, child_index: "NEW_RECORD" do |value_form| %>
+              <%= value_form.text_field :value, class: "input is-small", placeholder: "Value (e.g. Red)" %>
+              <div class="field is-grouped is-align-items-center">
+                <%= value_form.button :remove, class: "button is-danger is-small is-outlined", data: { action: "nested-form#remove" } do %>
+                  <span class="icon is-small">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                <% end %>
+                <%= value_form.hidden_field :_destroy %>
+              </div>
+            <% end %>
+          </div>
+        </template>
+        
+        <% option_form.object.product_option_values.each_with_index do |value, idx| %>
+          <%= option_form.fields_for :product_option_values, value, child_index: idx do |value_form| %>
+            <div class="field is-grouped mb-1 nested-form-wrapper">
+              <%= value_form.text_field :value, class: "input is-small", placeholder: "Value (e.g. Red)" %>
+              <div class="field is-grouped is-align-items-center">
+                <%= value_form.button :remove, class: "button is-danger is-small is-outlined", data: { action: "nested-form#remove" } do %>
+                  <span class="icon is-small">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                <% end %>
+                <%= value_form.hidden_field :_destroy %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+        <div data-nested-form-target="target"></div>
+        <button class="button is-small is-info mt-1" type="button" data-action="nested-form#add">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>Add Value</span>
+        </button>
+      </div>
+    </div>
+  <% end %>
+</div> 

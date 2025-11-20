@@ -1,21 +1,41 @@
-<nav class="navbar is-dark">
+<nav class="navbar is-dark" data-controller="dropdown">
   <div class="navbar-brand">
     <a class="navbar-item is-size-4 has-text-weight-bold" style="width: 80px;" href="/">
       <img src="/icon.png" alt="Logo" style="height: 100%; object-fit: cover; object-position: center; ">
     </a>
+
+    <span class="navbar-burger dropdown is-right" data-dropdown-target="dropdown" data-action="click->dropdown#toggle" aria-label="Menu">
+      <div class="dropdown-trigger">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+          <% if current_account %>
+            <%= link_to "Account", account_path(current_account), class: "dropdown-item" %>
+          <% end %>
+          <%= link_to "Profile", edit_user_registration_path, class: "dropdown-item" %>
+          <%= button_to "Log out", destroy_user_session_path, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "dropdown-item", style: "width: 100%;" %>
+        </div>
+      </div>
+    </span>
   </div>
 
   <div class="navbar-menu">
     <div class="navbar-end">
-      <div class="navbar-item">
-        <div class="buttons">
-          <%= link_to edit_user_registration_path, class: "button is-link" do %>
-            <span>Profile</span>
+      <%= render 'layouts/notifications_bell' %>
+      
+      <div class="navbar-item has-dropdown" data-controller="dropdown" data-dropdown-target="dropdown">
+        <div class="navbar-link" data-action="click->dropdown#toggle">Account</div>
+        <div class="navbar-dropdown is-boxed is-active is-right">
+          <% if current_account %>
+            <%= link_to "Account Settings", account_path(current_account), class: "navbar-item" %>
           <% end %>
-
-          <%= button_to destroy_user_session_path, class: "button", method: :delete, data: { turbo_confirm: "Are you sure?" } do %>
-            <span>Log out</span>
-          <% end %>
+          <%= link_to "Edit profile", edit_user_registration_path, class: "navbar-item" %>
+          <%= button_to "Log out", destroy_user_session_path, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "navbar-item", style: "width: 100%;" %>
         </div>
       </div>
     </div>

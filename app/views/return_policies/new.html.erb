@@ -1,0 +1,126 @@
+<div class="container">
+  <nav class="breadcrumb" aria-label="breadcrumbs">
+    <ul>
+      <li><%= link_to "Dashboard", account_dashboard_path(current_account) %></li>
+      <li><%= link_to "External Accounts", account_external_account_path(current_account, @external_account) %></li>
+      <li class="is-active"><a href="#" aria-current="page">New Return Policy</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="title">Create New Return Policy</h1>
+  <h2 class="subtitle">eBay Account: <%= @external_account.ebay_display_name || @external_account.ebay_username %></h2>
+
+  <%= form_with model: [@external_account, @return_policy], 
+                url: account_external_account_return_policies_path(current_account, @external_account),
+                local: true,
+                class: "box" do |f| %>
+    
+    <% if @return_policy.errors.any? %>
+      <div class="notification is-danger">
+        <h4>Please fix the following errors:</h4>
+        <ul>
+          <% @return_policy.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= f.hidden_field :marketplace_id, value: "EBAY_GB" %>
+
+    <div class="field">
+      <%= f.label :name, class: "label" %>
+      <div class="control">
+        <%= f.text_field :name, class: "input", placeholder: "Policy Name" %>
+      </div>
+      <p class="help">Enter a unique name for this return policy</p>
+    </div>
+
+    <div class="field">
+      <%= f.label :returns_accepted, "Returns Accepted", class: "label" %>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <%= f.select :returns_accepted, 
+                       [["Yes", "true"], ["No", "false"]], 
+                       { prompt: "Select whether returns are accepted" },
+                       { class: "select", id: "returns_accepted_select" } %>
+        </div>
+      </div>
+    </div>
+
+    <div id="return_details" style="display: none;">
+      <div class="field">
+        <%= f.label :return_period_value, "Return Period", class: "label" %>
+        <div class="field has-addons">
+          <div class="control">
+            <%= f.number_field :return_period_value, class: "input", min: 1, max: 60, value: 30 %>
+          </div>
+          <div class="control">
+            <div class="select">
+              <%= f.select :return_period_unit, 
+                           [["Days", "DAY"], ["Months", "MONTH"]], 
+                           { selected: "DAY" } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :refund_method, "Refund Method", class: "label" %>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <%= f.select :refund_method,
+                         [["Money Back", "MONEY_BACK"], ["Exchange", "EXCHANGE"], ["Store Credit", "MERCHANDISE_CREDIT"]],
+                         { selected: "MONEY_BACK" } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :return_shipping_cost_payer, "Return Shipping Cost Payer", class: "label" %>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <%= f.select :return_shipping_cost_payer,
+                         [["Buyer", "BUYER"], ["Seller", "SELLER"]],
+                         { selected: "BUYER" } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :return_instructions, "Return Instructions", class: "label" %>
+        <div class="control">
+          <%= f.text_area :return_instructions, class: "textarea", rows: 3, placeholder: "Optional instructions for buyers returning items" %>
+        </div>
+        <p class="help">Provide any special instructions for returns (optional)</p>
+      </div>
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <%= f.submit "Create Return Policy", class: "button is-primary" %>
+      </div>
+      <div class="control">
+        <%= link_to "Cancel", account_external_account_path(current_account, @external_account), class: "button" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const returnsAcceptedSelect = document.getElementById('returns_accepted_select');
+    const returnDetails = document.getElementById('return_details');
+    
+    function toggleReturnDetails() {
+      if (returnsAcceptedSelect.value === 'true') {
+        returnDetails.style.display = 'block';
+      } else {
+        returnDetails.style.display = 'none';
+      }
+    }
+    
+    returnsAcceptedSelect.addEventListener('change', toggleReturnDetails);
+    toggleReturnDetails(); // Initial check
+  });
+</script>

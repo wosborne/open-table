@@ -4,7 +4,7 @@ class TablesController < AccountsController
 
   def show
     @table = current_table
-    @items = search_and_filter_items(item_scope)
+    @records = search_and_filter_records(record_scope)
     @property_value_options = property_value_options
     @view = current_view
 
@@ -37,12 +37,12 @@ class TablesController < AccountsController
   end
 
   def set_record_attribute
-    item = current_table.items.find(set_attribute_params[:item_id])
+    record = current_table.records.find(set_attribute_params[:record_id])
     property = current_table.properties.find(set_attribute_params[:property_id])
-    item.set_property(set_attribute_params) if item && property
+    record.set_property(set_attribute_params) if record && property
 
     render turbo_stream: [
-      turbo_stream.replace("item-#{item.id}-property-#{property.id}", partial: "components/table/cell", locals: { item:, property:, value: item.properties[property.id.to_s] })
+      turbo_stream.replace("record-#{record.id}-property-#{property.id}", partial: "components/table/cell", locals: { record: record, property:, value: record.properties[property.id.to_s] })
     ]
   end
 
@@ -57,8 +57,8 @@ class TablesController < AccountsController
   end
 
   private
-  def item_scope
-    current_table.items.order(:created_at)
+  def record_scope
+    current_table.records.order(:created_at)
   end
 
   def table_params
@@ -66,7 +66,7 @@ class TablesController < AccountsController
   end
 
   def set_attribute_params
-    params.permit(:item_id, :property_id, :value)
+    params.permit(:record_id, :property_id, :value)
   end
 
   def property_value_options

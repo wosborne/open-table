@@ -1,0 +1,55 @@
+<% ebay_aspects ||= nil %>
+<% if selected_product&.product_options&.any? %>
+  <h3 class="subtitle">Product Options</h3>
+  
+  <%= fields_for "variant[variant_option_values_attributes]" do |vov_form| %>
+    <% if ebay_aspects&.any? %>
+      <% selected_product.product_options.each_with_index do |option, index| %>
+        <% corresponding_aspect = ebay_aspects.find { |aspect| aspect[:name] == option.name } %>
+        <% if corresponding_aspect %>
+          <div class="field">
+            <label class="label">
+              <%= option.name %>
+              <% if corresponding_aspect[:required] %>
+                <span class="has-text-danger">*</span>
+              <% end %>
+            </label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <%= select_tag "variant[product_option_values_attributes][#{index}][value]", 
+                    options_for_select(corresponding_aspect[:values].map { |v| [v, v] }),
+                    { 
+                      prompt: "Select #{option.name}...",
+                      required: corresponding_aspect[:required],
+                      class: "input"
+                    } %>
+              </div>
+            </div>
+            <%= hidden_field_tag "variant[product_option_values_attributes][#{index}][product_option_id]", option.id %>
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <% selected_product.product_options.each_with_index do |option, index| %>
+        <div class="field">
+          <label class="label">
+            <%= option.name %>
+            <span class="has-text-danger">*</span>
+          </label>
+          <div class="control">
+            <div class="select is-fullwidth">
+              <%= select_tag "variant[product_option_values_attributes][#{index}][value]", 
+                  options_from_collection_for_select(option.product_option_values, :value, :value),
+                  { 
+                    prompt: "Select #{option.name.downcase}...",
+                    required: true,
+                    class: "input"
+                  } %>
+            </div>
+          </div>
+          <%= hidden_field_tag "variant[product_option_values_attributes][#{index}][product_option_id]", option.id %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

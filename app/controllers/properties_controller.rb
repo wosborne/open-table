@@ -1,14 +1,12 @@
 class PropertiesController < TablesController
   def create
-    @property = current_table.properties.create(data_type: :text)
+    @property = current_table.properties.create(type: Property::TYPE_MAP[property_params[:type]] || "Properties::TextProperty")
 
     redirect_to account_table_path(current_account, current_table)
   end
 
   def update
-    @property = current_table.properties.find(params[:id])
-
-    @property.update(property_params)
+    @property = Properties::UpdateProperty.call(current_property, property_params)
   end
 
   def destroy
@@ -26,14 +24,14 @@ class PropertiesController < TablesController
 
   def refresh_cells
     property = current_table.properties.find(params[:id])
-    item_ids = JSON.parse(params[:item_ids])
-    items = current_table.items.where(id: item_ids)
+    record_ids = JSON.parse(params[:record_ids])
+    records = current_table.records.where(id: record_ids)
 
-    render turbo_stream: items.map { |item|
+    render turbo_stream: records.map { |record|
       turbo_stream.replace(
-        "item-#{item.id}-property-#{property.id}",
+        "record-#{record.id}-property-#{property.id}",
         partial: "components/table/cell",
-        locals: { item: item, property: property, value: item.properties[property.id.to_s] }
+        locals: { record:, property: property, value: record.properties[property.id.to_s] }
       )
     }
   end
@@ -48,10 +46,11 @@ class PropertiesController < TablesController
     params.require(:property).permit(
       :id,
       :name,
-      :data_type,
+      :type,
       :position,
       :linked_table_id,
       :format,
+      :prefix,
       options_attributes: [ :id, :value, :_destroy ],
       formula_attributes: [ :id, :formula_data ]
     )

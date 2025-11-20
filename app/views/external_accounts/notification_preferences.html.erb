@@ -1,0 +1,139 @@
+<turbo-frame id="notification-preferences-frame">
+  <div class="content mt-5">
+    <h4 class="title is-5">Notification Preferences</h4>
+    
+    <% if @notification_data[:error] %>
+      <div class="notification is-warning">
+        <strong>Error:</strong> <%= @notification_data[:error] %>
+        <% if @notification_data[:error].include?("token") %>
+          <br>
+          <small>Your eBay token may have expired. Try reconnecting your eBay account.</small>
+        <% end %>
+      </div>
+    <% else %>
+      <% if @notification_data[:enabled_events].any? %>
+        <div class="tags">
+          <% @notification_data[:enabled_events].each do |event| %>
+            <span class="tag is-success is-light"><%= event.humanize %></span>
+          <% end %>
+        </div>
+        
+        <div class="content is-small mt-3">
+          <p><strong><%= @notification_data[:enabled_events].count %></strong> event types enabled</p>
+        </div>
+      <% else %>
+        <div class="notification is-warning">
+          <strong>No notification events are configured.</strong><br>
+          <small>Please reconnect your eBay account to configure notifications.</small>
+        </div>
+      <% end %>
+    <% end %>
+
+    <!-- Notification Usage Stats -->
+    <div class="content mt-5">
+      <h5 class="title is-6">Notification Usage (Last 2 Days)</h5>
+      
+      <% if @notification_usage && !@notification_usage[:error] %>
+        <div class="columns">
+          <div class="column is-one-third-tablet">
+            <div class="box has-text-centered">
+              <p class="heading">Total Notifications</p>
+              <p class="title is-3"><%= @notification_usage[:total_notifications] %></p>
+            </div>
+          </div>
+          <div class="column is-one-third-tablet">
+            <div class="box has-text-centered">
+              <p class="heading">Failed</p>
+              <p class="title is-3 <%= @notification_usage[:total_failed_notifications] > 0 ? 'has-text-danger' : 'has-text-success' %>">
+                <%= @notification_usage[:total_failed_notifications] %>
+              </p>
+            </div>
+          </div>
+          <div class="column is-one-third-tablet">
+            <div class="box has-text-centered">
+              <p class="heading">Success Rate</p>
+              <p class="title is-3 has-text-success">
+                <% if @notification_usage[:total_notifications] > 0 %>
+                  <%= (((@notification_usage[:total_notifications] - @notification_usage[:total_failed_notifications]).to_f / @notification_usage[:total_notifications]) * 100).round(1) %>%
+                <% else %>
+                  100%
+                <% end %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <% if @notification_usage[:breakdown] %>
+          <div class="content is-small mt-4">
+            <p class="subtitle is-6">Breakdown:</p>
+            <div class="level is-mobile">
+              <div class="level-left">
+                <div class="level-item">
+                  <span class="tag is-success is-light">Delivered</span>
+                </div>
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <span class="has-text-weight-bold"><%= @notification_usage[:breakdown][:delivered] %></span>
+                </div>
+              </div>
+            </div>
+            
+            <% if @notification_usage[:breakdown][:errors] > 0 %>
+              <div class="level is-mobile">
+                <div class="level-left">
+                  <div class="level-item">
+                    <span class="tag is-danger is-light">Errors</span>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <span class="has-text-weight-bold has-text-danger"><%= @notification_usage[:breakdown][:errors] %></span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @notification_usage[:breakdown][:expired] > 0 %>
+              <div class="level is-mobile">
+                <div class="level-left">
+                  <div class="level-item">
+                    <span class="tag is-warning is-light">Expired</span>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <span class="has-text-weight-bold has-text-warning"><%= @notification_usage[:breakdown][:expired] %></span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @notification_usage[:total_pending] > 0 %>
+              <div class="level is-mobile">
+                <div class="level-left">
+                  <div class="level-item">
+                    <span class="tag is-info is-light">Pending/Queued</span>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <span class="has-text-weight-bold has-text-info"><%= @notification_usage[:total_pending] %></span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% elsif @notification_usage && @notification_usage[:error] %>
+        <div class="notification is-warning">
+          <strong>Usage data unavailable:</strong> <%= @notification_usage[:error] %>
+        </div>
+      <% else %>
+        <div class="notification is-info">
+          <strong>Loading usage statistics...</strong>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</turbo-frame>

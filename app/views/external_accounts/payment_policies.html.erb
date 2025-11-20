@@ -1,0 +1,8 @@
+<%= render PolicyTableComponent.new(
+      policy_type: 'payment',
+      title: 'Payment Policies',
+      policies: @payment_policies,
+      local_policies: @local_payment_policies,
+      external_account: @external_account,
+      current_account: current_account
+    ) %>

@@ -1,0 +1,19 @@
+
+<h1 class="title">Products</h1>
+
+<div class="field is-grouped is-grouped-right">
+  <p class="control">
+    <%= link_to new_account_product_path(current_account), class: "button is-fullwidth-mobile" do %>
+      <span class="icon-text">
+        <span class="icon">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>New Product</span>
+      </span>
+    <% end %>
+  </p>
+</div>
+
+<%= turbo_frame_tag "products", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
+  <%= render TableGridComponent.new(resources: @products, extra_columns: @extra_columns, current_account: current_account, model_class: Product) %>
+<% end %>

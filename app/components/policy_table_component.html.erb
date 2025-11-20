@@ -1,0 +1,45 @@
+<turbo-frame id="<%= frame_id %>">
+  <div class="content mt-5">
+    <div class="level">
+      <div class="level-left">
+        <div class="level-item">
+          <h4 class="title is-5"><%= title %></h4>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <%= link_to create_button_text, 
+                create_button_path, 
+                class: "button is-primary", 
+                data: { turbo_frame: "_top" } %>
+        </div>
+      </div>
+    </div>
+    
+    <% if policies.any? %>
+      <div style="overflow: auto;">
+        <table class="table is-fullwidth is-hoverable" data-controller="clickable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th><%= detail_column_header %></th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% policies.each do |policy| %>
+              <% local_policy = local_policy_for(policy) %>
+              <tr <%= "data-url=\"#{show_path(local_policy)}\"".html_safe if local_policy %> style="cursor: pointer;">
+                <td><%= policy['name'] %></td>
+                <td><%= detail_value(policy) %></td>
+                <td>From eBay</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="has-text-grey"><%= no_policies_message %></p>
+    <% end %>
+  </div>
+</turbo-frame>

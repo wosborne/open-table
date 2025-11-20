@@ -1,0 +1,54 @@
+<%= form_with model: [current_account, @variant], local: true do |form| %>
+  <% if @variant.errors.any? %>
+    <div class="notification is-danger">
+      <ul>
+        <% @variant.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div data-controller="variant-product-selector" 
+       data-variant-product-selector-product-options-url-value="<%= product_options_account_variants_path(current_account) %>">
+    
+    <div class="field">
+      <%= form.label :product_id, "Product", class: "label" %>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <%= form.collection_select :product_id, @products, :id, :name, 
+              { prompt: "Select a product" }, 
+              { required: true, data: { action: "change->variant-product-selector#updateProductOptions" } } %>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="field">
+      <%= form.label :price, class: "label" %>
+      <div class="control">
+        <div class="field has-addons">
+          <div class="control">
+            <span class="button is-static">$</span>
+          </div>
+          <div class="control is-expanded">
+            <%= form.number_field :price, step: 0.01, min: 0, class: "input", placeholder: "0.00", required: true %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%= turbo_frame_tag "product_options" do %>
+      <% if @variant.product %>
+        <%= render 'product_options', selected_product: @variant.product %>
+      <% end %>
+    <% end %>
+
+    <div class="field">
+      <div class="control">
+        <%= form.submit (form.object.new_record? ? "Create Variant" : "Update Variant"), class: "button is-primary" %>
+        <%= link_to "Cancel", @variant.persisted? ? account_variant_path(current_account, @variant) : account_variants_path(current_account), class: "button" %>
+      </div>
+    </div>
+  </div>
+<% end %>

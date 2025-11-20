@@ -1,0 +1,8 @@
+<%= render PolicyTableComponent.new(
+      policy_type: 'fulfillment',
+      title: 'Fulfillment Policies (Shipping)',
+      policies: @fulfillment_policies,
+      local_policies: @local_fulfillment_policies,
+      external_account: @external_account,
+      current_account: current_account
+    ) %>

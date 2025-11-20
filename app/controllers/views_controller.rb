@@ -4,7 +4,7 @@ class ViewsController < TablesController
   def show
     @view = current_table.views.friendly.find(params[:id])
     @table = @view.table
-    @items = search_and_filter_items(item_scope)
+    @records = search_and_filter_records(record_scope)
     @property_value_options = property_value_options
   end
 
@@ -54,19 +54,19 @@ class ViewsController < TablesController
     end
   end
 
-  def item_scope
-    @item_scope||= apply_view_filters
+  def record_scope
+    @record_scope||= apply_view_filters
   end
 
   def apply_view_filters
-    items = current_table.items.order(:created_at)
+    records = current_table.records.order(:created_at)
 
     @view.filters.each do |filter|
       pid = filter.property_id
 
-      items = items.where("properties ->> ? ILIKE ?", pid.to_s, "%#{filter.value}%")
+      records = records.where("properties ->> ? ILIKE ?", pid.to_s, "%#{filter.value}%")
     end
 
-    items
+    records
   end
 end
