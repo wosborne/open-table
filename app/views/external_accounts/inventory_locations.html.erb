@@ -1,47 +1,60 @@
 <turbo-frame id="inventory-locations-frame">
   <div class="content mt-5">
-    <h4 class="title is-5">Inventory Locations</h4>
+    <div class="level">
+      <div class="level-left">
+        <div class="level-item">
+          <h4 class="title is-5">Inventory Locations</h4>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <%= link_to "Create New Location", new_account_location_path(current_account), 
+                      class: "button is-primary", data: { turbo_frame: "_top" } %>
+        </div>
+      </div>
+    </div>
+    
     <% if @inventory_locations.any? %>
-      <table class="table is-fullwidth">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @inventory_locations.each do |location| %>
+      <div style="overflow: auto;">
+        <table class="table is-fullwidth">
+          <thead>
             <tr>
-              <td><%= location['name'] %></td>
-              <td>
-                <% if location['location'] && location['location']['address'] %>
-                  <% address = location['location']['address'] %>
-                  <%= [address['addressLine1'], address['city'], address['postalCode']].compact.join(', ') %>
-                <% else %>
-                  -
-                <% end %>
-              </td>
-              <td>
-                <% status = location['merchantLocationStatus'] %>
-                <span class="tag <%= status == 'ENABLED' ? 'is-success' : 'is-warning' %>">
-                  <%= status&.humanize %>
-                </span>
-              </td>
-              <td>
-                <% local_location = current_account.locations.find_by(ebay_merchant_location_key: location['merchantLocationKey']) %>
-                <%= link_to "Edit", edit_account_location_path(current_account, local_location), 
-                            class: "button is-small is-light", data: { turbo_frame: "_top" } %>
-              </td>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% @inventory_locations.each do |location| %>
+              <tr>
+                <td><%= location['name'] %></td>
+                <td>
+                  <% if location['location'] && location['location']['address'] %>
+                    <% address = location['location']['address'] %>
+                    <%= [address['addressLine1'], address['city'], address['postalCode']].compact.join(', ') %>
+                  <% else %>
+                    -
+                  <% end %>
+                </td>
+                <td>
+                  <% status = location['merchantLocationStatus'] %>
+                  <span class="tag <%= status == 'ENABLED' ? 'is-success' : 'is-warning' %>">
+                    <%= status&.humanize %>
+                  </span>
+                </td>
+                <td>
+                  <% local_location = current_account.locations.find_by(ebay_merchant_location_key: location['merchantLocationKey']) %>
+                  <%= link_to "Edit", edit_account_location_path(current_account, local_location), 
+                              class: "button is-small is-light", data: { turbo_frame: "_top" } %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     <% else %>
       <p class="has-text-grey">No inventory locations found.</p>
     <% end %>
-    <%= link_to "Create New Location", new_account_location_path(current_account), 
-                class: "button is-info", data: { turbo_frame: "_top" } %>
   </div>
 </turbo-frame>

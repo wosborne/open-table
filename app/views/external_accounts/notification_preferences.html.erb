@@ -34,14 +34,14 @@
       <h5 class="title is-6">Notification Usage (Last 2 Days)</h5>
       
       <% if @notification_usage && !@notification_usage[:error] %>
-        <div class="columns is-mobile">
-          <div class="column">
+        <div class="columns">
+          <div class="column is-one-third-tablet">
             <div class="box has-text-centered">
               <p class="heading">Total Notifications</p>
               <p class="title is-3"><%= @notification_usage[:total_notifications] %></p>
             </div>
           </div>
-          <div class="column">
+          <div class="column is-one-third-tablet">
             <div class="box has-text-centered">
               <p class="heading">Failed</p>
               <p class="title is-3 <%= @notification_usage[:total_failed_notifications] > 0 ? 'has-text-danger' : 'has-text-success' %>">
@@ -49,7 +49,7 @@
               </p>
             </div>
           </div>
-          <div class="column">
+          <div class="column is-one-third-tablet">
             <div class="box has-text-centered">
               <p class="heading">Success Rate</p>
               <p class="title is-3 has-text-success">

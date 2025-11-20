@@ -5,7 +5,7 @@
     <%= link_to "← Back", account_path(current_account), class: "button is-text" %>
   </div>
 
-  <div class="box">
+  <div>
     <div class="level mb-5">
       <div class="level-left">
         <div class="level-item">
@@ -46,49 +46,59 @@
         </div>
         
         <!-- Fulfillment Policies -->
-        <turbo-frame id="fulfillment-policies-frame" 
-                     src="<%= fulfillment_policies_account_external_account_path(current_account, @external_account) %>">
-          <div class="content mt-5">
-            <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
-            <div class="skeleton-block"></div>
-          </div>
-        </turbo-frame>
+        <section class="section px-0">
+          <turbo-frame id="fulfillment-policies-frame" 
+                      src="<%= fulfillment_policies_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Fulfillment Policies (Shipping)</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
 
         <!-- Payment Policies -->
-        <turbo-frame id="payment-policies-frame" 
-                     src="<%= payment_policies_account_external_account_path(current_account, @external_account) %>">
-          <div class="content mt-5">
-            <h4 class="title is-5">Payment Policies</h4>
-            <div class="skeleton-block"></div>
-          </div>
-        </turbo-frame>
+        <section class="section px-0">
+          <turbo-frame id="payment-policies-frame" 
+                      src="<%= payment_policies_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Payment Policies</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
 
         <!-- Return Policies -->
-        <turbo-frame id="return-policies-frame" 
-                     src="<%= return_policies_account_external_account_path(current_account, @external_account) %>">
-          <div class="content mt-5">
-            <h4 class="title is-5">Return Policies</h4>
-            <div class="skeleton-block"></div>
-          </div>
-        </turbo-frame>
+        <section class="section px-0">
+          <turbo-frame id="return-policies-frame" 
+                      src="<%= return_policies_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Return Policies</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
 
         <!-- Inventory Locations -->
-        <turbo-frame id="inventory-locations-frame" 
-                     src="<%= inventory_locations_account_external_account_path(current_account, @external_account) %>">
-          <div class="content mt-5">
-            <h4 class="title is-5">Inventory Locations</h4>
-            <div class="skeleton-block"></div>
-          </div>
-        </turbo-frame>
+        <section class="section px-0">
+          <turbo-frame id="inventory-locations-frame" 
+                      src="<%= inventory_locations_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Inventory Locations</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
 
         <!-- Notification Preferences -->
-        <turbo-frame id="notification-preferences-frame" 
-                     src="<%= notification_preferences_account_external_account_path(current_account, @external_account) %>">
-          <div class="content mt-5">
-            <h4 class="title is-5">Notification Preferences</h4>
-            <div class="skeleton-block"></div>
-          </div>
-        </turbo-frame>
+        <section class="section px-0">  
+          <turbo-frame id="notification-preferences-frame" 
+                      src="<%= notification_preferences_account_external_account_path(current_account, @external_account) %>">
+            <div class="content mt-5">
+              <h4 class="title is-5">Notification Preferences</h4>
+              <div class="skeleton-block"></div>
+            </div>
+          </turbo-frame>
+        </section>
       </div>
     <% end %>
 
