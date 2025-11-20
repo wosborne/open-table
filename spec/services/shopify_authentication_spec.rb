@@ -5,7 +5,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
   let(:shop_domain) { "test-shop.myshopify.com" }
   let(:params) { { "shop" => shop_domain, "code" => "auth_code_123", "state" => jwt_state } }
   let(:authentication_service) { ShopifyAuthentication.new(params: params) }
-  
+
   let(:jwt_payload) do
     {
       user_id: user.id,
@@ -25,7 +25,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
 
   before do
     user.update!(state_nonce: "secure_nonce")
-    
+
     # Override global mocking for RestClient calls in these tests
     allow(RestClient).to receive(:post).and_return(rest_client_response)
   end
@@ -43,7 +43,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
       allow(authentication_service).to receive(:generate_state).with(user).and_return("test_state")
 
       result = authentication_service.authentication_path(user, shop_domain)
-      
+
       expect(result).to include("https://#{shop_domain}/admin/oauth/authorize")
       expect(result).to include("client_id=#{Rails.application.credentials.shopify[:client_id]}")
       expect(result).to include("scope=read_products,write_products,read_inventory,write_inventory,read_orders")
@@ -62,7 +62,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
     context 'with valid JWT' do
       it 'decodes state correctly' do
         result = authentication_service.decode_state(jwt_state)
-        
+
         expect(result["user_id"]).to eq(user.id)
         expect(result["current_account_id"]).to eq(user.accounts.first.id)
         expect(result["nonce"]).to eq("secure_nonce")
@@ -78,14 +78,14 @@ RSpec.describe ShopifyAuthentication, type: :service do
       it 'returns nil for expired token' do
         expired_payload = jwt_payload.merge(exp: 1.hour.ago.to_i)
         expired_token = JWT.encode(expired_payload, Rails.application.credentials.secret_key_base, "HS256")
-        
+
         result = authentication_service.decode_state(expired_token)
         expect(result).to be_nil
       end
 
       it 'returns nil for token with wrong secret' do
         wrong_secret_token = JWT.encode(jwt_payload, "wrong_secret", "HS256")
-        
+
         result = authentication_service.decode_state(wrong_secret_token)
         expect(result).to be_nil
       end
@@ -135,9 +135,9 @@ RSpec.describe ShopifyAuthentication, type: :service do
     end
 
     it 'destroys existing shopify account before creating new one' do
-      existing_account = create(:external_account, 
-        account: user.accounts.first, 
-        service_name: "shopify", 
+      existing_account = create(:external_account,
+        account: user.accounts.first,
+        service_name: "shopify",
         domain: "old-shop.myshopify.com"
       )
 
@@ -188,7 +188,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
   describe '#generate_state' do
     it 'generates JWT with correct payload structure' do
       allow(SecureRandom).to receive(:hex).with(16).and_return("test_nonce")
-      
+
       state = authentication_service.send(:generate_state, user)
       decoded = JWT.decode(state, Rails.application.credentials.secret_key_base, true, { algorithm: "HS256" })
       payload = decoded.first
@@ -201,7 +201,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
 
     it 'updates user state_nonce' do
       allow(SecureRandom).to receive(:hex).with(16).and_return("new_nonce")
-      
+
       expect {
         authentication_service.send(:generate_state, user)
       }.to change { user.reload.state_nonce }.to("new_nonce")
@@ -249,7 +249,7 @@ RSpec.describe ShopifyAuthentication, type: :service do
       # Step 1: Generate auth URL (this will update user's state_nonce)
       auth_url = authentication_service.authentication_path(user, shop_domain)
       expect(auth_url).to include(shop_domain)
-      
+
       # Step 2: Get the updated user state for testing
       user.reload
       new_jwt_payload = {
@@ -259,15 +259,15 @@ RSpec.describe ShopifyAuthentication, type: :service do
         exp: 10.minutes.from_now.to_i
       }
       new_jwt_state = JWT.encode(new_jwt_payload, Rails.application.credentials.secret_key_base, "HS256")
-      
+
       # Step 3: Decode state (simulating callback)
       state_data = authentication_service.decode_state(new_jwt_state)
       expect(state_data).to be_present
-      
+
       # Step 4: Verify user matches
       found_user = User.find_by(id: state_data["user_id"], state_nonce: state_data["nonce"])
       expect(found_user).to eq(user)
-      
+
       # Step 5: Create external account
       expect {
         authentication_service.create_external_account_for(found_user)
@@ -278,12 +278,12 @@ RSpec.describe ShopifyAuthentication, type: :service do
       # Create a different user with different nonce
       attacker_user = create(:user)
       attacker_user.update!(state_nonce: "attacker_nonce")
-      
+
       # Try to use state meant for original user
       found_user = User.find_by(id: jwt_payload[:user_id], state_nonce: jwt_payload[:nonce])
       expect(found_user).to eq(user)
       expect(found_user).not_to eq(attacker_user)
-      
+
       # Attacker can't use the state because nonce doesn't match
       attacker_found = User.find_by(id: attacker_user.id, state_nonce: jwt_payload[:nonce])
       expect(attacker_found).to be_nil

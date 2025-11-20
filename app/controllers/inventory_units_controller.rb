@@ -16,7 +16,7 @@ class InventoryUnitsController < AccountsController
   def create
     @inventory_unit = current_account.inventory_units.new(inventory_unit_params)
     @products = current_account.products.includes(:variants)
-    
+
     if @inventory_unit.save
       redirect_to account_inventory_unit_path(current_account, @inventory_unit), notice: "Inventory unit created."
     else
@@ -59,9 +59,9 @@ class InventoryUnitsController < AccountsController
     @products = current_account.products.includes(:variants)
     @selected_product = current_account.products.find_by(id: params[:product_id])
     @inventory_unit = current_account.inventory_units.new
-    
-    render partial: "product_option_selector", locals: { 
-      products: @products, 
+
+    render partial: "product_option_selector", locals: {
+      products: @products,
       selected_product: @selected_product
     }
   end

@@ -30,7 +30,7 @@ RSpec.describe EbayApiResponse, type: :model do
 
     it 'accepts error data' do
       error_data = { message: 'Invalid request' }
-      detailed_errors = [{ error_id: 123, message: 'Field required' }]
+      detailed_errors = [ { error_id: 123, message: 'Field required' } ]
 
       response = described_class.new(
         success: false,
@@ -85,7 +85,7 @@ RSpec.describe EbayApiResponse, type: :model do
       it 'returns JSON string of data' do
         data = { id: '123', name: 'Test Policy' }
         response = described_class.new(success: true, status_code: 200, data: data)
-        
+
         expect(response.body).to eq(data.to_json)
       end
 
@@ -94,11 +94,11 @@ RSpec.describe EbayApiResponse, type: :model do
           policy: {
             id: '123',
             details: { name: 'Test', active: true },
-            items: [1, 2, 3]
+            items: [ 1, 2, 3 ]
           }
         }
         response = described_class.new(success: true, status_code: 200, data: data)
-        
+
         expect(response.body).to eq(data.to_json)
       end
     end
@@ -133,8 +133,8 @@ RSpec.describe EbayApiResponse, type: :model do
           { error_id: 456, message: 'Another short message', long_message: 'Another long message' }
         ]
         response = described_class.new(success: false, status_code: 400, detailed_errors: detailed_errors)
-        
-        expect(response.error_messages).to eq(['Long detailed message', 'Another long message'])
+
+        expect(response.error_messages).to eq([ 'Long detailed message', 'Another long message' ])
       end
 
       it 'falls back to message when long_message is not available' do
@@ -143,8 +143,8 @@ RSpec.describe EbayApiResponse, type: :model do
           { error_id: 456, message: 'Another message' }
         ]
         response = described_class.new(success: false, status_code: 400, detailed_errors: detailed_errors)
-        
-        expect(response.error_messages).to eq(['Short message', 'Another message'])
+
+        expect(response.error_messages).to eq([ 'Short message', 'Another message' ])
       end
 
       it 'uses default message when both are missing' do
@@ -153,8 +153,8 @@ RSpec.describe EbayApiResponse, type: :model do
           { error_id: 456, severity: 'high' }
         ]
         response = described_class.new(success: false, status_code: 400, detailed_errors: detailed_errors)
-        
-        expect(response.error_messages).to eq(['Unknown error', 'Unknown error'])
+
+        expect(response.error_messages).to eq([ 'Unknown error', 'Unknown error' ])
       end
 
       it 'handles mixed message availability' do
@@ -164,8 +164,8 @@ RSpec.describe EbayApiResponse, type: :model do
           { error_id: 789, severity: 'low' }
         ]
         response = described_class.new(success: false, status_code: 400, detailed_errors: detailed_errors)
-        
-        expect(response.error_messages).to eq(['Long message', 'Only short message', 'Unknown error'])
+
+        expect(response.error_messages).to eq([ 'Long message', 'Only short message', 'Unknown error' ])
       end
     end
   end
@@ -174,21 +174,21 @@ RSpec.describe EbayApiResponse, type: :model do
     it 'provides informative string representation with data keys' do
       data = { policy_id: '123', name: 'Test Policy', active: true }
       response = described_class.new(success: true, status_code: 200, data: data)
-      
+
       expected = "#<EbayApiResponse success=true code=200 data_keys=#{data.keys}>"
       expect(response.inspect).to eq(expected)
     end
 
     it 'handles nil data gracefully' do
       response = described_class.new(success: false, status_code: 404, data: nil)
-      
+
       expected = "#<EbayApiResponse success=false code=404 data_keys=>"
       expect(response.inspect).to eq(expected)
     end
 
     it 'handles empty data' do
       response = described_class.new(success: true, status_code: 204, data: {})
-      
+
       expected = "#<EbayApiResponse success=true code=204 data_keys=[]>"
       expect(response.inspect).to eq(expected)
     end
@@ -201,7 +201,7 @@ RSpec.describe EbayApiResponse, type: :model do
           'fulfillmentPolicyId' => '123456789',
           'name' => 'UK Standard Shipping',
           'marketplaceId' => 'EBAY_GB',
-          'categoryTypes' => [{ 'name' => 'ALL_EXCLUDING_MOTORS_VEHICLES', 'default' => true }]
+          'categoryTypes' => [ { 'name' => 'ALL_EXCLUDING_MOTORS_VEHICLES', 'default' => true } ]
         }
 
         response = described_class.new(success: true, status_code: 201, data: data)
@@ -267,7 +267,7 @@ RSpec.describe EbayApiResponse, type: :model do
         expect(response.failure?).to be true
         expect(response.status_code).to eq(400)
         expect(response.error['errors'].first['errorId']).to eq(25007)
-        expect(response.error_messages).to eq(['Required field shippingOptions is missing from the request'])
+        expect(response.error_messages).to eq([ 'Required field shippingOptions is missing from the request' ])
       end
 
       it 'models authentication error response' do
@@ -297,7 +297,7 @@ RSpec.describe EbayApiResponse, type: :model do
 
         expect(response.success?).to be false
         expect(response.status_code).to eq(401)
-        expect(response.error_messages).to eq(['Invalid access token'])
+        expect(response.error_messages).to eq([ 'Invalid access token' ])
       end
 
       it 'models network error response' do
@@ -323,7 +323,7 @@ RSpec.describe EbayApiResponse, type: :model do
     end
 
     it 'handles array data' do
-      data = [1, 2, 3, 'test']
+      data = [ 1, 2, 3, 'test' ]
       response = described_class.new(success: true, status_code: 200, data: data)
       expect(response.body).to eq(data.to_json)
     end
@@ -338,7 +338,7 @@ RSpec.describe EbayApiResponse, type: :model do
         { error_id: 123, message: 'Test error' }
       ]
       response = described_class.new(success: false, status_code: 400, detailed_errors: detailed_errors)
-      expect(response.error_messages).to eq(['Test error'])
+      expect(response.error_messages).to eq([ 'Test error' ])
     end
 
     it 'only extracts messages with symbol keys (not string keys)' do
@@ -346,7 +346,7 @@ RSpec.describe EbayApiResponse, type: :model do
         { 'error_id' => 123, 'message' => 'String key message' }
       ]
       response = described_class.new(success: false, status_code: 400, detailed_errors: detailed_errors)
-      expect(response.error_messages).to eq(['Unknown error'])
+      expect(response.error_messages).to eq([ 'Unknown error' ])
     end
   end
 end

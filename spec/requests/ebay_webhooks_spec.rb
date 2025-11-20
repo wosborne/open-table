@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'eBay Webhooks', type: :request do
   let!(:external_account) { create(:external_account, service_name: "ebay", ebay_username: "test_user") }
-  
+
   let(:transaction_xml) do
     <<~XML
       <?xml version="1.0" encoding="UTF-8"?>
@@ -13,7 +13,7 @@ RSpec.describe 'eBay Webhooks', type: :request do
       </GetItemTransactionsResponse>
     XML
   end
-  
+
   let(:item_listed_xml) do
     <<~XML
       <?xml version="1.0" encoding="UTF-8"?>
@@ -29,7 +29,7 @@ RSpec.describe 'eBay Webhooks', type: :request do
     allow(Rails.application.credentials).to receive(:ebay).and_return(
       double(webhook_verification_token: 'test_verification_token')
     )
-    
+
     # Mock eBay API sync callbacks to prevent real API calls during factory creation
     allow_any_instance_of(ExternalAccount).to receive(:sync_ebay_inventory_locations).and_return(true)
     allow_any_instance_of(ExternalAccount).to receive(:sync_ebay_business_policies).and_return(true)
@@ -42,8 +42,8 @@ RSpec.describe 'eBay Webhooks', type: :request do
           .with(external_account)
           .and_return(double('handler', process: true))
 
-        post '/webhooks/ebay/notifications', 
-             params: transaction_xml, 
+        post '/webhooks/ebay/notifications',
+             params: transaction_xml,
              headers: { 'Content-Type' => 'text/xml' }
 
         expect(response).to have_http_status(:ok)
@@ -97,7 +97,7 @@ RSpec.describe 'eBay Webhooks', type: :request do
       it 'verifies JSON signature and returns ok' do
         post '/webhooks/ebay/notifications',
              params: json_payload,
-             headers: { 
+             headers: {
                'Content-Type' => 'application/json',
                'X-EBAY-SIGNATURE' => 'test_signature'
              }
@@ -125,11 +125,11 @@ RSpec.describe 'eBay Webhooks', type: :request do
 
   describe 'GET /webhooks/ebay/marketplace_account_deletion' do
     it 'returns challenge response for valid verification' do
-      get '/webhooks/ebay/marketplace_account_deletion', 
+      get '/webhooks/ebay/marketplace_account_deletion',
           params: { challenge_code: 'test_challenge_123' }
 
       expect(response).to have_http_status(:ok)
-      
+
       response_body = JSON.parse(response.body)
       expect(response_body).to have_key('challengeResponse')
       expect(response_body['challengeResponse']).to be_a(String)

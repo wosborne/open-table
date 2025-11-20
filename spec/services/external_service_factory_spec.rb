@@ -4,7 +4,7 @@ RSpec.describe ExternalServiceFactory, type: :service do
   describe '.for' do
     context 'with Shopify external account' do
       let(:shopify_account) { create(:external_account, service_name: "shopify", domain: "test-shop.myshopify.com") }
-      
+
       before do
         # Mock ShopifyAPI setup to avoid API calls during testing
         allow(ShopifyAPI::Context).to receive(:setup)
@@ -49,7 +49,7 @@ RSpec.describe ExternalServiceFactory, type: :service do
       it 'raises ArgumentError' do
         # Bypass validation to test factory logic
         allow(unknown_account).to receive(:service_name).and_return("unknown_service")
-        
+
         expect {
           ExternalServiceFactory.for(unknown_account)
         }.to raise_error(ArgumentError, "Unknown service: unknown_service")
@@ -64,7 +64,7 @@ RSpec.describe ExternalServiceFactory, type: :service do
         allow(Rails.application.credentials).to receive(:dig).and_call_original
         allow(Rails.application.credentials).to receive(:dig).with(:ebay, :client_id).and_return("ebay_client_id")
         allow(Rails.application.credentials).to receive(:dig).with(:ebay, :client_secret).and_return("ebay_client_secret")
-        
+
         # Mock ShopifyAPI setup for mixed service tests
         allow(ShopifyAPI::Context).to receive(:setup)
         allow(ShopifyAPI::Auth::Session).to receive(:new).and_return(double)

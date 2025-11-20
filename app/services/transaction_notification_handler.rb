@@ -5,15 +5,15 @@ class TransactionNotificationHandler
 
   def process(xml_body)
     parsed_data = parse_transaction_xml(xml_body)
-    
+
     if parsed_data.nil?
       Rails.logger.error "Transaction handler: Failed to parse XML data"
       return
     end
-    
+
     order = create_or_update_order(parsed_data)
     Rails.logger.info "eBay transaction processed: Order ##{order.name} - $#{order.total_price}"
-    
+
     order
   rescue => e
     Rails.logger.error "Transaction handler failed: #{e.message}"
@@ -23,31 +23,31 @@ class TransactionNotificationHandler
   private
 
   def parse_transaction_xml(xml_body)
-    require 'nokogiri'
+    require "nokogiri"
     doc = Nokogiri::XML(xml_body)
-    
+
     # Extract transaction data
     transaction_id = doc.at_xpath("//xmlns:TransactionID", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
     item_id = doc.at_xpath("//xmlns:ItemID", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
-    
+
     # Extract order data
     order_id = doc.at_xpath("//xmlns:ContainingOrder/xmlns:OrderID", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
     order_status = doc.at_xpath("//xmlns:ContainingOrder/xmlns:OrderStatus", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
-    
+
     # Extract transaction details
     amount_paid = doc.at_xpath("//xmlns:AmountPaid", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
     currency = doc.at_xpath("//xmlns:AmountPaid/@currencyID", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
     transaction_price = doc.at_xpath("//xmlns:TransactionPrice", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
-    
+
     # Extract item title for notification
     item_title = doc.at_xpath("//xmlns:Item/xmlns:Title", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
-    
+
     # Extract payment status
     payment_status = doc.at_xpath("//xmlns:Status/xmlns:CheckoutStatus", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
-    
+
     # Extract created date
     created_date = doc.at_xpath("//xmlns:CreatedDate", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
-    
+
     if transaction_id.blank? || item_id.blank? || order_id.blank?
       Rails.logger.error "eBay transaction missing data - transaction_id: #{transaction_id}, item_id: #{item_id}, order_id: #{order_id}"
       return nil
@@ -75,7 +75,7 @@ class TransactionNotificationHandler
 
     # Parse amount and convert to decimal
     total_price = data[:amount_paid]&.to_f || data[:transaction_price]&.to_f || 0.0
-    
+
     # Parse created date
     external_created_at = data[:created_date] ? Time.parse(data[:created_date]) : Time.current
 

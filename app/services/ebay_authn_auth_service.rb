@@ -2,7 +2,7 @@ class EbayAuthnAuthService
   def initialize(external_account)
     @external_account = external_account
     @dev_id = Rails.application.credentials.dig(:ebay, :dev_id)
-    @app_id = Rails.application.credentials.dig(:ebay, :client_id) 
+    @app_id = Rails.application.credentials.dig(:ebay, :client_id)
     @cert_id = Rails.application.credentials.dig(:ebay, :client_secret)
     @ru_name = "#{Rails.application.credentials.dig(:ebay, :callback_url)}/external_accounts/ebay_authn_auth_callback"
     @api_base_url = Rails.application.credentials.dig(:ebay, :api_base_url)
@@ -10,11 +10,11 @@ class EbayAuthnAuthService
 
   def get_session_id
     xml_payload = build_get_session_id_xml
-    
+
     Rails.logger.info "Getting eBay Auth'n'Auth session ID for: #{@external_account.ebay_username}"
-    
+
     response = make_authn_auth_request(xml_payload, "GetSessionID")
-    
+
     if response[:success]
       session_id = extract_session_id(response[:data])
       Rails.logger.info "Successfully retrieved session ID: #{session_id}"
@@ -33,7 +33,7 @@ class EbayAuthnAuthService
 
     # eBay sign-in URL for Auth'n'Auth flow
     auth_base_url = @api_base_url.gsub("api.", "signin.")
-    
+
     "#{auth_base_url}/ws/eBayISAPI.dll?" +
       "SignIn&" +
       "RuName=#{CGI.escape(@ru_name)}&" +
@@ -44,14 +44,14 @@ class EbayAuthnAuthService
     return nil unless session_id
 
     xml_payload = build_fetch_token_xml(session_id)
-    
+
     Rails.logger.info "Fetching eBay Auth'n'Auth token for session: #{session_id}"
-    
+
     response = make_authn_auth_request(xml_payload, "FetchToken")
-    
+
     if response[:success]
       auth_token = extract_auth_token(response[:data])
-      
+
       if auth_token
         # Store the Auth'n'Auth token
         @external_account.update!(ebay_auth_token: auth_token)

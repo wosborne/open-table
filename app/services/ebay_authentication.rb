@@ -75,7 +75,7 @@ class EbayAuthentication
   def fetch_ebay_user_info(access_token)
     # Use the correct Identity API base URL (apiz.ebay.com instead of api.ebay.com)
     identity_base_url = @api_base_url.gsub("api.", "apiz.")
-    
+
     response = RestClient.get(
       "#{identity_base_url}/commerce/identity/v1/user/",
       {

@@ -18,45 +18,45 @@ class PolicyTableComponent < ApplicationComponent
 
   def detail_column_header
     case policy_type
-    when 'fulfillment'
-      'Shipping Service'
-    when 'payment'
-      'Payment Method'
-    when 'return'
-      'Return Period'
+    when "fulfillment"
+      "Shipping Service"
+    when "payment"
+      "Payment Method"
+    when "return"
+      "Return Period"
     end
   end
 
   def policy_id_key
     case policy_type
-    when 'fulfillment'
-      'fulfillmentPolicyId'
-    when 'payment'
-      'paymentPolicyId'
-    when 'return'
-      'returnPolicyId'
+    when "fulfillment"
+      "fulfillmentPolicyId"
+    when "payment"
+      "paymentPolicyId"
+    when "return"
+      "returnPolicyId"
     end
   end
 
   def detail_value(policy)
     case policy_type
-    when 'fulfillment'
-      if policy['shippingOptions']&.any? && policy['shippingOptions'].first['shippingServices']&.any?
-        policy['shippingOptions'].first['shippingServices'].first['shippingServiceCode']
+    when "fulfillment"
+      if policy["shippingOptions"]&.any? && policy["shippingOptions"].first["shippingServices"]&.any?
+        policy["shippingOptions"].first["shippingServices"].first["shippingServiceCode"]
       else
-        '-'
+        "-"
       end
-    when 'payment'
-      if policy['paymentMethods']&.any?
-        policy['paymentMethods'].first['paymentMethodType']
+    when "payment"
+      if policy["paymentMethods"]&.any?
+        policy["paymentMethods"].first["paymentMethodType"]
       else
-        '-'
+        "-"
       end
-    when 'return'
-      if policy['returnPeriod']
+    when "return"
+      if policy["returnPeriod"]
         "#{policy['returnPeriod']['value']} #{policy['returnPeriod']['unit']&.downcase}"
       else
-        '-'
+        "-"
       end
     end
   end
@@ -67,11 +67,11 @@ class PolicyTableComponent < ApplicationComponent
 
   def show_path(local_policy)
     case policy_type
-    when 'fulfillment'
+    when "fulfillment"
       account_external_account_fulfillment_policy_path(current_account, external_account, local_policy)
-    when 'payment'
+    when "payment"
       account_external_account_payment_policy_path(current_account, external_account, local_policy)
-    when 'return'
+    when "return"
       account_external_account_return_policy_path(current_account, external_account, local_policy)
     end
   end
@@ -82,11 +82,11 @@ class PolicyTableComponent < ApplicationComponent
 
   def create_button_path
     case policy_type
-    when 'fulfillment'
+    when "fulfillment"
       new_account_external_account_fulfillment_policy_path(current_account, external_account)
-    when 'payment'
+    when "payment"
       new_account_external_account_payment_policy_path(current_account, external_account)
-    when 'return'
+    when "return"
       new_account_external_account_return_policy_path(current_account, external_account)
     end
   end

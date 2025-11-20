@@ -26,10 +26,10 @@ RSpec.describe ExternalAccountProduct, type: :model do
     # Mock the Shopify service creation
     allow(ExternalServiceFactory).to receive(:for).and_return(mock_shopify_service)
     allow(mock_shopify_service).to receive(:publish_product).and_return(shopify_response)
-    
+
     # Mock external account webhook registration to prevent API calls
     allow_any_instance_of(ExternalAccount).to receive(:register_shopify_webhooks)
-    
+
     # Set up product variants with prices to make them valid
     product.variants.each_with_index do |variant, index|
       variant.update!(price: 100 + (index * 10))
@@ -39,15 +39,15 @@ RSpec.describe ExternalAccountProduct, type: :model do
   describe 'callbacks' do
     it 'syncs to external account after save' do
       expect_any_instance_of(ExternalAccountProduct).to receive(:sync_to_external_account)
-      
+
       ExternalAccountProduct.create!(external_account: external_account, product: product)
     end
 
     it 'removes from external account before destroy' do
       eap = create(:external_account_product, external_account: external_account, product: product, external_id: "12345")
-      
+
       expect_any_instance_of(ExternalAccountProduct).to receive(:remove_from_external_account)
-      
+
       eap.destroy
     end
   end
@@ -95,9 +95,9 @@ RSpec.describe ExternalAccountProduct, type: :model do
       # Ensure external_id is initially blank
       external_account_product.update_column(:external_id, nil)
       expect(external_account_product.external_id).to be_blank
-      
+
       expect(mock_shopify_service).to receive(:publish_product).and_return(shopify_response)
-      
+
       expect {
         external_account_product.sync_to_external_account
       }.to change { external_account_product.reload.external_id }.from(nil).to("12345")
@@ -120,11 +120,11 @@ RSpec.describe ExternalAccountProduct, type: :model do
     before do
       # Stub the callback to avoid API calls during creation
       allow_any_instance_of(ExternalAccountProduct).to receive(:sync_to_external_account)
-      
+
       # Set external IDs for options using the actual method and reload to ensure they're persisted
       color_option.set_external_id_for(saved_external_account_product.id, "ext_color_1")
       size_option.set_external_id_for(saved_external_account_product.id, "ext_size_2")
-      
+
       # Reload the product to ensure the options are fresh
       saved_external_account_product.product.reload
     end
@@ -134,11 +134,11 @@ RSpec.describe ExternalAccountProduct, type: :model do
 
       expect(result).to be_an(Array)
       expect(result.length).to eq(2)
-      
+
       color_option_data = result.find { |opt| opt[:name] == "Color" }
       expect(color_option_data[:id]).to eq("ext_color_1")
       expect(color_option_data[:values]).to include("Red", "Blue")
-      
+
       size_option_data = result.find { |opt| opt[:name] == "Size" }
       expect(size_option_data[:id]).to eq("ext_size_2")
       expect(size_option_data[:values]).to include("Small", "Large")
@@ -151,7 +151,7 @@ RSpec.describe ExternalAccountProduct, type: :model do
 
       expect(result).to be_an(Array)
       expect(result.length).to be > 0
-      
+
       first_variant = result.first
       expect(first_variant).to have_key(:id)
       expect(first_variant).to have_key(:sku)

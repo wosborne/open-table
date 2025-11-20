@@ -226,7 +226,7 @@ module EbayApiMocking
   end
 
   def stub_ebay_payment_policy_update(policy_id, response = nil)
-    response ||= mock_successful_payment_policy_update  
+    response ||= mock_successful_payment_policy_update
     allow_any_instance_of(EbayApiClient).to receive(:put)
       .with("/sell/account/v1/payment_policy/#{policy_id}", anything)
       .and_return(response)

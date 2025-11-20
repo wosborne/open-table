@@ -19,9 +19,9 @@ class ModelTableComponent < ApplicationComponent
     if extra_columns.include?(column)
       # Handle extra columns - assume they're aspect names
       resource.respond_to?(:aspect) ? resource.aspect(column) : resource.try(column)
-    elsif column.to_s.ends_with?('_id')
+    elsif column.to_s.ends_with?("_id")
       # Handle ID columns by looking for associated object name/title
-      association_name = column.sub('_id', '')
+      association_name = column.sub("_id", "")
       associated = resource.send(association_name)
       associated.try(:name) || associated.try(:title) || resource.send(column)
     else
@@ -34,12 +34,12 @@ class ModelTableComponent < ApplicationComponent
   end
 
   def resource_url(resource)
-    return '' unless current_account
-    
+    return "" unless current_account
+
     begin
-      helpers.polymorphic_path([current_account, resource])
+      helpers.polymorphic_path([ current_account, resource ])
     rescue
-      ''
+      ""
     end
   end
 end

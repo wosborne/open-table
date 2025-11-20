@@ -1,6 +1,6 @@
 class EbayReturnPolicy < EbayBusinessPolicy
-  POLICY_TYPE = 'return'
-  
+  POLICY_TYPE = "return"
+
   def returns_accepted?
     ebay_attributes.dig("returnsAccepted") || false
   end

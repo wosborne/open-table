@@ -4,7 +4,7 @@ RSpec.describe EbayAuthentication, type: :service do
   let(:user) { create(:user) }
   let(:params) { { "code" => "ebay_auth_code_123", "state" => jwt_state } }
   let(:authentication_service) { EbayAuthentication.new(params: params) }
-  
+
   let(:jwt_payload) do
     {
       user_id: user.id,
@@ -24,12 +24,12 @@ RSpec.describe EbayAuthentication, type: :service do
 
   before do
     user.update!(state_nonce: "secure_nonce")
-    
+
     # Mock Rails credentials for eBay
     allow(Rails.application.credentials).to receive(:dig).with(:ebay, :client_id).and_return("ebay_client_id")
     allow(Rails.application.credentials).to receive(:dig).with(:ebay, :client_secret).and_return("ebay_client_secret")
     allow(Rails.application.credentials).to receive(:dig).with(:ebay, :redirect_url).and_return("https://app.test/auth/ebay/callback")
-    
+
     # Mock RestClient calls
     allow(RestClient).to receive(:post).and_return(rest_client_response)
   end
@@ -37,12 +37,12 @@ RSpec.describe EbayAuthentication, type: :service do
   describe '#authentication_path' do
     it 'generates correct eBay OAuth URL' do
       expected_base = "https://auth.ebay.com/oauth2/authorize?"
-      
+
       # Mock the state generation to return a predictable value
       allow(authentication_service).to receive(:generate_state).with(user).and_return("test_state")
 
       result = authentication_service.authentication_path(user)
-      
+
       expect(result).to include(expected_base)
       expect(result).to include("client_id=ebay_client_id")
       expect(result).to include("response_type=code")
@@ -53,9 +53,9 @@ RSpec.describe EbayAuthentication, type: :service do
 
     it 'includes correct eBay scopes' do
       allow(authentication_service).to receive(:generate_state).with(user).and_return("test_state")
-      
+
       result = authentication_service.authentication_path(user)
-      
+
       # Just check that the scope parameter is present and contains expected scope substrings
       expect(result).to include("scope=")
       expect(result).to include("api.ebay.com/oauth/api_scope")
@@ -74,7 +74,7 @@ RSpec.describe EbayAuthentication, type: :service do
     context 'with valid JWT' do
       it 'decodes state correctly' do
         result = authentication_service.decode_state(jwt_state)
-        
+
         expect(result["user_id"]).to eq(user.id)
         expect(result["current_account_id"]).to eq(user.accounts.first.id)
         expect(result["nonce"]).to eq("secure_nonce")
@@ -90,14 +90,14 @@ RSpec.describe EbayAuthentication, type: :service do
       it 'returns nil for expired token' do
         expired_payload = jwt_payload.merge(exp: 1.hour.ago.to_i)
         expired_token = JWT.encode(expired_payload, Rails.application.credentials.secret_key_base, "HS256")
-        
+
         result = authentication_service.decode_state(expired_token)
         expect(result).to be_nil
       end
 
       it 'returns nil for token with wrong secret' do
         wrong_secret_token = JWT.encode(jwt_payload, "wrong_secret", "HS256")
-        
+
         result = authentication_service.decode_state(wrong_secret_token)
         expect(result).to be_nil
       end
@@ -122,7 +122,7 @@ RSpec.describe EbayAuthentication, type: :service do
 
     it 'exchanges code for access token with correct eBay endpoint' do
       expected_auth_header = Base64.strict_encode64("ebay_client_id:ebay_client_secret")
-      
+
       expect(RestClient).to receive(:post).with(
         "https://api.ebay.com/identity/v1/oauth2/token",
         {
@@ -153,9 +153,9 @@ RSpec.describe EbayAuthentication, type: :service do
     end
 
     it 'destroys existing eBay account before creating new one' do
-      existing_account = create(:external_account, 
-        account: user.accounts.first, 
-        service_name: "ebay", 
+      existing_account = create(:external_account,
+        account: user.accounts.first,
+        service_name: "ebay",
         domain: "ebay.com"
       )
 
@@ -206,7 +206,7 @@ RSpec.describe EbayAuthentication, type: :service do
   describe '#generate_state' do
     it 'generates JWT with correct payload structure' do
       allow(SecureRandom).to receive(:hex).with(16).and_return("test_nonce")
-      
+
       state = authentication_service.send(:generate_state, user)
       decoded = JWT.decode(state, Rails.application.credentials.secret_key_base, true, { algorithm: "HS256" })
       payload = decoded.first
@@ -219,7 +219,7 @@ RSpec.describe EbayAuthentication, type: :service do
 
     it 'updates user state_nonce' do
       allow(SecureRandom).to receive(:hex).with(16).and_return("new_nonce")
-      
+
       expect {
         authentication_service.send(:generate_state, user)
       }.to change { user.reload.state_nonce }.to("new_nonce")
@@ -255,7 +255,7 @@ RSpec.describe EbayAuthentication, type: :service do
     it 'generates correct Basic auth header' do
       expected_credentials = "ebay_client_id:ebay_client_secret"
       expected_header = Base64.strict_encode64(expected_credentials)
-      
+
       result = authentication_service.send(:auth_header)
       expect(result).to eq(expected_header)
     end
@@ -277,7 +277,7 @@ RSpec.describe EbayAuthentication, type: :service do
       # Step 1: Generate auth URL (this will update user's state_nonce)
       auth_url = authentication_service.authentication_path(user)
       expect(auth_url).to include("auth.ebay.com")
-      
+
       # Step 2: Get the updated user state for testing
       user.reload
       new_jwt_payload = {
@@ -287,20 +287,20 @@ RSpec.describe EbayAuthentication, type: :service do
         exp: 10.minutes.from_now.to_i
       }
       new_jwt_state = JWT.encode(new_jwt_payload, Rails.application.credentials.secret_key_base, "HS256")
-      
+
       # Step 3: Decode state (simulating callback)
       state_data = authentication_service.decode_state(new_jwt_state)
       expect(state_data).to be_present
-      
+
       # Step 4: Verify user matches
       found_user = User.find_by(id: state_data["user_id"], state_nonce: state_data["nonce"])
       expect(found_user).to eq(user)
-      
+
       # Step 5: Create external account
       expect {
         authentication_service.create_external_account_for(found_user)
       }.to change(ExternalAccount, :count).by(1)
-      
+
       # Verify it's an eBay account
       external_account = ExternalAccount.last
       expect(external_account.service_name).to eq("ebay")
@@ -310,12 +310,12 @@ RSpec.describe EbayAuthentication, type: :service do
       # Create a different user with different nonce
       attacker_user = create(:user)
       attacker_user.update!(state_nonce: "attacker_nonce")
-      
+
       # Try to use state meant for original user
       found_user = User.find_by(id: jwt_payload[:user_id], state_nonce: jwt_payload[:nonce])
       expect(found_user).to eq(user)
       expect(found_user).not_to eq(attacker_user)
-      
+
       # Attacker can't use the state because nonce doesn't match
       attacker_found = User.find_by(id: attacker_user.id, state_nonce: jwt_payload[:nonce])
       expect(attacker_found).to be_nil

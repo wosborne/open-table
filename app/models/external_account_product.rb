@@ -31,13 +31,13 @@ class ExternalAccountProduct < ApplicationRecord
 
   def build_product_payload
     case external_account.service_name
-    when 'shopify'
+    when "shopify"
       {
         title: product.name,
         variants: shopify_variants,
         options: shopify_options
       }
-    when 'ebay'
+    when "ebay"
       {
         title: product.name,
         description: product.description || product.name,
@@ -51,18 +51,18 @@ class ExternalAccountProduct < ApplicationRecord
 
   def external_product_id(external_product)
     case external_account.service_name
-    when 'shopify'
+    when "shopify"
       external_product["id"]
-    when 'ebay'
+    when "ebay"
       external_product["ItemID"]
     end
   end
 
   def sync_external_ids(external_product)
     case external_account.service_name
-    when 'shopify'
+    when "shopify"
       sync_shopify_ids(external_product)
-    when 'ebay'
+    when "ebay"
       sync_ebay_ids(external_product)
     end
   end
@@ -105,10 +105,10 @@ class ExternalAccountProduct < ApplicationRecord
         vov = variant.variant_option_values.find { |v| v.product_option_id == option.id }
         vov&.product_option_value&.value
       end
-      
+
       # Skip variants that have any nil option values
       next if option_values.any?(&:nil?)
-      
+
       variant_hash = {
         id: variant.external_id_for(self.id),
         sku: variant.sku,

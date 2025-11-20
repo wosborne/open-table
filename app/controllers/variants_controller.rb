@@ -1,5 +1,5 @@
 class VariantsController < AccountsController
-  before_action :set_variant, only: [:show, :edit, :update, :destroy]
+  before_action :set_variant, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @variants = current_account.variants.includes(:product, :product_option_values).order(created_at: :desc)
@@ -45,21 +45,21 @@ class VariantsController < AccountsController
   def product_options
     @selected_product = current_account.products.find_by(id: params[:product_id])
     @ebay_aspects = nil
-    
+
     # Fetch eBay aspects if product has category for new variant creation
     if @selected_product&.ebay_category_id.present?
       # Find an eBay external account to use for API calls
-      ebay_account = current_account.external_accounts.where(service_name: 'ebay').first
+      ebay_account = current_account.external_accounts.where(service_name: "ebay").first
       if ebay_account
         ebay_category = EbayCategory.new(ebay_account)
         aspects_data = ebay_category.format_item_specifics_for_form(@selected_product.ebay_category_id)
         @ebay_aspects = aspects_data[:variation_aspects] if aspects_data && !aspects_data[:error]
       end
     end
-    
-    render turbo_stream: turbo_stream.update("product_options", 
-      partial: "product_options", 
-      locals: { 
+
+    render turbo_stream: turbo_stream.update("product_options",
+      partial: "product_options",
+      locals: {
         selected_product: @selected_product,
         ebay_aspects: @ebay_aspects
       }
@@ -73,7 +73,7 @@ class VariantsController < AccountsController
   end
 
   def variant_params
-    params.require(:variant).permit(:sku, :price, :product_id, product_option_values_attributes: [:product_option_id, :value, :_destroy])
+    params.require(:variant).permit(:sku, :price, :product_id, product_option_values_attributes: [ :product_option_id, :value, :_destroy ])
   end
 
   def current_account

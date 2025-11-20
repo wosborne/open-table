@@ -9,8 +9,8 @@ class CreateEbayBusinessPolicies < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :ebay_business_policies, [:external_account_id, :policy_type]
+
+    add_index :ebay_business_policies, [ :external_account_id, :policy_type ]
     add_index :ebay_business_policies, :ebay_policy_id, unique: true
   end
 end

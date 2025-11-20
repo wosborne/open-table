@@ -17,15 +17,15 @@ class CreateShopifyOrderJob < ApplicationJob
       external_account: external_account,
       external_id: external_id
     )
-    
+
     # Set order attributes with defaults for required fields
     order.name = order_data[:name]
-    order.currency = order_data[:currency] || 'USD'
+    order.currency = order_data[:currency] || "USD"
     order.total_price = order_data[:total_price] || 0.0
     order.external_created_at = order_data[:created_at] || Time.current
     order.financial_status = order_data[:financial_status]
     order.fulfillment_status = order_data[:fulfillment_status]
-    
+
     # Only save if the order is valid
     return unless order.valid?
     order.save!

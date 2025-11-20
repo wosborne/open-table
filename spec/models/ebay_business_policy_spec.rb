@@ -204,7 +204,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
       {
         name: "Test Policy",
         marketplaceId: "EBAY_GB",
-        categoryTypes: [{ name: "ALL_EXCLUDING_MOTORS_VEHICLES", default: true }]
+        categoryTypes: [ { name: "ALL_EXCLUDING_MOTORS_VEHICLES", default: true } ]
       }
     end
 
@@ -226,7 +226,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
         end
 
         it 'creates fulfillment policy on eBay and sets ebay_policy_id' do
-          policy = build(:ebay_fulfillment_policy, 
+          policy = build(:ebay_fulfillment_policy,
             external_account: external_account,
             ebay_policy_id: nil
           )
@@ -247,7 +247,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           allow_any_instance_of(EbayApiClient).to receive(:create_payment_policy)
             .and_return(payment_response)
 
-          policy = build(:ebay_payment_policy, 
+          policy = build(:ebay_payment_policy,
             external_account: external_account,
             ebay_policy_id: nil
           )
@@ -267,7 +267,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           allow_any_instance_of(EbayApiClient).to receive(:create_return_policy)
             .and_return(return_response)
 
-          policy = build(:ebay_return_policy, 
+          policy = build(:ebay_return_policy,
             external_account: external_account,
             ebay_policy_id: nil
           )
@@ -283,7 +283,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           response = EbayApiResponse.new(
             success: false,
             status_code: 400,
-            error: { 'errors' => [{ 'errorId' => 25007, 'message' => 'Required field missing', 'longMessage' => 'Required field shippingOptions is missing' }] }
+            error: { 'errors' => [ { 'errorId' => 25007, 'message' => 'Required field missing', 'longMessage' => 'Required field shippingOptions is missing' } ] }
           )
           allow(response).to receive(:body).and_return('{"errors":[{"errorId":25007,"message":"Required field missing","longMessage":"Required field shippingOptions is missing"}]}')
           response
@@ -295,7 +295,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
         end
 
         it 'prevents save and adds error messages' do
-          policy = build(:ebay_fulfillment_policy, 
+          policy = build(:ebay_fulfillment_policy,
             external_account: external_account,
             ebay_policy_id: nil
           )
@@ -314,7 +314,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
         end
 
         it 'prevents save and adds error message' do
-          policy = build(:ebay_fulfillment_policy, 
+          policy = build(:ebay_fulfillment_policy,
             external_account: external_account,
             ebay_policy_id: nil
           )
@@ -328,7 +328,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
 
       context 'when no ebay_policy_data is set' do
         it 'skips eBay API call and saves normally' do
-          policy = build(:ebay_fulfillment_policy, 
+          policy = build(:ebay_fulfillment_policy,
             external_account: external_account,
             ebay_policy_id: '12345678'
           )
@@ -368,7 +368,6 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           expect(existing_policy.save).to be true
           expect(existing_policy.name).to eq("Updated Policy Name")
         end
-
       end
 
       context 'when eBay API call fails' do
@@ -376,7 +375,7 @@ RSpec.describe EbayBusinessPolicy, type: :model do
           response = EbayApiResponse.new(
             success: false,
             status_code: 400,
-            error: { 'errors' => [{ 'errorId' => 25001, 'message' => 'Policy not found' }] }
+            error: { 'errors' => [ { 'errorId' => 25001, 'message' => 'Policy not found' } ] }
           )
           allow(response).to receive(:body).and_return('{"errors":[{"errorId":25001,"message":"Policy not found"}]}')
           response

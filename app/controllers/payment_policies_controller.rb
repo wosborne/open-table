@@ -1,5 +1,5 @@
 class PaymentPoliciesController < ExternalAccountsController
-  before_action :set_payment_policy, only: [:show, :edit, :update, :destroy]
+  before_action :set_payment_policy, only: [ :show, :edit, :update, :destroy ]
 
   def new
     @payment_policy = current_external_account.payment_policies.build
@@ -16,7 +16,7 @@ class PaymentPoliciesController < ExternalAccountsController
       payment_policy_params.slice(:name, :marketplace_id)
     )
     @payment_policy.ebay_policy_data = build_ebay_policy_data(payment_policy_params)
-    
+
     if @payment_policy.save
       redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Payment policy '#{@payment_policy.name}' created successfully!"
@@ -28,7 +28,7 @@ class PaymentPoliciesController < ExternalAccountsController
   def update
     @payment_policy.assign_attributes(payment_policy_params.slice(:name, :marketplace_id))
     @payment_policy.ebay_policy_data = build_ebay_policy_data(payment_policy_params)
-    
+
     if @payment_policy.save
       redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Payment policy '#{@payment_policy.name}' updated successfully!"

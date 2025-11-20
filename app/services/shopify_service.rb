@@ -54,7 +54,7 @@ class ShopifyService < BaseExternalService
   protected
 
   def token_expired?(error)
-    error.is_a?(ShopifyAPI::Errors::HttpResponseError) && 
+    error.is_a?(ShopifyAPI::Errors::HttpResponseError) &&
       error.message.include?("Invalid API key or access token")
   end
 
@@ -66,13 +66,13 @@ class ShopifyService < BaseExternalService
         client_id: Rails.application.credentials.shopify[:client_id],
         client_secret: Rails.application.credentials.shopify[:client_secret],
         refresh_token: @external_account.refresh_token,
-        grant_type: 'refresh_token'
+        grant_type: "refresh_token"
       },
-      headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }
+      headers: { "Content-Type" => "application/x-www-form-urlencoded" }
     })
 
     if response.success?
-      new_token = response.parsed_response['access_token']
+      new_token = response.parsed_response["access_token"]
       @external_account.update!(api_token: new_token)
       @access_token = new_token
       @session = setup_session

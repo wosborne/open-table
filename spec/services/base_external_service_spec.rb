@@ -78,7 +78,7 @@ RSpec.describe BaseExternalService, type: :service do
     it 'retries block once when token refresh succeeds' do
       call_count = 0
       error = StandardError.new("token expired")
-      
+
       allow(service).to receive(:token_expired?).with(error).and_return(true)
       allow(service).to receive(:refresh_access_token).and_return(true)
 
@@ -98,7 +98,7 @@ RSpec.describe BaseExternalService, type: :service do
     it 'does not retry when token refresh fails' do
       call_count = 0
       error = StandardError.new("token expired")
-      
+
       allow(service).to receive(:token_expired?).with(error).and_return(true)
       allow(service).to receive(:refresh_access_token).and_return(false)
 
@@ -149,7 +149,7 @@ RSpec.describe BaseExternalService, type: :service do
         end
 
         def get_products
-          [{ id: "123", title: "Test Product" }]
+          [ { id: "123", title: "Test Product" } ]
         end
 
         protected
@@ -169,7 +169,7 @@ RSpec.describe BaseExternalService, type: :service do
     it 'allows subclasses to implement abstract methods' do
       expect(test_service.publish_product(title: "Test")).to eq({ id: "123", title: "Test" })
       expect(test_service.remove_product("123")).to be true
-      expect(test_service.get_products).to eq([{ id: "123", title: "Test Product" }])
+      expect(test_service.get_products).to eq([ { id: "123", title: "Test Product" } ])
     end
 
     it 'allows subclasses to implement token handling' do

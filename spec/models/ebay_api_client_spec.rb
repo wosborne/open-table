@@ -76,7 +76,6 @@ RSpec.describe EbayApiClient, type: :model do
         expect(response.data['fulfillmentPolicyId']).to eq('12345678')
         expect(response.data['name']).to eq('Test Fulfillment Policy')
       end
-
     end
 
     context 'when API call fails' do
@@ -93,7 +92,6 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response.error['errors']).to be_present
       end
-
     end
 
     context 'when network error occurs' do
@@ -146,7 +144,6 @@ RSpec.describe EbayApiClient, type: :model do
         expect(response.data['paymentPolicyId']).to eq('87654321')
         expect(response.data['name']).to eq('Test Payment Policy')
       end
-
     end
 
     context 'when API call fails' do
@@ -163,7 +160,6 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response.error['errors']).to be_present
       end
-
     end
 
     context 'when exception occurs' do
@@ -210,7 +206,6 @@ RSpec.describe EbayApiClient, type: :model do
         expect(response.data['returnPolicyId']).to eq('11223344')
         expect(response.data['name']).to eq('Test Return Policy')
       end
-
     end
 
     context 'when API call fails' do
@@ -227,7 +222,6 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response.error['errors']).to be_present
       end
-
     end
 
     context 'when exception occurs' do
@@ -449,7 +443,6 @@ RSpec.describe EbayApiClient, type: :model do
         expect(response.data['fulfillmentPolicyId']).to eq('12345678')
         expect(response.data['name']).to eq('Updated Fulfillment Policy')
       end
-
     end
 
     context 'when API call fails' do
@@ -466,7 +459,6 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response.error['errors']).to be_present
       end
-
     end
 
     context 'when exception occurs' do
@@ -510,7 +502,6 @@ RSpec.describe EbayApiClient, type: :model do
         expect(response.data['paymentPolicyId']).to eq('87654321')
         expect(response.data['name']).to eq('Updated Payment Policy')
       end
-
     end
 
     context 'when API call fails' do
@@ -527,7 +518,6 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response.error['errors']).to be_present
       end
-
     end
 
     context 'when exception occurs' do
@@ -571,7 +561,6 @@ RSpec.describe EbayApiClient, type: :model do
         expect(response.data['returnPolicyId']).to eq('11223344')
         expect(response.data['name']).to eq('Updated Return Policy')
       end
-
     end
 
     context 'when API call fails' do
@@ -588,7 +577,6 @@ RSpec.describe EbayApiClient, type: :model do
 
         expect(response.error['errors']).to be_present
       end
-
     end
 
     context 'when exception occurs' do

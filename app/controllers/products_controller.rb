@@ -74,15 +74,15 @@ class ProductsController < AccountsController
   def gather_ebay_aspect_columns
     sql = <<~SQL
       SELECT DISTINCT jsonb_object_keys(ebay_aspects) as aspect_key
-      FROM products 
+      FROM products#{' '}
       WHERE account_id = ? AND ebay_aspects IS NOT NULL AND ebay_aspects != '{}'
       ORDER BY aspect_key
     SQL
-    
+
     result = ActiveRecord::Base.connection.execute(
-      ActiveRecord::Base.sanitize_sql([sql, current_account.id])
+      ActiveRecord::Base.sanitize_sql([ sql, current_account.id ])
     )
-    result.map { |row| row['aspect_key'] }
+    result.map { |row| row["aspect_key"] }
   end
 
   def product_params

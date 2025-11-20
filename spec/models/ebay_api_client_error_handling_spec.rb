@@ -5,12 +5,12 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
 
   let(:external_account) { create(:external_account, :ebay) }
   let(:client) { described_class.new(external_account) }
-  
+
   let(:policy_data) do
     {
       name: "Test Policy",
       marketplaceId: "EBAY_GB",
-      categoryTypes: [{ name: "ALL_EXCLUDING_MOTORS_VEHICLES", default: true }]
+      categoryTypes: [ { name: "ALL_EXCLUDING_MOTORS_VEHICLES", default: true } ]
     }
   end
 
@@ -33,14 +33,14 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
         EbayApiResponse.new(
           success: false,
           status_code: 401,
-          error: { "errors" => [{ "errorId" => 1001, "message" => "Invalid access token" }] },
-          detailed_errors: [{ message: "Invalid access token", error_id: 1001 }]
+          error: { "errors" => [ { "errorId" => 1001, "message" => "Invalid access token" } ] },
+          detailed_errors: [ { message: "Invalid access token", error_id: 1001 } ]
         )
       end
 
       it 'creates EbayAuthenticationError with helpful message' do
         exception = client.send(:build_appropriate_exception, error_response)
-        
+
         expect(exception).to be_a(EbayApiErrorHandling::EbayAuthenticationError)
         expect(exception.message).to eq("Invalid access token")
         expect(exception.status_code).to eq(401)
@@ -53,14 +53,14 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
         EbayApiResponse.new(
           success: false,
           status_code: 400,
-          error: { "errors" => [{ "errorId" => 25007, "message" => "Required field missing" }] },
-          detailed_errors: [{ message: "Required field missing", error_id: 25007 }]
+          error: { "errors" => [ { "errorId" => 25007, "message" => "Required field missing" } ] },
+          detailed_errors: [ { message: "Required field missing", error_id: 25007 } ]
         )
       end
 
       it 'creates EbayValidationError with helpful message' do
         exception = client.send(:build_appropriate_exception, error_response)
-        
+
         expect(exception).to be_a(EbayApiErrorHandling::EbayValidationError)
         expect(exception.message).to eq("Required field missing")
         expect(exception.status_code).to eq(400)
@@ -72,14 +72,14 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
         EbayApiResponse.new(
           success: false,
           status_code: 429,
-          error: { "errors" => [{ "errorId" => 1015, "message" => "Rate limit exceeded" }] },
-          detailed_errors: [{ message: "Rate limit exceeded", error_id: 1015 }]
+          error: { "errors" => [ { "errorId" => 1015, "message" => "Rate limit exceeded" } ] },
+          detailed_errors: [ { message: "Rate limit exceeded", error_id: 1015 } ]
         )
       end
 
       it 'creates EbayRateLimitError' do
         exception = client.send(:build_appropriate_exception, error_response)
-        
+
         expect(exception).to be_a(EbayApiErrorHandling::EbayRateLimitError)
         expect(exception.message).to eq("Rate limit exceeded")
         expect(exception.status_code).to eq(429)
@@ -98,7 +98,7 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
 
       it 'creates EbayNetworkError' do
         exception = client.send(:build_appropriate_exception, error_response)
-        
+
         expect(exception).to be_a(EbayApiErrorHandling::EbayNetworkError)
         expect(exception.message).to eq("Connection timeout")
         expect(exception.status_code).to be_nil
@@ -111,8 +111,8 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
       response = EbayApiResponse.new(
         success: false,
         status_code: 400,
-        error: { "errors" => [{ "errorId" => 25007 }] },
-        detailed_errors: [{ message: "Detailed error message", long_message: "Even longer message" }]
+        error: { "errors" => [ { "errorId" => 25007 } ] },
+        detailed_errors: [ { message: "Detailed error message", long_message: "Even longer message" } ]
       )
 
       message = client.send(:extract_user_friendly_message, response)
@@ -123,8 +123,8 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
       response = EbayApiResponse.new(
         success: false,
         status_code: 400,
-        error: { "errors" => [{ "errorId" => 25007 }] },
-        detailed_errors: [{ long_message: "Long error message" }]
+        error: { "errors" => [ { "errorId" => 25007 } ] },
+        detailed_errors: [ { long_message: "Long error message" } ]
       )
 
       message = client.send(:extract_user_friendly_message, response)
@@ -182,11 +182,11 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
 
       it 'returns EbayApiResponse with correct format' do
         response = client.create_payment_policy(policy_data)
-        
+
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(201)
         expect(response.success?).to be true
-        
+
         expect(response.data['paymentPolicyId']).to eq('12345')
         expect(response.data['name']).to eq('Test Policy')
       end
@@ -198,7 +198,7 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
           EbayApiResponse.new(
             success: false,
             status_code: 400,
-            error: { "errors" => [{ "message" => "Invalid data" }] },
+            error: { "errors" => [ { "message" => "Invalid data" } ] },
             detailed_errors: []
           )
         )
@@ -206,7 +206,7 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
 
       it 'returns EbayApiResponse error format' do
         response = client.create_fulfillment_policy(policy_data)
-        
+
         expect(response).to be_a(EbayApiResponse)
         expect(response.status_code).to eq(400)
         expect(response.success?).to be false
@@ -238,7 +238,7 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
 
       it 'creates successful ApiResult' do
         result = client.send(:handle_api_response, success_response)
-        
+
         expect(result).to be_a(EbayApiErrorHandling::ApiResult)
         expect(result.success?).to be true
         expect(result.failure?).to be false
@@ -278,7 +278,7 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
       )
 
       flash = {}
-      
+
       begin
         # This would fail with current backward-compatible implementation
         # but demonstrates the intended usage pattern
@@ -301,16 +301,16 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
       error_response = EbayApiResponse.new(
         success: false,
         status_code: 400,
-        error: { "errors" => [{ "errorId" => 25007, "message" => "Required field missing" }] },
-        detailed_errors: [{ 
-          message: "Required field missing: shippingOptions", 
+        error: { "errors" => [ { "errorId" => 25007, "message" => "Required field missing" } ] },
+        detailed_errors: [ {
+          message: "Required field missing: shippingOptions",
           error_id: 25007,
           severity: "high"
-        }]
+        } ]
       )
 
       exception = client.send(:build_appropriate_exception, error_response)
-      
+
       expect(exception.message).to eq("Required field missing: shippingOptions")
       expect(exception.detailed_errors.first[:error_id]).to eq(25007)
       expect(exception.detailed_errors.first[:severity]).to eq("high")
@@ -328,12 +328,12 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
 
     let(:methods_to_test) do
       [
-        [:create_payment_policy, policy_data],
-        [:update_payment_policy, "123", policy_data],
-        [:create_return_policy, policy_data],
-        [:update_return_policy, "123", policy_data],
-        [:create_fulfillment_policy, policy_data],
-        [:update_fulfillment_policy, "123", policy_data]
+        [ :create_payment_policy, policy_data ],
+        [ :update_payment_policy, "123", policy_data ],
+        [ :create_return_policy, policy_data ],
+        [ :update_return_policy, "123", policy_data ],
+        [ :create_fulfillment_policy, policy_data ],
+        [ :update_fulfillment_policy, "123", policy_data ]
       ]
     end
 
@@ -344,10 +344,10 @@ RSpec.describe EbayApiClient, 'Error Handling', type: :model do
         allow(client).to receive(http_method).and_return(success_response)
 
         response = client.public_send(method_name, *args)
-        
+
         expect(response).to be_a(EbayApiResponse), "#{method_name} should return EbayApiResponse"
         expect(response.status_code).to eq(201), "#{method_name} should have correct status code"
-        
+
         expect(response.success?).to be true
         expect(response.data).to have_key('id')
       end

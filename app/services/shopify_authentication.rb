@@ -29,8 +29,8 @@ class ShopifyAuthentication
 
     user.accounts.first.external_accounts.find_by(service_name: "shopify")&.destroy
     user.accounts.first.external_accounts.create(
-      service_name: "shopify", 
-      api_token: access_token, 
+      service_name: "shopify",
+      api_token: access_token,
       refresh_token: refresh_token,
       domain: @params["shop"]
     )
@@ -55,7 +55,7 @@ class ShopifyAuthentication
 
   def generate_state(user)
     return nil if user.nil?
-    
+
     state = SecureRandom.hex(16)
     user.update(state_nonce: state)
     payload = {

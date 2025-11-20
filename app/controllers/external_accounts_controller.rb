@@ -144,7 +144,7 @@ class ExternalAccountsController < AccountsController
     begin
       notification_service = EbayNotificationService.new(@external_account)
       response_xml = notification_service.get_notification_preferences
-      
+
       Rails.logger.info "Controller received response_xml: #{response_xml.inspect}"
 
       if response_xml.present?
@@ -153,11 +153,11 @@ class ExternalAccountsController < AccountsController
           Rails.logger.info "Parsing Application XML separately"
           app_data = parse_notification_preferences(response_xml[:application_xml])
           Rails.logger.info "App data parsed: #{app_data}"
-          
-          Rails.logger.info "Parsing User XML separately"  
+
+          Rails.logger.info "Parsing User XML separately"
           user_data = parse_notification_preferences(response_xml[:user_xml])
           Rails.logger.info "User data parsed: #{user_data}"
-          
+
           @notification_data = app_data.merge(enabled_events: user_data[:enabled_events])
         else
           @notification_data = parse_notification_preferences(response_xml)
@@ -225,19 +225,19 @@ class ExternalAccountsController < AccountsController
   end
 
   def parse_notification_preferences(xml_response)
-    require 'nokogiri'
-    
+    require "nokogiri"
+
     Rails.logger.info "Parsing XML response: #{xml_response}"
-    
+
     doc = Nokogiri::XML(xml_response)
-    
+
     # Check if the response was successful
-    ack_element = doc.at_xpath('//xmlns:Ack', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
-    if ack_element && ack_element.text != 'Success'
-      error_message = doc.at_xpath('//xmlns:ShortMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text || 'Unknown error'
+    ack_element = doc.at_xpath("//xmlns:Ack", "xmlns" => "urn:ebay:apis:eBLBaseComponents")
+    if ack_element && ack_element.text != "Success"
+      error_message = doc.at_xpath("//xmlns:ShortMessage", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text || "Unknown error"
       return { error: error_message }
     end
-    
+
     data = {
       webhook_url: nil,
       alert_enabled: false,
@@ -247,28 +247,28 @@ class ExternalAccountsController < AccountsController
       device_type: nil,
       payload_version: nil
     }
-    
+
     # Extract application delivery preferences
-    app_prefs = doc.at_xpath('//xmlns:ApplicationDeliveryPreferences', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
+    app_prefs = doc.at_xpath("//xmlns:ApplicationDeliveryPreferences", "xmlns" => "urn:ebay:apis:eBLBaseComponents")
     if app_prefs
-      data[:webhook_url] = app_prefs.at_xpath('xmlns:ApplicationURL', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
-      data[:alert_enabled] = app_prefs.at_xpath('xmlns:AlertEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text == 'Enable'
-      data[:application_enabled] = app_prefs.at_xpath('xmlns:ApplicationEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text == 'Enable'
-      data[:payload_type] = app_prefs.at_xpath('xmlns:NotificationPayloadType', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
-      data[:device_type] = app_prefs.at_xpath('xmlns:DeviceType', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
-      data[:payload_version] = app_prefs.at_xpath('xmlns:PayloadVersion', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
+      data[:webhook_url] = app_prefs.at_xpath("xmlns:ApplicationURL", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
+      data[:alert_enabled] = app_prefs.at_xpath("xmlns:AlertEnable", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text == "Enable"
+      data[:application_enabled] = app_prefs.at_xpath("xmlns:ApplicationEnable", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text == "Enable"
+      data[:payload_type] = app_prefs.at_xpath("xmlns:NotificationPayloadType", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
+      data[:device_type] = app_prefs.at_xpath("xmlns:DeviceType", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
+      data[:payload_version] = app_prefs.at_xpath("xmlns:PayloadVersion", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
     end
-    
+
     # Extract enabled notification events
-    doc.xpath('//xmlns:NotificationEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents').each do |notification|
-      event_type = notification.at_xpath('xmlns:EventType', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
-      event_enabled = notification.at_xpath('xmlns:EventEnable', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text == 'Enable'
-      
+    doc.xpath("//xmlns:NotificationEnable", "xmlns" => "urn:ebay:apis:eBLBaseComponents").each do |notification|
+      event_type = notification.at_xpath("xmlns:EventType", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
+      event_enabled = notification.at_xpath("xmlns:EventEnable", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text == "Enable"
+
       if event_type && event_enabled
         data[:enabled_events] << event_type
       end
     end
-    
+
     Rails.logger.info "Parsed notification data: #{data}"
     data
   rescue => e
@@ -277,19 +277,19 @@ class ExternalAccountsController < AccountsController
   end
 
   def parse_notification_usage(xml_response)
-    require 'nokogiri'
-    
+    require "nokogiri"
+
     Rails.logger.info "Parsing notification usage XML: #{xml_response}"
-    
+
     doc = Nokogiri::XML(xml_response)
-    
+
     # Check if the response was successful
-    ack_element = doc.at_xpath('//xmlns:Ack', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
-    if ack_element && ack_element.text != 'Success'
-      error_message = doc.at_xpath('//xmlns:ShortMessage', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text || 'Unknown error'
+    ack_element = doc.at_xpath("//xmlns:Ack", "xmlns" => "urn:ebay:apis:eBLBaseComponents")
+    if ack_element && ack_element.text != "Success"
+      error_message = doc.at_xpath("//xmlns:ShortMessage", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text || "Unknown error"
       return { error: error_message }
     end
-    
+
     data = {
       start_time: nil,
       end_time: nil,
@@ -297,26 +297,26 @@ class ExternalAccountsController < AccountsController
       total_notifications: 0,
       total_failed_notifications: 0
     }
-    
+
     # Extract time range
-    data[:start_time] = doc.at_xpath('//xmlns:StartTime', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
-    data[:end_time] = doc.at_xpath('//xmlns:EndTime', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text
-    
+    data[:start_time] = doc.at_xpath("//xmlns:StartTime", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
+    data[:end_time] = doc.at_xpath("//xmlns:EndTime", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text
+
     # Extract notification statistics - GetNotificationsUsage returns aggregate stats, not per-event-type
-    stats_element = doc.at_xpath('//xmlns:NotificationStatistics', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')
+    stats_element = doc.at_xpath("//xmlns:NotificationStatistics", "xmlns" => "urn:ebay:apis:eBLBaseComponents")
     if stats_element
-      delivered_count = stats_element.at_xpath('xmlns:DeliveredCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
-      error_count = stats_element.at_xpath('xmlns:ErrorCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
-      expired_count = stats_element.at_xpath('xmlns:ExpiredCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
-      queued_new_count = stats_element.at_xpath('xmlns:QueuedNewCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
-      queued_pending_count = stats_element.at_xpath('xmlns:QueuedPendingCount', 'xmlns' => 'urn:ebay:apis:eBLBaseComponents')&.text&.to_i || 0
-      
+      delivered_count = stats_element.at_xpath("xmlns:DeliveredCount", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text&.to_i || 0
+      error_count = stats_element.at_xpath("xmlns:ErrorCount", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text&.to_i || 0
+      expired_count = stats_element.at_xpath("xmlns:ExpiredCount", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text&.to_i || 0
+      queued_new_count = stats_element.at_xpath("xmlns:QueuedNewCount", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text&.to_i || 0
+      queued_pending_count = stats_element.at_xpath("xmlns:QueuedPendingCount", "xmlns" => "urn:ebay:apis:eBLBaseComponents")&.text&.to_i || 0
+
       # Calculate totals
       total_failed = error_count + expired_count
       total_delivered = delivered_count
       total_pending = queued_new_count + queued_pending_count
       total_notifications = total_delivered + total_failed + total_pending
-      
+
       data[:total_notifications] = total_notifications
       data[:total_failed_notifications] = total_failed
       data[:total_delivered] = total_delivered
@@ -329,7 +329,7 @@ class ExternalAccountsController < AccountsController
         queued_pending: queued_pending_count
       }
     end
-    
+
     Rails.logger.info "Parsed notification usage data: #{data}"
     data
   rescue => e

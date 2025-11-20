@@ -1,5 +1,5 @@
 class ReturnPoliciesController < ExternalAccountsController
-  before_action :set_return_policy, only: [:show, :edit, :update, :destroy]
+  before_action :set_return_policy, only: [ :show, :edit, :update, :destroy ]
 
   def new
     @return_policy = current_external_account.return_policies.build
@@ -16,7 +16,7 @@ class ReturnPoliciesController < ExternalAccountsController
       return_policy_params.slice(:name, :marketplace_id)
     )
     @return_policy.ebay_policy_data = build_ebay_policy_data(return_policy_params)
-    
+
     if @return_policy.save
       redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Return policy '#{@return_policy.name}' created successfully!"
@@ -28,7 +28,7 @@ class ReturnPoliciesController < ExternalAccountsController
   def update
     @return_policy.assign_attributes(return_policy_params.slice(:name, :marketplace_id))
     @return_policy.ebay_policy_data = build_ebay_policy_data(return_policy_params)
-    
+
     if @return_policy.save
       redirect_to account_external_account_path(current_account, current_external_account),
                   notice: "Return policy '#{@return_policy.name}' updated successfully!"

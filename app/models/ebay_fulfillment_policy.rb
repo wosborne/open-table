@@ -1,6 +1,6 @@
 class EbayFulfillmentPolicy < EbayBusinessPolicy
-  POLICY_TYPE = 'fulfillment'
-  
+  POLICY_TYPE = "fulfillment"
+
   def handling_time
     ebay_attributes.dig("handlingTime", "value")
   end

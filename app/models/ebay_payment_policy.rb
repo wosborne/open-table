@@ -1,6 +1,6 @@
 class EbayPaymentPolicy < EbayBusinessPolicy
-  POLICY_TYPE = 'payment'
-  
+  POLICY_TYPE = "payment"
+
   def immediate_pay?
     ebay_attributes.dig("immediatePay") || false
   end

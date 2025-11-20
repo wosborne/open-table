@@ -8,7 +8,7 @@ class EbayCategory
 
   def get_categories
     result = @api_client.get("/commerce/taxonomy/v1/category_tree/0", { marketplace_id: "EBAY_GB" })
-    
+
     if result.success?
       result.data
     else
@@ -22,12 +22,12 @@ class EbayCategory
     else
       "/commerce/taxonomy/v1/category_tree/0"
     end
-    
+
     params = { marketplace_id: "EBAY_GB" }
     params[:category_id] = category_id if category_id
 
     result = @api_client.get(endpoint, params)
-    
+
     if result.success?
       result.data
     else
@@ -37,13 +37,13 @@ class EbayCategory
 
   def get_item_specifics(category_id)
     cache_key = "ebay_item_specifics_#{category_id}"
-    
+
     Rails.cache.fetch(cache_key, expires_in: 24.hours) do
       result = @api_client.get("/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category", {
         marketplace_id: "EBAY_GB",
         category_id: category_id
       })
-      
+
       if result.success?
         result.data
       else
@@ -54,13 +54,13 @@ class EbayCategory
 
   def search_categories(query)
     cache_key = "ebay_search_categories_#{query.downcase.gsub(/\s+/, '_')}"
-    
+
     Rails.cache.fetch(cache_key, expires_in: 24.hours) do
       result = @api_client.get("/commerce/taxonomy/v1/category_tree/0/get_category_suggestions", {
-        marketplace_id: "EBAY_GB", 
+        marketplace_id: "EBAY_GB",
         q: query
       })
-      
+
       if result.success?
         result.data
       else
@@ -74,12 +74,12 @@ class EbayCategory
       marketplace_id: "EBAY_GB",
       category_id: category_id
     })
-    
+
     if result.success?
       category_data = result.data
-      
+
       specifics_result = get_item_specifics(category_id)
-      
+
       {
         category: category_data,
         item_specifics: specifics_result[:error] ? [] : specifics_result[:aspects] || []
@@ -91,42 +91,42 @@ class EbayCategory
 
   def get_mobile_phone_categories
     cache_key = "ebay_mobile_phone_categories_#{@external_account.id}"
-    
+
     Rails.cache.fetch(cache_key, expires_in: 24.hours) do
       search_result = search_categories("mobile phone")
-      
+
       if search_result[:error]
         return { error: search_result[:error] }
       end
 
       categories = search_result["categorySuggestions"] || []
-      
+
       mobile_categories = categories.select do |suggestion|
         category_data = suggestion["category"]
         name = category_data["categoryName"] || suggestion["categoryTreeNodeAncestors"]&.last&.dig("categoryName") || ""
         name.downcase.include?("phone") || name.downcase.include?("smartphone") || name.downcase.include?("cell")
       end
-      
+
       mobile_categories
     end
   end
 
   def format_item_specifics_for_form(category_id)
     specifics = get_item_specifics(category_id)
-    
+
     return { item_aspects: [], variation_aspects: [] } if specifics["error"] || specifics[:error]
-    
+
     aspects = specifics["aspects"] || []
-    
+
     # Filter to only required aspects
     required_aspects = aspects.select do |aspect|
       aspect.dig("aspectConstraint", "aspectRequired") == true
     end
-    
+
     # Separate into item-level and variation-level aspects
     item_aspects = []
     variation_aspects = []
-    
+
     required_aspects.each do |aspect|
       aspect_data = {
         name: aspect["localizedAspectName"],
@@ -137,10 +137,10 @@ class EbayCategory
         cardinality: aspect.dig("aspectConstraint", "itemToAspectCardinality"),
         mode: aspect.dig("aspectConstraint", "aspectMode")
       }
-      
+
       # Check if this aspect can be used for variations
       enabled_for_variations = aspect.dig("aspectConstraint", "aspectEnabledForVariations") == true
-      
+
       # Override: Model should always be item-level (one model per product)
       if aspect_data[:name].downcase == "model"
         item_aspects << aspect_data
@@ -150,10 +150,10 @@ class EbayCategory
         item_aspects << aspect_data
       end
     end
-    
+
     # Process brand-model relationships for cascading selects
     brand_models_map = build_brand_models_mapping(required_aspects)
-    
+
     {
       item_aspects: item_aspects,
       variation_aspects: variation_aspects,
@@ -166,27 +166,27 @@ class EbayCategory
   def build_brand_models_mapping(aspects)
     brand_aspect = aspects.find { |a| a["localizedAspectName"]&.downcase == "brand" }
     model_aspect = aspects.find { |a| a["localizedAspectName"]&.downcase == "model" }
-    
+
     return {} unless brand_aspect && model_aspect
-    
+
     brands = brand_aspect["aspectValues"]&.map { |v| v["localizedValue"] } || []
     models = model_aspect["aspectValues"]&.map { |v| v["localizedValue"] } || []
-    
+
     # Filter models by brand name - eBay includes brand name in model names
     brand_models = {}
-    
+
     brands.each do |brand|
-      brand_models[brand] = models.select { |model| 
-        model.downcase.include?(brand.downcase) 
+      brand_models[brand] = models.select { |model|
+        model.downcase.include?(brand.downcase)
       }
     end
-    
+
     brand_models
   end
 
   def determine_input_type(aspect)
     values_count = aspect["aspectValues"]&.length || 0
-    
+
     if values_count == 0
       "text"
     elsif values_count <= 50

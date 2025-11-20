@@ -92,7 +92,7 @@ RSpec.describe TransactionNotificationHandler do
         expect(order.financial_status).to eq("paid")
         expect(order.fulfillment_status).to eq("fulfilled")
         expect(order.payment_status).to eq("CheckoutComplete")
-        
+
         extra_details = JSON.parse(order.extra_details)
         expect(extra_details["ebay_transaction_id"]).to eq("123456789")
         expect(extra_details["ebay_item_id"]).to eq("987654321")
@@ -102,7 +102,7 @@ RSpec.describe TransactionNotificationHandler do
 
       it 'updates existing order when order already exists' do
         existing_order = create(:order, external_account: external_account, external_id: "20-13830-48048", total_price: 500.0)
-        
+
         expect { handler.process(valid_transaction_xml) }.not_to change { Order.count }
 
         existing_order.reload
@@ -167,7 +167,7 @@ RSpec.describe TransactionNotificationHandler do
   describe 'XML parsing' do
     it 'extracts all available transaction data' do
       parsed_data = handler.send(:parse_transaction_xml, valid_transaction_xml)
-      
+
       expect(parsed_data[:transaction_id]).to eq("123456789")
       expect(parsed_data[:item_id]).to eq("987654321")
       expect(parsed_data[:order_id]).to eq("20-13830-48048")
@@ -182,7 +182,7 @@ RSpec.describe TransactionNotificationHandler do
 
     it 'handles missing optional fields gracefully' do
       parsed_data = handler.send(:parse_transaction_xml, minimal_transaction_xml)
-      
+
       expect(parsed_data[:transaction_id]).to eq("123456789")
       expect(parsed_data[:order_id]).to eq("20-13830-48048")
       expect(parsed_data[:item_title]).to be_nil
@@ -240,7 +240,7 @@ RSpec.describe TransactionNotificationHandler do
         parsed = JSON.parse(result)
 
         expect(parsed["ebay_transaction_id"]).to eq("123456789")
-        expect(parsed.keys).to eq(["ebay_transaction_id"])
+        expect(parsed.keys).to eq([ "ebay_transaction_id" ])
       end
     end
   end

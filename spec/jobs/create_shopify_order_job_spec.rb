@@ -10,7 +10,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
   before do
     # Mock external account webhook registration to prevent API calls
     allow_any_instance_of(ExternalAccount).to receive(:register_shopify_webhooks)
-    
+
     # Set up ActiveJob test adapter
     ActiveJob::Base.queue_adapter = :test
   end
@@ -41,7 +41,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
       it 'creates a new order successfully' do
         # Ensure all required records are created
         inventory_unit # This triggers creation of the entire chain
-        
+
         expect {
           described_class.perform_now(shop_domain: shop_domain, webhook: webhook_data)
         }.to change(Order, :count).by(1)
@@ -59,7 +59,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
       it 'creates order line items' do
         # Ensure all required records are created
         inventory_unit
-        
+
         described_class.perform_now(shop_domain: shop_domain, webhook: webhook_data)
 
         order = Order.last
@@ -75,7 +75,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
 
       it 'assigns inventory unit to line item' do
         inventory_unit # Ensure creation
-        
+
         described_class.perform_now(shop_domain: shop_domain, webhook: webhook_data)
 
         line_item = Order.last.order_line_items.first
@@ -84,7 +84,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
 
       it 'reserves inventory unit when assigned' do
         inventory_unit # Ensure creation
-        
+
         expect {
           described_class.perform_now(shop_domain: shop_domain, webhook: webhook_data)
         }.to change { inventory_unit.reload.status }.from('in_stock').to('reserved')
@@ -111,7 +111,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
 
         order = Order.last
         expect(order.order_line_items.count).to eq(2)
-        
+
         skus = order.order_line_items.pluck(:sku)
         expect(skus).to include("TEST-SKU-001", "TEST-SKU-002")
       end
@@ -180,7 +180,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
 
       it 'creates line item without inventory unit' do
         external_account # Ensure creation
-        
+
         described_class.perform_now(shop_domain: shop_domain, webhook: webhook_with_unknown_sku)
 
         line_item = Order.last.order_line_items.first
@@ -241,18 +241,18 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
 
       it 'handles missing line_items gracefully' do
         external_account # Ensure creation
-        
+
         expect {
           described_class.perform_now(shop_domain: shop_domain, webhook: malformed_webhook)
         }.not_to raise_error
-        
+
         # No order should be created with nil id
         expect(Order.count).to eq(0)
       end
 
       it 'does not create order with nil id' do
         external_account # Ensure creation
-        
+
         described_class.perform_now(shop_domain: shop_domain, webhook: malformed_webhook)
 
         # No order should be created when id is nil
@@ -263,7 +263,7 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
     context 'date parsing' do
       it 'parses external_created_at correctly' do
         inventory_unit # Ensure creation
-        
+
         described_class.perform_now(shop_domain: shop_domain, webhook: webhook_data)
 
         order = Order.last
@@ -273,9 +273,9 @@ RSpec.describe CreateShopifyOrderJob, type: :job do
 
       it 'handles missing created_at' do
         inventory_unit # Ensure creation
-        
+
         webhook_without_date = webhook_data.except(:created_at)
-        
+
         expect {
           described_class.perform_now(shop_domain: shop_domain, webhook: webhook_without_date)
         }.not_to raise_error

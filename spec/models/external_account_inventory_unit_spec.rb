@@ -5,8 +5,8 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
   let(:ebay_account) { create(:external_account, :ebay, account: account) }
   let(:inventory_unit) { create(:inventory_unit, account: account) }
   let(:external_account_inventory_unit) do
-    create(:external_account_inventory_unit, 
-           external_account: ebay_account, 
+    create(:external_account_inventory_unit,
+           external_account: ebay_account,
            inventory_unit: inventory_unit)
   end
 
@@ -24,29 +24,29 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
 
   describe "validations" do
     it "validates uniqueness of external_account_id scoped to inventory_unit_id" do
-      create(:external_account_inventory_unit, 
-             external_account: ebay_account, 
+      create(:external_account_inventory_unit,
+             external_account: ebay_account,
              inventory_unit: inventory_unit)
-      
+
       duplicate = build(:external_account_inventory_unit,
                        external_account: ebay_account,
                        inventory_unit: inventory_unit)
-      
+
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:external_account_id]).to include("has already been taken")
     end
 
     it "allows same inventory_unit with different external_accounts" do
       shopify_account = create(:external_account, service_name: 'shopify', account: account)
-      
+
       ebay_listing = create(:external_account_inventory_unit,
                            external_account: ebay_account,
                            inventory_unit: inventory_unit)
-      
+
       shopify_listing = build(:external_account_inventory_unit,
                              external_account: shopify_account,
                              inventory_unit: inventory_unit)
-      
+
       expect(shopify_listing).to be_valid
     end
   end
@@ -112,7 +112,7 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
 
       it "parses valid timestamp" do
         timestamp = 1.hour.ago.iso8601
-        unit = build(:external_account_inventory_unit, 
+        unit = build(:external_account_inventory_unit,
                     marketplace_data: { 'listed_at' => timestamp })
         expect(unit.listed_at).to be_within(1.second).of(Time.parse(timestamp))
       end
@@ -180,61 +180,61 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
           sku = unit.inventory_unit.variant.sku
           expect(api_client).to receive(:delete).with("/sell/inventory/v1/inventory_item/#{sku}")
                                                 .and_return({ success: true })
-          
+
           unit.destroy
         end
 
         it "logs success when deletion succeeds" do
           allow(api_client).to receive(:delete).and_return({ success: true })
           expect(Rails.logger).to receive(:info).with(/Successfully removed eBay inventory item/)
-          
+
           unit.destroy
         end
 
         it "handles 404 errors gracefully" do
-          allow(api_client).to receive(:delete).and_return({ 
-            success: false, 
-            status_code: 404 
+          allow(api_client).to receive(:delete).and_return({
+            success: false,
+            status_code: 404
           })
           expect(Rails.logger).to receive(:info).with(/already removed or not found/)
-          
+
           unit.destroy
         end
 
         it "handles eBay item not found error gracefully" do
           allow(api_client).to receive(:delete).and_return({
             success: false,
-            detailed_errors: [{ error_id: 25001 }]
+            detailed_errors: [ { error_id: 25001 } ]
           })
           expect(Rails.logger).to receive(:info).with(/already removed or not found/)
-          
+
           unit.destroy
         end
 
         it "handles eBay resource not found error 25710 gracefully" do
           allow(api_client).to receive(:delete).and_return({
             success: false,
-            detailed_errors: [{ error_id: 25710 }]
+            detailed_errors: [ { error_id: 25710 } ]
           })
           expect(Rails.logger).to receive(:info).with(/already removed or not found/)
-          
+
           unit.destroy
         end
 
         it "prevents deletion when eBay API fails" do
-          allow(api_client).to receive(:delete).and_return({ 
-            success: false, 
+          allow(api_client).to receive(:delete).and_return({
+            success: false,
             error: "API Error",
             status_code: 500
           })
-          
+
           expect { unit.destroy }.to raise_error(/Failed to remove item from eBay/)
           expect(ExternalAccountInventoryUnit.exists?(unit.id)).to be true
         end
 
         it "prevents deletion when API raises exception" do
           allow(api_client).to receive(:delete).and_raise("Network error")
-          
+
           expect { unit.destroy }.to raise_error("Network error")
           expect(ExternalAccountInventoryUnit.exists?(unit.id)).to be true
         end
@@ -258,10 +258,10 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
     describe "#update_marketplace_data" do
       it "merges new data into existing marketplace_data" do
         original_data = unit.marketplace_data.dup
-        
+
         unit.send(:update_marketplace_data, { status: 'new_status', new_field: 'new_value' })
         unit.reload
-        
+
         expect(unit.marketplace_data['status']).to eq('new_status')
         expect(unit.marketplace_data['new_field']).to eq('new_value')
         # Original data should still be present
@@ -270,10 +270,10 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
 
       it "handles nil marketplace_data" do
         unit.update!(marketplace_data: nil)
-        
+
         unit.send(:update_marketplace_data, { status: 'active' })
         unit.reload
-        
+
         expect(unit.marketplace_data['status']).to eq('active')
       end
     end
@@ -285,27 +285,27 @@ RSpec.describe ExternalAccountInventoryUnit, type: :model do
       end
 
       it "returns true for error_id 25001" do
-        result = { detailed_errors: [{ error_id: 25001 }] }
+        result = { detailed_errors: [ { error_id: 25001 } ] }
         expect(unit.send(:ebay_item_not_found?, result)).to be true
       end
 
       it "returns true for error_id 25710 (resource not found)" do
-        result = { detailed_errors: [{ error_id: 25710 }] }
+        result = { detailed_errors: [ { error_id: 25710 } ] }
         expect(unit.send(:ebay_item_not_found?, result)).to be true
       end
 
       it "returns true for errorId 25710 in eBay response format" do
-        result = { detailed_errors: [{ errorId: 25710 }] }
+        result = { detailed_errors: [ { errorId: 25710 } ] }
         expect(unit.send(:ebay_item_not_found?, result)).to be true
       end
 
       it "returns false for other errors" do
         result = { status_code: 500 }
         expect(unit.send(:ebay_item_not_found?, result)).to be false
-        
-        result = { detailed_errors: [{ error_id: 25002 }] }
+
+        result = { detailed_errors: [ { error_id: 25002 } ] }
         expect(unit.send(:ebay_item_not_found?, result)).to be false
-        
+
         result = {}
         expect(unit.send(:ebay_item_not_found?, result)).to be false
       end

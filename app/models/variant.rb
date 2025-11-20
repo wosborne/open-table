@@ -16,7 +16,7 @@ class Variant < ApplicationRecord
   before_update :prevent_sku_change
 
   attr_accessor :product_option_values_attributes
-  
+
   def product_option_values_attributes=(attributes)
     @product_option_values_params = attributes.values if attributes.is_a?(Hash)
   end
@@ -97,19 +97,19 @@ class Variant < ApplicationRecord
 
   def create_variant_option_values
     return unless new_record?
-    
+
     # Process the nested product_option_values_attributes manually
     if @product_option_values_params
       @product_option_values_params.each do |attrs|
         next if attrs[:value].blank? || attrs[:product_option_id].blank?
-        
+
         product_option = product.product_options.find(attrs[:product_option_id])
-        
+
         # Find or create the ProductOptionValue
         product_option_value = product_option.product_option_values.find_or_create_by!(
           value: attrs[:value]
         )
-        
+
         # Create the linking VariantOptionValue
         variant_option_values.build(
           product_option: product_option,

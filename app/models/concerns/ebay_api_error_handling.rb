@@ -51,7 +51,7 @@ module EbayApiErrorHandling
     status_code = response.status_code
     error_data = response.error
     detailed_errors = response.detailed_errors || []
-    
+
     case status_code
     when 401
       EbayAuthenticationError.new(message, status_code: status_code, error_data: error_data, detailed_errors: detailed_errors)
@@ -69,7 +69,7 @@ module EbayApiErrorHandling
   def extract_user_friendly_message(response)
     detailed_errors = response.detailed_errors
     error = response.error
-    
+
     if detailed_errors&.any?
       detailed_errors.first[:message] || detailed_errors.first[:long_message]
     elsif error.is_a?(Hash)
@@ -88,9 +88,9 @@ module EbayApiErrorHandling
 
   def handle_api_request(raise_on_error: false, &block)
     result = yield
-    
+
     Rails.logger.info "eBay API success: #{result.status_code}"
-    
+
     convert_to_legacy_response(result)
   rescue EbayApiError => e
     if raise_on_error
@@ -104,7 +104,7 @@ module EbayApiErrorHandling
     if e.detailed_errors.present?
       Rails.logger.error "eBay API detailed errors: #{e.detailed_errors.inspect}"
     end
-    
+
     EbayApiResponse.new(
       success: false,
       status_code: e.status_code || 500,

@@ -42,7 +42,7 @@ RSpec.describe InventoryUnit, type: :model do
   describe "eBay integration methods" do
     let(:account) { create(:account) }
     let(:ebay_account) { create(:external_account, :ebay, account: account) }
-    let(:product) { create(:product, account: account, ebay_category_id: 177, ebay_aspects: { "Brand" => ["Apple"], "Model" => ["iPhone"] }) }
+    let(:product) { create(:product, account: account, ebay_category_id: 177, ebay_aspects: { "Brand" => [ "Apple" ], "Model" => [ "iPhone" ] }) }
     let(:variant) { create(:variant, product: product) }
     let(:inventory_unit) { create(:inventory_unit, account: account, variant: variant) }
 
@@ -86,20 +86,20 @@ RSpec.describe InventoryUnit, type: :model do
         let(:policy_ids) do
           {
             fulfillment_policy_id: "fulfillment_123",
-            payment_policy_id: "payment_456", 
+            payment_policy_id: "payment_456",
             return_policy_id: "return_789"
           }
         end
 
         before do
           ebay_account # ensure the ebay_account exists
-          
+
           # Mock EbayApiClient
           allow(EbayApiClient).to receive(:new).with(ebay_account).and_return(api_client)
           allow(api_client).to receive(:put).and_return(inventory_response)
           allow(api_client).to receive(:post).and_return(offer_response)
           allow(api_client).to receive(:get).and_return({ success: true, data: [] })
-          
+
           # Mock EbayPolicyClient
           allow(EbayPolicyClient).to receive(:new).with(ebay_account).and_return(policy_client)
           allow(policy_client).to receive(:get_all_default_policy_ids).and_return(policy_ids)
@@ -154,7 +154,7 @@ RSpec.describe InventoryUnit, type: :model do
         it "handles existing offer gracefully" do
           existing_offer_error = {
             success: false,
-            detailed_errors: [{ error_id: 25002, message: "Offer entity already exists for the SKU" }]
+            detailed_errors: [ { error_id: 25002, message: "Offer entity already exists for the SKU" } ]
           }
           allow(api_client).to receive(:post).and_return(existing_offer_error)
 
@@ -180,7 +180,7 @@ RSpec.describe InventoryUnit, type: :model do
         it "returns failure with appropriate message" do
           # Ensure no eBay account exists for this test
           account.external_accounts.where(service_name: 'ebay').destroy_all
-          
+
           result = inventory_unit.publish_ebay_offer
           expect(result[:success]).to be false
           expect(result[:message]).to include("No eBay account connected")
@@ -274,7 +274,7 @@ RSpec.describe InventoryUnit, type: :model do
         before do
           ebay_account
           ebay_listing
-          
+
           allow(EbayApiClient).to receive(:new).with(ebay_account).and_return(api_client)
           allow(api_client).to receive(:delete).and_return(delete_response)
         end
@@ -294,7 +294,7 @@ RSpec.describe InventoryUnit, type: :model do
 
         it "uses variant SKU when marketplace_data SKU is missing" do
           ebay_listing.update!(marketplace_data: ebay_listing.marketplace_data.except('sku'))
-          
+
           expect(api_client).to receive(:delete).with(
             "/sell/inventory/v1/inventory_item/#{variant.sku}"
           ).and_return(delete_response)
@@ -329,7 +329,7 @@ RSpec.describe InventoryUnit, type: :model do
       let(:product_option2) { create(:product_option, name: "Storage", product: product) }
       let(:color_value) { create(:product_option_value, product_option: product_option1, value: "Blue") }
       let(:storage_value) { create(:product_option_value, product_option: product_option2, value: "256GB") }
-      
+
       before do
         create(:variant_option_value, variant: variant, product_option: product_option1, product_option_value: color_value)
         create(:variant_option_value, variant: variant, product_option: product_option2, product_option_value: storage_value)
@@ -366,32 +366,32 @@ RSpec.describe InventoryUnit, type: :model do
       describe "#build_ebay_aspects" do
         it "combines product aspects with variant option values" do
           aspects = inventory_unit.send(:build_ebay_aspects)
-          
-          expect(aspects["Brand"]).to eq(["Apple"])
-          expect(aspects["Model"]).to eq(["iPhone"])
-          expect(aspects["Color"]).to eq(["Blue"])
-          expect(aspects["Storage"]).to eq(["256GB"])
+
+          expect(aspects["Brand"]).to eq([ "Apple" ])
+          expect(aspects["Model"]).to eq([ "iPhone" ])
+          expect(aspects["Color"]).to eq([ "Blue" ])
+          expect(aspects["Storage"]).to eq([ "256GB" ])
         end
 
         it "handles Color/Colour marketplace differences" do
           aspects = inventory_unit.send(:build_ebay_aspects)
-          
+
           # Should have both Color and Colour for EBAY_GB compatibility
-          expect(aspects["Color"]).to eq(["Blue"])
-          expect(aspects["Colour"]).to eq(["Blue"])
+          expect(aspects["Color"]).to eq([ "Blue" ])
+          expect(aspects["Colour"]).to eq([ "Blue" ])
         end
 
         it "works with Colour option name (British spelling)" do
           product_option1.update!(name: "Colour")
           aspects = inventory_unit.send(:build_ebay_aspects)
-          
-          expect(aspects["Color"]).to eq(["Blue"])
-          expect(aspects["Colour"]).to eq(["Blue"])
+
+          expect(aspects["Color"]).to eq([ "Blue" ])
+          expect(aspects["Colour"]).to eq([ "Blue" ])
         end
 
         it "ensures all aspect values are arrays" do
           aspects = inventory_unit.send(:build_ebay_aspects)
-          
+
           aspects.each do |name, value|
             expect(value).to be_an(Array), "Aspect '#{name}' should be an array, got #{value.class}"
           end
@@ -400,9 +400,9 @@ RSpec.describe InventoryUnit, type: :model do
         it "handles products with no ebay_aspects" do
           product.update!(ebay_aspects: nil)
           aspects = inventory_unit.send(:build_ebay_aspects)
-          
-          expect(aspects["Color"]).to eq(["Blue"])
-          expect(aspects["Storage"]).to eq(["256GB"])
+
+          expect(aspects["Color"]).to eq([ "Blue" ])
+          expect(aspects["Storage"]).to eq([ "256GB" ])
           expect(aspects.keys).not_to include("Brand", "Model")
         end
       end
@@ -410,7 +410,7 @@ RSpec.describe InventoryUnit, type: :model do
       describe "#build_ebay_inventory_item_data" do
         it "builds complete inventory item structure" do
           data = inventory_unit.send(:build_ebay_inventory_item_data)
-          
+
           expect(data[:product][:title]).to be_present
           expect(data[:product][:aspects]).to be_a(Hash)
           expect(data[:condition]).to eq("USED_EXCELLENT")
@@ -424,7 +424,7 @@ RSpec.describe InventoryUnit, type: :model do
         let(:policy_ids) do
           {
             fulfillment_policy_id: "fulfillment_123",
-            payment_policy_id: "payment_456", 
+            payment_policy_id: "payment_456",
             return_policy_id: "return_789"
           }
         end
@@ -436,7 +436,7 @@ RSpec.describe InventoryUnit, type: :model do
 
         it "builds complete offer structure with policies" do
           data = inventory_unit.send(:build_ebay_offer_data, ebay_account)
-          
+
           expect(data[:sku]).to eq(variant.sku)
           expect(data[:marketplaceId]).to eq("EBAY_GB")
           expect(data[:format]).to eq("FIXED_PRICE")
@@ -479,21 +479,21 @@ RSpec.describe InventoryUnit, type: :model do
               { message: "Error 2" }
             ]
           }
-          
+
           formatted = inventory_unit.send(:format_ebay_error, result)
           expect(formatted).to eq("Error 1, Error 2")
         end
 
         it "falls back to error field when no detailed errors" do
           result = { error: "Simple error message" }
-          
+
           formatted = inventory_unit.send(:format_ebay_error, result)
           expect(formatted).to eq("Simple error message")
         end
 
         it "handles nil error gracefully" do
           result = {}
-          
+
           formatted = inventory_unit.send(:format_ebay_error, result)
           expect(formatted).to eq("")
         end
@@ -509,7 +509,7 @@ RSpec.describe InventoryUnit, type: :model do
               }
             ]
           }
-          
+
           expect(inventory_unit.send(:offer_already_exists_error?, result)).to be true
         end
 
@@ -522,7 +522,7 @@ RSpec.describe InventoryUnit, type: :model do
               }
             ]
           }
-          
+
           expect(inventory_unit.send(:offer_already_exists_error?, result)).to be false
         end
 
@@ -535,7 +535,7 @@ RSpec.describe InventoryUnit, type: :model do
               }
             ]
           }
-          
+
           expect(inventory_unit.send(:offer_already_exists_error?, result)).to be false
         end
 

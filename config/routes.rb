@@ -16,14 +16,14 @@ Rails.application.routes.draw do
   resources :accounts, only: %w[new create edit update show]
 
   post "/webhooks/shopify", to: "shopify_webhooks#receive"
-  match "/webhooks/ebay/marketplace_account_deletion", to: "ebay_webhooks#marketplace_account_deletion", via: [:get, :post]
+  match "/webhooks/ebay/marketplace_account_deletion", to: "ebay_webhooks#marketplace_account_deletion", via: [ :get, :post ]
   post "/webhooks/ebay/notifications", to: "ebay_webhooks#notifications", as: :ebay_webhooks
 
 
   scope "/:account_slug", as: :account do
     get "dashboard", to: "dashboard#index"
     post "ebay/opt_into_business_policies", to: "ebay#opt_into_business_policies"
-    
+
     resources :external_accounts, only: %w[new create destroy show edit update] do
       member do
         get :fulfillment_policies
@@ -32,16 +32,16 @@ Rails.application.routes.draw do
         get :inventory_locations
         get :notification_preferences
       end
-      
-      resources :fulfillment_policies, only: [:new, :create, :edit, :update, :show, :destroy] do
+
+      resources :fulfillment_policies, only: [ :new, :create, :edit, :update, :show, :destroy ] do
         collection do
           get :shipping_services
         end
       end
-      
-      resources :return_policies, only: [:new, :create, :edit, :update, :show, :destroy]
-      
-      resources :payment_policies, only: [:new, :create, :edit, :update, :show, :destroy]
+
+      resources :return_policies, only: [ :new, :create, :edit, :update, :show, :destroy ]
+
+      resources :payment_policies, only: [ :new, :create, :edit, :update, :show, :destroy ]
     end
 
     resources :products do
@@ -59,7 +59,7 @@ Rails.application.routes.draw do
       member do
         delete :delete_image_attachment
       end
-      resources :external_account_inventory_units, only: [:show, :new, :create, :update, :destroy]
+      resources :external_account_inventory_units, only: [ :show, :new, :create, :update, :destroy ]
     end
 
     resources :variants do
@@ -70,7 +70,7 @@ Rails.application.routes.draw do
 
     resources :orders, only: [ :index, :show, :edit ]
 
-    resources :ebay_notifications, only: [:index, :destroy] do
+    resources :ebay_notifications, only: [ :index, :destroy ] do
       delete :clear_all, on: :collection
     end
 
@@ -105,5 +105,5 @@ Rails.application.routes.draw do
   get "/external_accounts/shopify_callback", to: "external_accounts#shopify_callback"
   get "/external_accounts/ebay_callback", to: "external_accounts#ebay_callback"
   get "/external_accounts/ebay_authn_auth_callback", to: "external_accounts#ebay_authn_auth_callback"
-  match "/ebay/marketplace_notifications", to: "ebay_notifications#marketplace_notifications", via: [:get, :post]
+  match "/ebay/marketplace_notifications", to: "ebay_notifications#marketplace_notifications", via: [ :get, :post ]
 end

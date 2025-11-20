@@ -7,8 +7,8 @@ class CreateExternalAccountInventoryUnits < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :external_account_inventory_units, [:external_account_id, :inventory_unit_id], 
+
+    add_index :external_account_inventory_units, [ :external_account_id, :inventory_unit_id ],
               unique: true, name: 'index_eaiu_on_external_account_and_inventory_unit'
   end
 end

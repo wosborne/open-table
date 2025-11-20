@@ -4,7 +4,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
   let(:secret) { 'test_webhook_secret' }
   let(:webhook_payload) { { order: { id: 123, name: '#1001' } }.to_json }
   let(:calculated_hmac) { Base64.strict_encode64(OpenSSL::HMAC.digest('sha256', secret, webhook_payload)) }
-  
+
   before do
     allow(Rails.application.credentials.shopify).to receive(:[]).with(:client_secret).and_return(secret)
   end
@@ -24,7 +24,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
         expect(ShopifyAPI::Webhooks::Registry).to receive(:process).with(mock_webhook_request)
 
         post :receive, body: webhook_payload
-        
+
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to eq({ 'success' => true })
       end
@@ -51,7 +51,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
 
         allow(ShopifyAPI::Webhooks::Registry).to receive(:process)
         post :receive, body: webhook_payload
-        
+
         expect(response).to have_http_status(:ok)
       end
     end
@@ -64,14 +64,14 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
 
       it 'returns unauthorized status' do
         post :receive, body: webhook_payload
-        
+
         expect(response).to have_http_status(:unauthorized)
         expect(response.body).to eq('Unauthorized')
       end
 
       it 'does not process the webhook' do
         expect(ShopifyAPI::Webhooks::Registry).not_to receive(:process)
-        
+
         post :receive, body: webhook_payload
       end
     end
@@ -83,7 +83,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
 
       it 'returns unauthorized status' do
         post :receive, body: webhook_payload
-        
+
         expect(response).to have_http_status(:unauthorized)
         expect(response.body).to eq('Unauthorized')
       end
@@ -93,14 +93,14 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
       it 'validates HMAC correctly for different payloads' do
         different_payload = { order: { id: 456, name: '#1002' } }.to_json
         different_hmac = Base64.strict_encode64(OpenSSL::HMAC.digest('sha256', secret, different_payload))
-        
+
         request.headers['X-Shopify-Hmac-Sha256'] = different_hmac
         request.headers['X-Shopify-Topic'] = 'orders/create'
         request.headers['X-Shopify-Shop-Domain'] = 'test-shop.myshopify.com'
         allow(ShopifyAPI::Webhooks::Registry).to receive(:process)
 
         post :receive, body: different_payload
-        
+
         expect(response).to have_http_status(:ok)
       end
 
@@ -109,7 +109,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
         request.headers['X-Shopify-Hmac-Sha256'] = wrong_secret_hmac
 
         post :receive, body: webhook_payload
-        
+
         expect(response).to have_http_status(:unauthorized)
       end
 
@@ -117,7 +117,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
         request.headers['X-Shopify-Hmac-Sha256'] = calculated_hmac
         request.headers['X-Shopify-Topic'] = 'orders/create'
         request.headers['X-Shopify-Shop-Domain'] = 'test-shop.myshopify.com'
-        
+
         expect(ActiveSupport::SecurityUtils).to receive(:secure_compare).and_call_original
         allow(ShopifyAPI::Webhooks::Registry).to receive(:process)
 
@@ -161,7 +161,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
           headers: { 'X-Shopify-Hmac-Sha256' => 'invalid' },
           raw_post: webhook_payload
         )
-        
+
         result = controller.send(:valid_shopify_hmac?, invalid_request)
         expect(result).to be false
       end
@@ -171,7 +171,7 @@ RSpec.describe ShopifyWebhooksController, type: :controller do
           headers: {},
           raw_post: webhook_payload
         )
-        
+
         result = controller.send(:valid_shopify_hmac?, no_hmac_request)
         expect(result).to be false
       end

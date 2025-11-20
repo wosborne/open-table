@@ -1,13 +1,13 @@
 class ExternalAccountInventoryUnitsController < InventoryUnitsController
-  before_action :set_external_account_inventory_unit, only: [:show, :update, :destroy]
-  before_action :set_ebay_account, only: [:new, :create]
+  before_action :set_external_account_inventory_unit, only: [ :show, :update, :destroy ]
+  before_action :set_ebay_account, only: [ :new, :create ]
 
   def show
     @inventory_unit = current_inventory_unit
     @external_account_inventory_unit = current_inventory_unit.ebay_listing_for_account(current_account)
-    
+
     unless @external_account_inventory_unit
-      redirect_to account_inventory_unit_path(current_account, current_inventory_unit), 
+      redirect_to account_inventory_unit_path(current_account, current_inventory_unit),
                   alert: "No eBay listing found."
     end
   end
@@ -19,7 +19,7 @@ class ExternalAccountInventoryUnitsController < InventoryUnitsController
 
   def create
     result = current_inventory_unit.add_to_ebay_inventory
-    
+
     respond_to do |format|
       if result[:success]
         ebay_listing = result[:ebay_listing]
@@ -29,7 +29,7 @@ class ExternalAccountInventoryUnitsController < InventoryUnitsController
         @error = result[:message]
         @inventory_unit = current_inventory_unit
         @external_account_inventory_unit = ExternalAccountInventoryUnit.new
-        
+
         format.html { render :new, status: :unprocessable_entity }
         format.turbo_stream
       end
@@ -39,16 +39,16 @@ class ExternalAccountInventoryUnitsController < InventoryUnitsController
   def update
     @inventory_unit = current_inventory_unit
     action = params[:action_type]
-    
+
     case action
-    when 'publish'
+    when "publish"
       result = current_inventory_unit.publish_ebay_offer
-    when 'end'
+    when "end"
       result = @external_account_inventory_unit.end_listing
     else
       result = { success: false, message: "Unknown action: #{action}" }
     end
-    
+
     if result[:success]
       # Reload the external_account_inventory_unit to get updated data
       @external_account_inventory_unit.reload
@@ -62,7 +62,7 @@ class ExternalAccountInventoryUnitsController < InventoryUnitsController
   def destroy
     begin
       @external_account_inventory_unit.destroy
-      redirect_to account_inventory_unit_path(current_account, current_inventory_unit), 
+      redirect_to account_inventory_unit_path(current_account, current_inventory_unit),
                   notice: "eBay listing removed successfully!"
     rescue => e
       redirect_to account_inventory_unit_external_account_inventory_unit_path(current_account, current_inventory_unit, @external_account_inventory_unit),
@@ -73,21 +73,21 @@ class ExternalAccountInventoryUnitsController < InventoryUnitsController
   private
 
   def set_ebay_account
-    @ebay_account = current_account.external_accounts.find_by(service_name: 'ebay')
-    
+    @ebay_account = current_account.external_accounts.find_by(service_name: "ebay")
+
     unless @ebay_account
-      redirect_to account_inventory_unit_path(current_account, current_inventory_unit), 
+      redirect_to account_inventory_unit_path(current_account, current_inventory_unit),
                   alert: "No eBay account connected to this account."
     end
   end
 
   def set_external_account_inventory_unit
     @external_account_inventory_unit = current_inventory_unit.ebay_listing_for_account(current_account)
-    
+
     unless @external_account_inventory_unit
       @error = "No eBay listing found."
       render_response
-      return false
+      false
     end
   end
 

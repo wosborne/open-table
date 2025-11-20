@@ -28,17 +28,17 @@ class EbayAspectsComponent < ApplicationComponent
   end
 
   def brand_select_options(aspect)
-    [["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }
+    [ [ "Select #{aspect[:name]}...", "" ] ] + aspect[:values].map { |v| [ v, v ] }
   end
 
   def model_select_options(aspect)
     saved_brand = aspect_value("Brand")
     available_models = saved_brand ? brand_models_map[saved_brand] || [] : []
-    
+
     if available_models.any?
-      [["Select #{aspect[:name]}...", ""]] + available_models.map { |m| [m, m] }
+      [ [ "Select #{aspect[:name]}...", "" ] ] + available_models.map { |m| [ m, m ] }
     else
-      [["Select Brand first...", ""]]
+      [ [ "Select Brand first...", "" ] ]
     end
   end
 
@@ -49,6 +49,6 @@ class EbayAspectsComponent < ApplicationComponent
   end
 
   def regular_select_options(aspect)
-    [["Select #{aspect[:name]}...", ""]] + aspect[:values].map { |v| [v, v] }
+    [ [ "Select #{aspect[:name]}...", "" ] ] + aspect[:values].map { |v| [ v, v ] }
   end
 end

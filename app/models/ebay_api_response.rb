@@ -27,7 +27,7 @@ class EbayApiResponse
 
   def error_messages
     return [] if @detailed_errors.empty?
-    
+
     @detailed_errors.map do |error|
       error[:long_message] || error[:message] || "Unknown error"
     end

@@ -5,7 +5,7 @@ RSpec.describe ShopifyService, type: :service do
   let(:access_token) { "test_access_token" }
   let(:external_account) { create(:external_account, service_name: "shopify", domain: shop_domain, api_token: access_token) }
   let(:shopify_service) { ShopifyService.new(external_account: external_account, shop_domain: shop_domain, access_token: access_token) }
-  
+
   let(:mock_session) { instance_double(ShopifyAPI::Clients::Rest::Admin) }
   let(:success_response) { double(code: 201, body: { "product" => { "id" => 123, "title" => "Test Product" } }) }
   let(:error_response) { double(code: 400, body: { "errors" => "Invalid request" }) }
@@ -26,36 +26,36 @@ RSpec.describe ShopifyService, type: :service do
         is_embedded: false,
         is_private: false
       )
-      
+
       ShopifyService.new(external_account: external_account, shop_domain: shop_domain, access_token: access_token)
     end
 
     it 'creates a REST admin client' do
       expect(ShopifyAPI::Clients::Rest::Admin).to receive(:new)
-      
+
       ShopifyService.new(external_account: external_account, shop_domain: shop_domain, access_token: access_token)
     end
   end
 
   describe '#get_products' do
-    let(:products_response) { double(body: { "products" => [{ "id" => 1, "title" => "Product 1" }] }) }
+    let(:products_response) { double(body: { "products" => [ { "id" => 1, "title" => "Product 1" } ] }) }
 
     it 'fetches products from Shopify' do
       expect(mock_session).to receive(:get).with(path: "products").and_return(products_response)
-      
+
       result = shopify_service.get_products
-      expect(result).to eq([{ "id" => 1, "title" => "Product 1" }])
+      expect(result).to eq([ { "id" => 1, "title" => "Product 1" } ])
     end
 
     it 'can call refresh_access_token when needed' do
       # Test that the private method exists and can be called
       expect(shopify_service.respond_to?(:refresh_access_token, true)).to be true
-      
+
       # Test the actual method works with mocked external account
       allow(external_account).to receive(:refresh_token).and_return('test_refresh_token')
       allow(HTTParty).to receive(:post).and_return(double(success?: true, parsed_response: { 'access_token' => 'new_token' }))
       allow(external_account).to receive(:update!)
-      
+
       result = shopify_service.send(:refresh_access_token)
       expect(result).to be true
     end
@@ -199,7 +199,7 @@ RSpec.describe ShopifyService, type: :service do
   describe 'with_token_refresh wrapper' do
     it 'calls the block when no errors occur' do
       expect(mock_session).to receive(:get).and_return(double(body: { "products" => [] }))
-      
+
       result = shopify_service.get_products
       expect(result).to eq([])
     end
