@@ -1,5 +1,6 @@
 class InventoryUnit < ApplicationRecord
-  TABLE_COLUMNS = attribute_names - [ "account_id" ]
+  TABLE_COLUMNS = attribute_names - [ "account_id", "created_at", "updated_at" ]
+  SEARCHABLE_ATTRIBUTES = [ "id", "serial_number", "status" ]
 
   belongs_to :account
   belongs_to :variant

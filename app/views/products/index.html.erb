@@ -1,6 +1,12 @@
 
 <h1 class="title">Products</h1>
 
+<%= render "components/model_filters", 
+    path: account_products_path(current_account), 
+    model_class: Product,
+    model_name: "product",
+    searchable_attributes: Product::SEARCHABLE_ATTRIBUTES %>
+
 <div class="field is-grouped is-grouped-right">
   <p class="control">
     <%= link_to new_account_product_path(current_account), class: "button is-fullwidth-mobile" do %>

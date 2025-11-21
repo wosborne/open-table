@@ -1,7 +1,8 @@
 class Variant < ApplicationRecord
   has_paper_trail only: [ :sku, :price ]
 
-  TABLE_COLUMNS = attribute_names - [ "id", "external_ids", "product_id" ] + [ "product_name", "inventory_count" ]
+  TABLE_COLUMNS = attribute_names - [ "external_ids", "product_id", "created_at", "updated_at" ] + [ "product_name", "inventory_count" ]
+  SEARCHABLE_ATTRIBUTES = [ "id", "sku", "price", "product_name" ]
 
   belongs_to :product
   has_many :variant_option_values, dependent: :destroy

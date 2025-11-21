@@ -1,5 +1,5 @@
 class ViewsController < TablesController
-  include SearchAndFilterable
+  include RecordsSearchAndFilterable
 
   def show
     @view = current_table.views.friendly.find(params[:id])

@@ -1,5 +1,11 @@
 <h1 class="title">Inventory Units</h1>
 
+<%= render "components/model_filters", 
+    path: account_inventory_units_path(current_account), 
+    model_class: InventoryUnit,
+    model_name: "inventory unit",
+    searchable_attributes: InventoryUnit::SEARCHABLE_ATTRIBUTES %>
+
 <div class="field is-grouped is-grouped-right">
   <p class="control">
     <%= link_to new_account_inventory_unit_path(current_account), class: "button is-fullwidth-mobile" do %>

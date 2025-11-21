@@ -1,8 +1,9 @@
 class InventoryUnitsController < AccountsController
+  include SearchAndFilterable
   before_action :set_inventory_unit, only: [ :show, :edit, :update, :destroy, :delete_image_attachment ]
 
   def index
-    @inventory_units = current_account.inventory_units.includes(:variant).order(created_at: :desc)
+    @inventory_units = inventory_units
   end
 
   def show
@@ -73,6 +74,12 @@ class InventoryUnitsController < AccountsController
   helper_method :current_inventory_unit
 
   private
+
+  def inventory_units
+    @inventory_units ||= search_and_filter_records(
+      current_account.inventory_units.includes(:variant).order(created_at: :desc)
+    )
+  end
 
   def set_inventory_unit
     @inventory_unit = current_inventory_unit

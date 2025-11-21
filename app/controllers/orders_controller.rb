@@ -1,9 +1,19 @@
 class OrdersController < AccountsController
+  include SearchAndFilterable
+
   def index
-    @orders = Order.includes(:order_line_items).order(created_at: :desc)
+    @orders = orders
   end
 
   def show
-    @order = Order.includes(:order_line_items).find(params[:id])
+    @order = current_account.orders.includes(:order_line_items).find(params[:id])
+  end
+
+  private
+
+  def orders
+    @orders ||= search_and_filter_records(
+      current_account.orders.includes(:order_line_items).order(created_at: :desc)
+    )
   end
 end

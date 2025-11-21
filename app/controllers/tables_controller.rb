@@ -1,5 +1,5 @@
 class TablesController < AccountsController
-  include SearchAndFilterable
+  include RecordsSearchAndFilterable
   before_action :set_current_view_in_session, only: [ :show ]
 
   def show

@@ -1,5 +1,11 @@
 <h1 class="title">Orders</h1>
 
+<%= render "components/model_filters", 
+    path: account_orders_path(current_account), 
+    model_class: Order,
+    model_name: "order",
+    searchable_attributes: Order::SEARCHABLE_ATTRIBUTES %>
+
 <% if @orders.any? %>
   <%= render TableGridComponent.new(resources: @orders, current_account: current_account) %>
 <% else %>

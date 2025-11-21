@@ -1,6 +1,9 @@
 class Product < ApplicationRecord
+  TABLE_COLUMNS = attribute_names - [ "account_id", "description", "ebay_category_name", "ebay_category_id", "brand", "ebay_aspects", "created_at", "updated_at" ] + [ "in_stock" ]
+  SEARCHABLE_ATTRIBUTES = [ "id", "name", "brand" ]
+
   belongs_to :account
-  TABLE_COLUMNS = attribute_names - [ "id", "description", "account_id", "ebay_category_id", "ebay_category_name", "brand", "ebay_aspects" ] + [ "in_stock" ]
+
   has_many :product_options, dependent: :destroy
   has_many :product_option_values, through: :product_options
   has_many :variants, dependent: :destroy

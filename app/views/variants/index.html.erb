@@ -1,5 +1,11 @@
 <h1 class="title">Variants</h1>
 
+<%= render "components/model_filters", 
+    path: account_variants_path(current_account), 
+    model_class: Variant,
+    model_name: "variant",
+    searchable_attributes: Variant::SEARCHABLE_ATTRIBUTES %>
+
 <div class="field is-grouped is-grouped-right">
   <p class="control">
     <%= link_to new_account_variant_path(current_account), class: "button is-fullwidth-mobile" do %>

@@ -6,6 +6,7 @@ class ExternalAccount < ApplicationRecord
   has_many :external_account_products
   has_many :external_account_inventory_units, dependent: :destroy
   has_many :ebay_business_policies, dependent: :destroy
+  has_many :orders, dependent: :destroy
 
   # Specific policy type associations
   has_many :fulfillment_policies, -> { where(type: "EbayFulfillmentPolicy") },

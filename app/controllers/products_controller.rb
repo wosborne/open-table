@@ -1,8 +1,9 @@
 class ProductsController < AccountsController
+  include SearchAndFilterable
   before_action :set_product, only: [ :show, :edit, :update, :regenerate_skus ]
 
   def index
-    @products = current_account.products
+    @products = products
     @extra_columns = gather_ebay_aspect_columns
   end
 
@@ -70,6 +71,10 @@ class ProductsController < AccountsController
   end
 
   private
+
+  def products
+    @products ||= search_and_filter_records(current_account.products)
+  end
 
   def gather_ebay_aspect_columns
     sql = <<~SQL

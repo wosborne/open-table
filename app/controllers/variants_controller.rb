@@ -1,8 +1,9 @@
 class VariantsController < AccountsController
+  include SearchAndFilterable
   before_action :set_variant, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @variants = current_account.variants.includes(:product, :product_option_values).order(created_at: :desc)
+    @variants = variants
   end
 
   def show
@@ -67,6 +68,12 @@ class VariantsController < AccountsController
   end
 
   private
+
+  def variants
+    @variants ||= search_and_filter_records(
+      current_account.variants.includes(:product, :product_option_values).order(created_at: :desc)
+    )
+  end
 
   def set_variant
     @variant = current_account.variants.find(params[:id])

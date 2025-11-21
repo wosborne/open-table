@@ -1,0 +1,57 @@
+<div data-controller="model-filter">
+  <div class="columns">
+    <%= form_with url: path, method: :get, data: { model_filter_target: "form" }, class: "column is-one-third" do |f| %>
+      <div class="field has-addons">
+        <div class="control has-icons-left is-expanded">
+          <%= f.text_field :search, value: params[:search], placeholder: "Search #{model_name.pluralize}", class: "input" %>
+          <%= f.hidden_field :filters, value: params[:filters], data: { model_filter_target: "hiddenInput" } %>
+          <span class="icon is-small is-left">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+        
+        <div class="control">
+          <%= f.submit "Search", class: "button is-primary" %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="column is-two-fifths">
+      <div class="field has-addons">
+        <p class="control">
+          <span class="select">
+            <select data-model-filter-target="attributeSelect">
+              <option value="">Select attribute</option>
+              <% searchable_attributes.each do |attribute| %>
+                <option value="<%= attribute %>"><%= attribute.humanize %></option>
+              <% end %>
+            </select>
+          </span>
+        </p>
+    
+        <%= render "components/model_filter_input", model_class: model_class %>
+
+        <p class="control">
+          <button class="button is-info" type="button" data-action="click->model-filter#addFilter">Add Filter</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns">
+    <div class="column tags">
+      <% if params[:filters].present? && params[:filters] != "{}"  %>
+        <% JSON.parse(params[:filters])&.each do |attribute, value| %>
+          <% if searchable_attributes.include?(attribute) %>
+            <span class="tag is-info is-medium" data-model-filter-target="filterTag">
+              <%= attribute.humanize %>: <%= value %>
+              <button class="delete" type="button" data-action="click->model-filter#removeFilter" data-filter-attribute="<%= attribute %>"></button>
+            </span>
+          <% end %>
+        <% end %>
+
+        <%= link_to "Reset", path, class: "button is-light is-small" %>
+      <% end %>
+    </div>
+  </div>
+</div>
