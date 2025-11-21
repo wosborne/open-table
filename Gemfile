@@ -92,4 +92,11 @@ gem "ebay-ruby"
 gem "omniauth-ebay-oauth"
 gem "omniauth-rails_csrf_protection"
 
+# Gmail API integration
+gem "google-apis-gmail_v1"
+gem "google-apis-core"
+gem "omniauth"
+gem "omniauth-google-oauth2"
+gem "mail"
+
 gem "noticed"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_21_144351) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_21_164412) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -159,6 +159,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_144351) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "gmails", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.text "access_token"
+    t.text "refresh_token"
+    t.datetime "expires_at"
+    t.string "email"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_gmails_on_account_id"
   end
 
   create_table "inventory_units", force: :cascade do |t|
@@ -418,6 +430,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_144351) do
   add_foreign_key "filters", "properties"
   add_foreign_key "filters", "views"
   add_foreign_key "formulas", "properties"
+  add_foreign_key "gmails", "accounts"
   add_foreign_key "inventory_units", "accounts"
   add_foreign_key "inventory_units", "locations"
   add_foreign_key "inventory_units", "variants"

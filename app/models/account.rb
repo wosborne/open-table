@@ -16,6 +16,8 @@ class Account < ApplicationRecord
   has_one :shopify_account, -> { where(service_name: "shopify") }, class_name: "ExternalAccount"
   has_one :ebay_account, -> { where(service_name: "ebay") }, class_name: "ExternalAccount"
 
+  has_one :gmail, dependent: :destroy
+
   has_many :orders, through: :external_accounts
 
   has_many :notifications, as: :recipient, class_name: "Noticed::Notification", dependent: :destroy
@@ -25,4 +27,12 @@ class Account < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
 
   friendly_id :slug, use: :slugged
+
+  def gmail_connected?
+    gmail&.active? || false
+  end
+
+  def can_send_emails?
+    gmail_connected? && !gmail&.token_expired?
+  end
 end

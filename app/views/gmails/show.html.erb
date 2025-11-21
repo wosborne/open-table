@@ -1,0 +1,63 @@
+<% content_for :title, "Gmail Integration" %>
+
+<div class="mb-5">
+  <%= link_to "← Back", account_path(current_account), class: "button is-text" %>
+</div>
+
+<h1 class="title">Gmail Integration</h1>
+<h2 class="subtitle"><%= current_account.name %></h2>
+
+<div>
+  <% if @gmail&.active? %>
+    <div class="notification ">
+      <strong class="has-text-primary">Gmail Connected</strong><br>
+      <strong>Email:</strong> <%= @gmail.email %><br>
+      <strong>Status:</strong> <span class="tag is-primary">Active</span><br>
+    </div>
+
+    <p class="content">
+      Gmail integration is active. You can now send emails through your Gmail account 
+      using this platform's email functionality.
+    </p>
+    
+    <div class="buttons">
+      <%= link_to "Disconnect Gmail", 
+                  account_gmail_path(current_account), 
+                  method: :delete,
+                  class: "button is-danger",
+                  data: { 
+                    turbo_method: :delete,
+                    turbo_confirm: "Are you sure you want to disconnect Gmail?",
+                    turbo_frame: "_top"
+                  } %>
+    </div>
+  <% else %>
+    <div class="notification">
+      <strong>Gmail Not Connected</strong><br>
+      Connect your Gmail account to send emails through this platform.
+    </div>
+
+    <div class="content">
+      <h2 class="subtitle">What Gmail integration provides:</h2>
+      <ul>
+        <li>Send emails from your Gmail account through this platform</li>
+        <li>Maintain your email reputation and deliverability</li>
+        <li>Keep all email communication under your brand</li>
+        <li>Secure OAuth2 authentication</li>
+      </ul>
+    </div>
+    
+    <div class="buttons">
+      <% if Rails.application.credentials.dig(:google, :client_id).present? %>
+        <%= link_to "Connect Gmail", 
+                    connect_account_gmail_path(current_account),
+                    class: "button is-primary",
+                    data: { turbo_frame: "_top" } %>
+      <% else %>
+        <button class="button is-primary" disabled>
+          Gmail Integration Not Configured
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+</div>

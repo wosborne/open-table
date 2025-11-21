@@ -15,15 +15,15 @@
           <div class="level-left">
             <div>
               <h3 class="title is-5 mb-2"><%= condition.name %></h3>
-              <p class="subtitle is-6 has-text-grey-dark mb-3">
+              <p class="subtitle is-6 mb-3">
                 <%= condition.description %>
               </p>
               <div class="tags">
-                <span class="tag is-light">
+                <span class="tag is-primary">
                   <%= pluralize(condition.variants.count, 'variant') %>
                 </span>
                 <% if condition.ebay_condition.present? %>
-                  <span class="tag is-info is-light">
+                  <span class="tag is-info">
                     eBay: <%= condition.ebay_condition_display_name %>
                   </span>
                 <% end %>

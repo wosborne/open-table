@@ -101,10 +101,18 @@ Rails.application.routes.draw do
     end
 
     resources :shopify
+
+    # Gmail integration
+    resource :gmail, only: [ :show, :create, :destroy ] do
+      get :connect, on: :member
+    end
   end
 
   get "/external_accounts/shopify_callback", to: "external_accounts#shopify_callback"
   get "/external_accounts/ebay_callback", to: "external_accounts#ebay_callback"
   get "/external_accounts/ebay_authn_auth_callback", to: "external_accounts#ebay_authn_auth_callback"
   match "/ebay/marketplace_notifications", to: "ebay_notifications#marketplace_notifications", via: [ :get, :post ]
+
+  # Gmail OAuth routes
+  get "/auth/google_oauth2/callback", to: "oauth#gmail_callback"
 end

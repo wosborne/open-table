@@ -121,5 +121,53 @@
         </div>
       </div>
     </div>
+
+    <div class="column is-6">
+      <div class="card">
+        <div class="card-content">
+          <div class="media">
+            <div class="media-left">
+              <span class="icon is-large">
+                <i class="fab fa-google fa-2x"></i>
+              </span>
+            </div>
+            <div class="media-content">
+              <p class="title is-5 mb-1">Gmail</p>
+              <% if current_account.gmail_connected? %>
+                <span class="tag is-success is-light">Connected</span>
+                <% if current_account.gmail.email.present? %>
+                  <p class="has-text-grey is-size-7 mt-1"><%= current_account.gmail.email %></p>
+                <% end %>
+              <% else %>
+                <span class="tag is-light">Not Connected</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="content mt-3">
+            <% if current_account.gmail_connected? %>
+              <div class="buttons">
+                <%= link_to account_gmail_path(current_account), class: "button is-info is-small", data: { turbo_frame: "_top" } do %>
+                  <span class="icon">
+                    <i class="fas fa-cog"></i>
+                  </span>
+                  <span>Manage</span>
+                <% end %>
+                <%= button_to account_gmail_path(current_account), method: :delete, data: { turbo_confirm: "Are you sure you want to disconnect your Gmail account?", turbo_frame: "_top" }, class: "button is-danger is-small" do %>
+                  <span class="icon">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                  <span>Disconnect</span>
+                <% end %>
+              </div>
+            <% else %>
+              <%= link_to "Connect Gmail", connect_account_gmail_path(current_account), class: "button is-primary is-small", data: { turbo_frame: "_top" } %>
+            <% end %>
+            <p class="has-text-grey is-size-7 mt-2">
+              Send emails from your Gmail account through the platform
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
