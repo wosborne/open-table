@@ -17,6 +17,24 @@
       <%= link_to "Orders", account_orders_path(current_account) %>
     </li>
   </ul>
+  
+  <p class="menu-label">Custom Tables</p>
+  <ul class="menu-list">
+    <% current_account.tables.each do |table| %>
+      <li>
+        <%= link_to table.name, account_table_path(current_account, table) %>
+      </li>
+    <% end %>
 
-
+    <li>
+      <%= link_to new_account_table_path(current_account) do %>
+        <span class="icon-text">
+          <span>Create Table</span>
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+        </span>
+      <% end %>
+    </li>
+  </ul>
 </aside>

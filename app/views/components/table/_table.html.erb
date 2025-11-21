@@ -1,6 +1,6 @@
 <div data-controller="table" data-table-table-id-value="<%= @table.id %>" class="is-flex is-flex-direction-column is-flex-grow-1" >
-  <div class="level">
-    <div class="level-left">
+  <div class="level is-flex-direction-row">
+    <div class="level-left is-flex-direction-row">
       <div class="level-item">
         <p class="subtitle is-5"><strong data-table-target="selectedCount">0</strong> selected</p>
       </div>
@@ -70,7 +70,7 @@
     </div>
   </div>
 
-  <div class="table-container" data-controller="record-attribute" style="height: 100%;">
+  <div class="table-container" data-controller="record-attribute">
     <%= form_with url: set_record_attribute_account_table_path(current_account, @table), method: :patch, format: :turbo_stream, data: { turbo: true } do |f| %>
       <%= f.hidden_field :record_id, value: "", data: { record_attribute_target: "recordIdInput" } %>
       <%= f.hidden_field :property_id, value: "", data: { record_attribute_target: "propertyIdInput" } %>

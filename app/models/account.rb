@@ -10,7 +10,6 @@ class Account < ApplicationRecord
   has_many :users, through: :account_users
 
   has_many :tables, dependent: :destroy
-  has_one :inventory_table, -> { where(type: "InventoryTable") }, class_name: "Table"
 
   has_many :external_accounts, dependent: :destroy
   has_one :shopify_account, -> { where(service_name: "shopify") }, class_name: "ExternalAccount"
@@ -23,12 +22,4 @@ class Account < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
 
   friendly_id :slug, use: :slugged
-
-  after_create :create_inventory_table
-
-  private
-
-  def create_inventory_table
-    tables.create(name: "Inventory", type: "InventoryTable")
-  end
 end

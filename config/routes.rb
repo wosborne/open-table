@@ -74,30 +74,29 @@ Rails.application.routes.draw do
       delete :clear_all, on: :collection
     end
 
-    # Custom tables routes disabled
-    # resources :tables do
-    #   resources :properties, only: %w[create update destroy] do
-    #     get :type_fields, on: :member
-    #     post :refresh_cells, on: :member
-    #   end
-    #
-    #   resources :records, only: %w[create update destroy] do
-    #     delete :delete_records, on: :collection
-    #   end
-    #
-    #   resources :views, only: %w[create show update destroy] do
-    #     resources :view_properties do
-    #       patch :set_positions, on: :collection
-    #       patch :set_visibility, on: :member
-    #     end
-    #
-    #     get :filter_field, on: :member
-    #     patch :set_record_attribute, on: :member
-    #   end
-    #
-    #   get :property_options, on: :member
-    #   patch :set_record_attribute, on: :member
-    # end
+    resources :tables do
+      resources :properties, only: %w[create update destroy] do
+        get :type_fields, on: :member
+        post :refresh_cells, on: :member
+      end
+
+      resources :records, only: %w[create update destroy] do
+        delete :delete_records, on: :collection
+      end
+
+      resources :views, only: %w[create show update destroy] do
+        resources :view_properties do
+          patch :set_positions, on: :collection
+          patch :set_visibility, on: :member
+        end
+
+        get :filter_field, on: :member
+        patch :set_record_attribute, on: :member
+      end
+
+      get :property_options, on: :member
+      patch :set_record_attribute, on: :member
+    end
 
     resources :shopify
   end

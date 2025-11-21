@@ -1,28 +1,26 @@
-<section class="section is-flex is-flex-direction-column" style="height: 100%">
-  <h1 class="title"><%= @table.name %></h1>
+<h1 class="title"><%= @table.name %></h1>
 
-  <div class="tabs" style="overflow: visible;">
-    <ul>
-      <% @table.views.each do |view| %>
-        <%= render partial: "components/tabs/tab", locals: { view: } %>
-      <% end %>
+<div class="tabs" style="overflow: visible;">
+  <ul>
+    <% @table.views.each do |view| %>
+      <%= render partial: "components/tabs/tab", locals: { view: } %>
+    <% end %>
 
-      <li>
-        <%= button_to account_table_views_path(current_account, @table) do %>
-          <span class="icon-text">
-            <span class="icon is-clickable m-0">
-              <i class="fas fa-plus"></i>
-            </span>
-            <span>Add View</span>
+    <li>
+      <%= button_to account_table_views_path(current_account, @table) do %>
+        <span class="icon-text">
+          <span class="icon is-clickable m-0">
+            <i class="fas fa-plus"></i>
           </span>
-        <% end %>
-      </li>
-    </ul>
-  </div>
+          <span>Add View</span>
+        </span>
+      <% end %>
+    </li>
+  </ul>
+</div>
 
-  <%= render "components/table/filters", path: account_table_view_path(current_account, @table, @view) %>
+<%= render "components/table/filters", path: account_table_view_path(current_account, @table, @view) %>
 
-  <%= turbo_frame_tag "table_view", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
-    <%= render "components/table/table" %>
-  <% end %>
-</section>
+<%= turbo_frame_tag "table_view", class: "is-flex is-flex-direction-column is-flex-grow-1" do %>
+  <%= render "components/table/table" %>
+<% end %>

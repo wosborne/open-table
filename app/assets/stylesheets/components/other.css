@@ -3,3 +3,10 @@
   background-color: inherit !important;
   cursor: default;
 }
+
+.dropdown-portal {
+  position: absolute;
+  display: block;
+  pointer-events: auto;
+  z-index: 1000;
+}

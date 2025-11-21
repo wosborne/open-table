@@ -39,8 +39,6 @@ class Property < ApplicationRecord
 
   after_create :create_view_properties_for_each_view
 
-  before_destroy :prevent_destroy
-
   scope :select_type, -> { where(type: TYPE_MAP["select"]) }
   scope :number_type, -> { where(type: TYPE_MAP["number"]) }
   scope :searchable, -> { where.not(type: [ ALL_TYPE_MAP["timestamp"], ALL_TYPE_MAP["shopify"] ]) }
@@ -90,11 +88,5 @@ class Property < ApplicationRecord
     if type_changed? && !VALID_TYPES.include?(type)
       self.type = TYPE_MAP[type]
     end
-  end
-
-  def prevent_destroy
-    return unless deletable
-    errors.add(:base, "Cannot delete fixed properties")
-    throw(:abort)
   end
 end

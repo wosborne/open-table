@@ -2,7 +2,9 @@
   id="property-<%= property.id %>"
   data-id="<%= property.id %>"
   style="min-width: 110px;"
-  data-controller="dropdown column">
+  data-controller="dropdown column"
+  data-dropdown-portal-value="true"
+  >
   <div class="dropdown is-clickable" style="width: 100%; height: 100%;" data-dropdown-target="dropdown" data-action="click->dropdown#open">
     <div class="dropdown-trigger draggable">
       <%= form_with url: refresh_cells_account_table_property_path(current_account, current_table, property) do |f| %>
@@ -16,65 +18,70 @@
         <span><%= property.name %></span>
       </span>
     </div>
-    <div class="dropdown-menu" id="dropdown-menu" role="menu">
-      <div class="dropdown-content">
-        <%= form_with model: property,
-          scope: :property,
-          url: account_table_property_path(current_account, property.table_id, property),
-          id: "property-form-#{property.id}",
-          data: {
-            controller: 'nested-form property-type',
-            nested_form_wrapper_selector_value: '.nested-form-wrapper',
-            property_id: property.id,
-            table_id: property.table_id,
-            action: "turbo:submit-end->column#refreshCells",
-            url_template: type_fields_account_table_property_path(current_account, current_table, property)
-          },
-          format: :turbo_stream do |f| %>
-          <%= f.hidden_field :id %>
+  </div>
 
-          <div class="dropdown-item">
-            <%= f.text_field :name, class: "input is-small", disabled: !property.editable %>
-          </div>
-          
-          <% unless Property::ALL_TYPE_MAP.slice("id", "timestamp").values.include?(property.type) %>
+  <template data-dropdown-target="template">
+    <div class="dropdown is-active">
+      <div class="dropdown-menu" id="dropdown-menu" role="menu" data-dropdown-target="menu">
+        <div class="dropdown-content">
+          <%= form_with model: property,
+            scope: :property,
+            url: account_table_property_path(current_account, property.table_id, property),
+            id: "property-form-#{property.id}",
+            data: {
+              controller: 'nested-form property-type',
+              nested_form_wrapper_selector_value: '.nested-form-wrapper',
+              property_id: property.id,
+              table_id: property.table_id,
+              action: "turbo:submit-end->column#refreshCells",
+              url_template: type_fields_account_table_property_path(current_account, current_table, property)
+            },
+            format: :turbo_stream do |f| %>
+            <%= f.hidden_field :id %>
+
             <div class="dropdown-item">
-              <div class="field">
-                <div class="control is-expanded">
-                  <div class="select is-small is-fullwidth">
-                    <%= f.select :type, Property::TYPE_MAP.keys.excluding("id"), { selected: Property::TYPE_MAP.invert[property.type], disabled: !property.editable }, { data: { action: "change->property-type#typeChanged" } } %>
+              <%= f.text_field :name, class: "input is-small", disabled: !property.editable %>
+            </div>
+            
+            <% unless Property::ALL_TYPE_MAP.slice("id", "timestamp").values.include?(property.type) %>
+              <div class="dropdown-item">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <div class="select is-small is-fullwidth">
+                      <%= f.select :type, Property::TYPE_MAP.keys.excluding("id"), { selected: Property::TYPE_MAP.invert[property.type], disabled: !property.editable }, { data: { action: "change->property-type#typeChanged" } } %>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            <% end %>
+
+            <%= render partial: "components/table/properties/type_fields", locals: { f: f, property: } %>
           <% end %>
 
-          <%= render partial: "components/table/properties/type_fields", locals: { f: f, property: } %>
-        <% end %>
+          <hr class="dropdown-divider" />
 
-        <hr class="dropdown-divider" />
-
-        <div class="dropdown-item">
-          <div class="field is-grouped">
-            <% if property.deletable %>
-              <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
-                <span class="icon">
-                  <i class="fas fa-trash"></i>
-                </span>
+          <div class="dropdown-item">
+            <div class="field is-grouped">
+              <% if property.deletable %>
+                <%= button_to account_table_property_path(current_account, current_table, property), method: :delete, data: { turbo: true }, onclick: "event.stopPropagation();", class: "button is-danger is-outlined is-small" do %>
+                  <span class="icon">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                <% end %>
               <% end %>
-            <% end %>
-            
-            <p class="control is-expanded">
-            </p>
+              
+              <p class="control is-expanded">
+              </p>
 
-            <p class="control">
-              <button type="button" onclick="document.getElementById('property-form-<%= property.id %>').requestSubmit();" class="button is-primary is-small">
-                Save
-              </button>
-            </p>
+              <p class="control">
+                <button type="button" onclick="document.getElementById('property-form-<%= property.id %>').requestSubmit();" class="button is-primary is-small">
+                  Save
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </template>
 </th>
