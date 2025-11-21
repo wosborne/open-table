@@ -39,6 +39,20 @@
           <p class="content"><%= @variant.inventory_count %> units in stock</p>
         </div>
         
+        <% if @variant.condition %>
+          <div class="field">
+            <label class="label">Condition</label>
+            <p class="content">
+              <%= link_to @variant.condition.name, account_condition_path(current_account, @variant.condition), class: "is-link" %>
+              <% if @variant.condition.ebay_condition.present? %>
+                <span class="tag is-info is-light ml-2">
+                  eBay: <%= @variant.condition.ebay_condition_display_name %>
+                </span>
+              <% end %>
+            </p>
+          </div>
+        <% end %>
+        
         <% if @variant.sku_version_number > 1 %>
           <div class="field">
             <label class="label">SKU Version</label>

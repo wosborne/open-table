@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_18_075606) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_21_144351) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_18_075606) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "conditions", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "ebay_condition"
+    t.index ["account_id", "name"], name: "index_conditions_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_conditions_on_account_id"
   end
 
   create_table "ebay_business_policies", force: :cascade do |t|
@@ -354,6 +365,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_18_075606) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "external_ids", default: {}, null: false
+    t.bigint "condition_id"
+    t.index ["condition_id"], name: "index_variants_on_condition_id"
     t.index ["product_id"], name: "index_variants_on_product_id"
     t.index ["sku"], name: "index_variants_on_sku", unique: true
   end
@@ -394,6 +407,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_18_075606) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "conditions", "accounts"
   add_foreign_key "ebay_business_policies", "external_accounts"
   add_foreign_key "external_account_inventory_units", "external_accounts"
   add_foreign_key "external_account_inventory_units", "inventory_units"
@@ -425,6 +439,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_18_075606) do
   add_foreign_key "variant_option_values", "product_option_values"
   add_foreign_key "variant_option_values", "product_options"
   add_foreign_key "variant_option_values", "variants"
+  add_foreign_key "variants", "conditions"
   add_foreign_key "variants", "products"
   add_foreign_key "view_properties", "properties"
   add_foreign_key "view_properties", "views"

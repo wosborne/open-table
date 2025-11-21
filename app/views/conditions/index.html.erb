@@ -1,0 +1,56 @@
+<div class="container">
+  <div class="level">
+    <div class="level-left">
+      <h1 class="title">Conditions</h1>
+    </div>
+    <div class="level-right">
+      <%= link_to "New Condition", new_account_condition_path(current_account), class: "button is-primary" %>
+    </div>
+  </div>
+
+  <% if @conditions.any? %>
+    <% @conditions.each do |condition| %>
+      <div class="box mb-4">
+        <div class="level">
+          <div class="level-left">
+            <div>
+              <h3 class="title is-5 mb-2"><%= condition.name %></h3>
+              <p class="subtitle is-6 has-text-grey-dark mb-3">
+                <%= condition.description %>
+              </p>
+              <div class="tags">
+                <span class="tag is-light">
+                  <%= pluralize(condition.variants.count, 'variant') %>
+                </span>
+                <% if condition.ebay_condition.present? %>
+                  <span class="tag is-info is-light">
+                    eBay: <%= condition.ebay_condition_display_name %>
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="buttons are-small">
+              <%= link_to "View", account_condition_path(current_account, condition), class: "button is-info" %>
+              <%= link_to "Edit", edit_account_condition_path(current_account, condition), class: "button is-warning" %>
+              <%= link_to "Delete", account_condition_path(current_account, condition), 
+                  method: :delete,
+                  data: { 
+                    confirm: "Are you sure? This will remove the condition from #{condition.variants.count} variants.",
+                    turbo_method: :delete 
+                  },
+                  class: "button is-danger" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="notification is-info">
+      <p><strong>No conditions found.</strong></p>
+      <p>Create your first condition to start organizing your product variants by condition.</p>
+      <%= link_to "Create First Condition", new_account_condition_path(current_account), class: "button is-primary mt-3" %>
+    </div>
+  <% end %>
+</div>

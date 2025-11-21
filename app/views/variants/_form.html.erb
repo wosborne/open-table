@@ -25,6 +25,17 @@
 
 
     <div class="field">
+      <%= form.label :condition_id, "Condition", class: "label" %>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <%= form.collection_select :condition_id, @conditions, :id, :name, 
+              { prompt: "Select a condition (optional)" }, 
+              { class: "select" } %>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
       <%= form.label :price, class: "label" %>
       <div class="control">
         <div class="field has-addons">

@@ -1,0 +1,66 @@
+<div class="container">
+  <div class="level">
+    <div class="level-left">
+      <h1 class="title"><%= @condition.name %></h1>
+    </div>
+    <div class="level-right">
+      <div class="buttons">
+        <%= link_to "Edit", edit_account_condition_path(current_account, @condition), class: "button is-warning" %>
+        <%= link_to "Back", account_conditions_path(current_account), class: "button" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="content">
+      <p><strong>Description:</strong></p>
+      <p><%= @condition.description %></p>
+      
+      <% if @condition.ebay_condition.present? %>
+        <hr>
+        <p><strong>eBay Condition Mapping:</strong></p>
+        <span class="tag is-info">
+          <%= @condition.ebay_condition_display_name %>
+        </span>
+        <p class="help mt-2">This condition maps to "<%= @condition.ebay_condition %>" in eBay's system.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2 class="subtitle">Variants using this condition (<%= @condition.variants.count %>)</h2>
+    
+    <% if @condition.variants.any? %>
+      <div class="table-container">
+        <table class="table is-fullwidth is-striped">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @condition.variants.includes(:product).each do |variant| %>
+              <tr>
+                <td><strong><%= variant.sku %></strong></td>
+                <td><%= variant.product.name %></td>
+                <td>$<%= variant.price %></td>
+                <td><%= variant.inventory_count %></td>
+                <td>
+                  <%= link_to "View", account_variant_path(current_account, variant), class: "button is-small is-info" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="notification is-info">
+        <p>No variants are currently using this condition.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

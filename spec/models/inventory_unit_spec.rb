@@ -413,9 +413,47 @@ RSpec.describe InventoryUnit, type: :model do
 
           expect(data[:product][:title]).to be_present
           expect(data[:product][:aspects]).to be_a(Hash)
-          expect(data[:condition]).to eq("USED_EXCELLENT")
+          expect(data[:condition]).to eq("USED_EXCELLENT") # Default when no condition mapping
           expect(data[:availability][:shipToLocationAvailability][:quantity]).to eq(1)
           expect(data[:packageWeightAndSize]).to be_present
+        end
+        context "with variant condition mappings" do
+          let(:condition) { create(:condition, :with_ebay_mapping, account: account, ebay_condition: "NEW") }
+          let(:variant_with_condition) { create(:variant, product: product, condition: condition) }
+          let(:inventory_unit_with_condition) { create(:inventory_unit, account: account, variant: variant_with_condition) }
+
+          it "uses the mapped eBay condition" do
+            data = inventory_unit_with_condition.send(:build_ebay_inventory_item_data)
+            expect(data[:condition]).to eq("NEW")
+          end
+        end
+      end
+
+      describe "#ebay_condition_value" do
+        context "when variant has a condition with eBay mapping" do
+          let(:condition) { create(:condition, :with_ebay_mapping, account: account, ebay_condition: "CERTIFIED_REFURBISHED") }
+          let(:variant_with_condition) { create(:variant, product: product, condition: condition) }
+          let(:inventory_unit_with_condition) { create(:inventory_unit, account: account, variant: variant_with_condition) }
+
+          it "returns the mapped eBay condition" do
+            expect(inventory_unit_with_condition.send(:ebay_condition_value)).to eq("CERTIFIED_REFURBISHED")
+          end
+        end
+
+        context "when variant has a condition without eBay mapping" do
+          let(:condition) { create(:condition, account: account, ebay_condition: nil) }
+          let(:variant_with_condition) { create(:variant, product: product, condition: condition) }
+          let(:inventory_unit_with_condition) { create(:inventory_unit, account: account, variant: variant_with_condition) }
+
+          it "falls back to default condition" do
+            expect(inventory_unit_with_condition.send(:ebay_condition_value)).to eq("USED_EXCELLENT")
+          end
+        end
+
+        context "when variant has no condition" do
+          it "falls back to default condition" do
+            expect(inventory_unit.send(:ebay_condition_value)).to eq("USED_EXCELLENT")
+          end
         end
       end
 

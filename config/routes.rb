@@ -66,6 +66,8 @@ Rails.application.routes.draw do
       get :product_options, on: :collection
     end
 
+    resources :conditions
+
     resources :locations
 
     resources :orders, only: [ :index, :show, :edit ]

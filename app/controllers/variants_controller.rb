@@ -12,11 +12,13 @@ class VariantsController < AccountsController
   def new
     @variant = current_account.variants.new
     @products = current_account.products.includes(:product_options, :product_option_values)
+    @conditions = current_account.conditions.order(:name)
   end
 
   def create
     @variant = current_account.variants.new(variant_params)
     @products = current_account.products.includes(:product_options, :product_option_values)
+    @conditions = current_account.conditions.order(:name)
 
     if @variant.save
       redirect_to account_variant_path(current_account, @variant), notice: "Variant was successfully created."
@@ -27,6 +29,7 @@ class VariantsController < AccountsController
 
   def edit
     @products = current_account.products.includes(:product_options, :product_option_values)
+    @conditions = current_account.conditions.order(:name)
   end
 
   def update
@@ -34,6 +37,7 @@ class VariantsController < AccountsController
       redirect_to account_variant_path(current_account, @variant), notice: "Variant was successfully updated."
     else
       @products = current_account.products.includes(:product_options, :product_option_values)
+      @conditions = current_account.conditions.order(:name)
       render :edit, status: :unprocessable_entity
     end
   end
@@ -80,7 +84,7 @@ class VariantsController < AccountsController
   end
 
   def variant_params
-    params.require(:variant).permit(:sku, :price, :product_id, product_option_values_attributes: [ :product_option_id, :value, :_destroy ])
+    params.require(:variant).permit(:sku, :price, :product_id, :condition_id, product_option_values_attributes: [ :product_option_id, :value, :_destroy ])
   end
 
   def current_account

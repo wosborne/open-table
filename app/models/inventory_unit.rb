@@ -215,7 +215,7 @@ class InventoryUnit < ApplicationRecord
         aspects: build_ebay_aspects,
         imageUrls: build_ebay_image_urls
       },
-      condition: "USED_EXCELLENT",
+      condition: ebay_condition_value,
       availability: {
         shipToLocationAvailability: {
           quantity: 1
@@ -408,5 +408,15 @@ class InventoryUnit < ApplicationRecord
 
   def ebay_error_config
     @ebay_error_config ||= YAML.load_file(Rails.root.join("config", "ebay_error_messages.yml"))
+  end
+
+  def ebay_condition_value
+    # Use the variant's condition mapping if available
+    if variant.condition&.ebay_condition.present?
+      variant.condition.ebay_condition
+    else
+      # Fallback to default condition
+      "USED_EXCELLENT"
+    end
   end
 end

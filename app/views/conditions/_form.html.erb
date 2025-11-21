@@ -1,0 +1,57 @@
+<%= form_with(model: [current_account, @condition], local: true) do |form| %>
+  <% if @condition.errors.any? %>
+    <div class="notification is-danger">
+      <h4><%= pluralize(@condition.errors.count, "error") %> prohibited this condition from being saved:</h4>
+      <ul>
+        <% @condition.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name, class: "label" %>
+    <div class="control">
+      <%= form.text_field :name, class: "input", placeholder: "e.g., New, Used, Refurbished" %>
+    </div>
+    <% if @condition.errors[:name].any? %>
+      <p class="help is-danger"><%= @condition.errors[:name].first %></p>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= form.label :description, class: "label" %>
+    <div class="control">
+      <%= form.text_area :description, class: "textarea", rows: 4, placeholder: "Describe this condition..." %>
+    </div>
+    <% if @condition.errors[:description].any? %>
+      <p class="help is-danger"><%= @condition.errors[:description].first %></p>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= form.label :ebay_condition, "eBay Condition Mapping", class: "label" %>
+    <div class="control">
+      <div class="select is-fullwidth">
+        <%= form.select :ebay_condition, 
+            options_for_select(Condition::EBAY_CONDITIONS.map { |c| [c.downcase.titleize, c] }, @condition.ebay_condition), 
+            { prompt: "Select an eBay condition (optional)" }, 
+            { class: "select" } %>
+      </div>
+    </div>
+    <p class="help">Map this condition to an eBay condition for listing synchronization.</p>
+    <% if @condition.errors[:ebay_condition].any? %>
+      <p class="help is-danger"><%= @condition.errors[:ebay_condition].first %></p>
+    <% end %>
+  </div>
+
+  <div class="field is-grouped">
+    <div class="control">
+      <%= form.submit class: "button is-primary" %>
+    </div>
+    <div class="control">
+      <%= link_to "Cancel", account_conditions_path(current_account), class: "button" %>
+    </div>
+  </div>
+<% end %>

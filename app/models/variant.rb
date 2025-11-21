@@ -5,6 +5,7 @@ class Variant < ApplicationRecord
   SEARCHABLE_ATTRIBUTES = [ "id", "sku", "price", "product_name" ]
 
   belongs_to :product
+  belongs_to :condition, optional: true
   has_many :variant_option_values, dependent: :destroy
   has_many :product_options, through: :variant_option_values
   has_many :product_option_values, through: :variant_option_values
@@ -34,6 +35,9 @@ class Variant < ApplicationRecord
       # Use eBay aspects Model if no model product option exists
       parts << product.ebay_aspects["Model"]
     end
+
+    # Add condition if present
+    parts << condition&.name.to_s if condition
 
     # Add all other options (excluding model)
     product.product_options.each do |opt|

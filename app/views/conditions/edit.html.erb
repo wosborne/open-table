@@ -1,0 +1,22 @@
+<div class="container">
+  <h1 class="title">Edit Condition</h1>
+
+  <%= render 'form', condition: @condition %>
+
+  <hr>
+  
+  <div class="level">
+    <div class="level-left">
+      <%= link_to "Show", account_condition_path(current_account, @condition), class: "button is-info" %>
+    </div>
+    <div class="level-right">
+      <%= link_to "Delete", account_condition_path(current_account, @condition), 
+          method: :delete,
+          data: { 
+            confirm: "Are you sure? This will remove the condition from #{@condition.variants.count} variants.",
+            turbo_method: :delete 
+          },
+          class: "button is-danger" %>
+    </div>
+  </div>
+</div>
