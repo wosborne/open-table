@@ -32,12 +32,13 @@ class Item < ApplicationRecord
     created_at_property = table.properties.find_by(name: "Created at")
     updated_at_property = table.properties.find_by(name: "Updated at")
     time = Time.now
-    properties[created_at_property.id.to_s] = time
-    properties[updated_at_property.id.to_s] = time
+    properties[created_at_property.id.to_s] = time if created_at_property
+    properties[updated_at_property.id.to_s] = time if updated_at_property
   end
 
   def set_updated_at_property
     property = table.properties.find_by(name: "Updated at")
-    properties[property.id.to_s] = Time.zone.now
+
+    properties[property.id.to_s] = Time.zone.now if property
   end
 end
