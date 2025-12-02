@@ -91,7 +91,7 @@ class Property < ApplicationRecord
   end
 
   def prevent_destroy
-    return unless deletable
+    return if deletable
     errors.add(:base, "Cannot delete fixed properties")
     throw(:abort)
   end
