@@ -81,7 +81,7 @@ GEM
     bcrypt_pbkdf (1.1.1-arm64-darwin)
     bcrypt_pbkdf (1.1.1-x86_64-darwin)
     benchmark (0.4.0)
-    bigdecimal (3.1.9)
+    bigdecimal (3.3.1)
     bindex (0.8.1)
     bootsnap (1.18.4)
       msgpack (~> 1.2)
@@ -111,7 +111,7 @@ GEM
     debug (1.10.0)
       irb (~> 1.10)
       reline (>= 0.3.8)
-    dentaku (3.5.4)
+    dentaku (3.5.6)
       bigdecimal
       concurrent-ruby
     devise (4.9.4)
